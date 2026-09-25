@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PuentesGlobales | Tu Futuro Profesional en Europa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="config.js"></script>
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --accent: #2563eb;
+            --bg: #ffffff;
+            --gray: #f9fafb;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--primary); overflow-x: hidden; }
+
+        /* Navbar */
+        nav {
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            width: 100%;
+            z-index: 100;
+        }
+        .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: inherit; font-weight: 600; font-size: 0.95rem; }
+        .btn-nav { background: var(--accent); color: white !important; padding: 0.6rem 1.25rem; border-radius: 100px; }
+
+        /* Hero */
+        .hero {
+            height: 90vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            background: linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0.1)), 
+                        url('assets/img/hero.png');
+            background-size: cover;
+            background-position: center;
+        }
+        .hero-content { max-width: 650px; }
+        .hero h1 { font-size: 3.8rem; line-height: 1.05; font-weight: 800; margin-bottom: 1.5rem; letter-spacing: -2px; }
+        .hero p { font-size: 1.2rem; color: #4b5563; margin-bottom: 2.5rem; font-weight: 300; }
+
+        /* Search Box */
+        .search-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+        }
+        .search-container input, .search-container select {
+            border: 1px solid #e5e7eb;
+            padding: 0.85rem 1.25rem;
+            font-size: 0.95rem;
+            outline: none;
+            border-radius: 12px;
+            font-family: inherit;
+        }
+        .btn-search {
+            background: var(--accent);
+            color: white;
+            padding: 0.85rem 2rem;
+            border-radius: 100px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Feature Cards */
+        .features { padding: 5rem 5%; background: var(--gray); display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .feature-card { background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid #eee; transition: transform 0.3s; }
+        .feature-card:hover { transform: translateY(-5px); }
+        .feature-card h3 { font-size: 1.4rem; font-weight: 700; margin: 1rem 0 0.5rem 0; }
+        .feature-card p { color: #6b7280; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; }
+        .feature-card a { color: var(--accent); font-weight: 700; text-decoration: none; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            .features { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+        footer { padding: 3rem 5%; text-align: center; border-top: 1px solid #eee; color: #6b7280; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">PuentesGlobales.</div>
+        <div class="nav-links">
+            <a href="ats-scanner.html">🔍 Escáner ATS</a>
+            <a href="test-psicometrico.html">🧠 Test Psicométrico</a>
+            <a href="search-results.html" class="btn-nav">Buscar Empleos</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Tu puente al empleo europeo.</h1>
+            <p>Miles de oportunidades laborales en Europa, actualizadas diariamente desde las mejores fuentes. Consulta a ALEX IO para ver cómo te podemos ayudar a migrar a Europa.</p>
+            
+            <form action="search-results.html" method="GET" class="search-container">
+                <div style="display: flex; gap: 1rem; width: 100%;">
+                    <select name="country" style="flex: 1;">
+                        <option value="">🌍 Todos los países</option>
+                        <option value="España">🇪🇸 España</option>
+                        <option value="Alemania">🇩🇪 Alemania</option>
+                        <option value="Francia">🇫🇷 Francia</option>
+                        <option value="Italia">🇮🇹 Italia</option>
+                        <option value="Reino Unido">🇬🇧 Reino Unido</option>
+                        <option value="Irlanda">🇮🇪 Irlanda</option>
+                        <option value="Remoto">💻 Remoto</option>
+                    </select>
+                    
+                    <select name="profession" style="flex: 1;">
+                        <option value="">💼 Todas las profesiones</option>
+                        <option value="IT">💻 Tecnología / IT</option>
+                        <option value="Salud">🏥 Salud</option>
+                        <option value="Ingeniería">⚙️ Ingeniería</option>
+                        <option value="Construcción">🏗️ Construcción</option>
+                        <option value="Hostelería">🍽️ Hostelería</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; width: 100%;">
+                    <input type="text" name="q" placeholder="Busca por puesto, empresa o habilidad..." required style="flex: 1;">
+                    <button type="submit" class="btn-search">Buscar Empleos</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature-card">
+            <div style="font-size: 2rem">🌐</div>
+            <h3>Agregador Multi-API</h3>
+            <p>Búsquedas en tiempo real conectadas a múltiples fuentes de empleo en Europa (Arbeitnow, RemoteOK, Remotive).</p>
+            <a href="search-results.html">Buscar Oportunidades →</a>
+        </div>
+
+        <div class="feature-card">
+            <div style="font-size: 2rem">📄</div>
+            <h3>Filtro ATS Mejorado</h3>
+            <p>Escanea y califica tu CV contra los algoritmos de reclutadores europeos antes de enviar tu postulación.</p>
+            <a href="ats-scanner.html">Escanear mi CV →</a>
+        </div>
+
+        <div class="feature-card">
+            <div style="font-size: 2rem">🧠</div>
+            <h3>Test Psicométrico</h3>
+            <p>Diagnóstico de idoneidad, adaptación cultural y motivación para relocalización laboral en Europa.</p>
+            <a href="test-psicometrico.html">Hacer Evaluación →</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 PuentesGlobales. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->
+    <script
+      src="https://whatsapp-fullstack-ylsx.onrender.com/widget.js"
+      data-tenant="0e8a4312-7b38-42fe-bfa1-58dde5e3ca21"
+      data-instance="v5_125230a0-8cc7-4758-8102-c5f03628ec9b"
+      data-color="#6366f1"
+      data-title="¡Hola! 👋"
+      data-subtitle="¿En qué te puedo ayudar?"
+      data-position="right"
+    ></script>
+</body>
+</html>

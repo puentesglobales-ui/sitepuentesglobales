@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtro ATS Mejorado | PuentesGlobales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--primary); padding-bottom: 4rem; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; border-bottom: 1px solid #e2e8f0; }
+        .logo { font-weight: 800; font-size: 1.5rem; }
+        .container { max-width: 900px; margin: 3rem auto; padding: 0 1.5rem; }
+        .card { background: var(--card); border-radius: 24px; padding: 2.5rem; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 2rem; }
+        h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.75rem; }
+        p.subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 2rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        textarea, input { width: 100%; padding: 1rem; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 1rem; font-family: inherit; margin-bottom: 1.5rem; outline: none; }
+        textarea:focus, input:focus { border-color: var(--accent); }
+        .btn-analyze { background: var(--accent); color: white; border: none; padding: 1rem 2.5rem; border-radius: 100px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: background 0.3s; width: 100%; }
+        .btn-analyze:hover { background: #1d4ed8; }
+        .result-box { display: none; margin-top: 2rem; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: #eff6ff; border: 6px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; color: var(--accent); margin: 0 auto 1.5rem auto; }
+        .rec-item { background: #f1f5f9; padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 0.75rem; border-left: 4px solid var(--accent); font-size: 0.95rem; }
+        .badge { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-right: 0.5rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">PuentesGlobales.</div>
+        <a href="index.html" style="text-decoration:none; color:inherit; font-weight:600">← Volver al Inicio</a>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1>🔍 Escáner y Filtro ATS para Europa</h1>
+            <p class="subtitle">Evalúa gratis si tu CV supera los filtros automáticos de los reclutadores europeos.</p>
+
+            <form id="ats-form" onsubmit="runATSAnalysis(event)">
+                <label>Puesto al que aspiras (Opcional)</label>
+                <input type="text" id="jobTitle" placeholder="Ej: Desarrollador Fullstack, Enfermero/a, Ingeniero Industrial">
+
+                <label>Pega aquí el texto de tu Currículum Vitae (CV)</label>
+                <textarea id="cvText" rows="10" placeholder="Pega el contenido completo de tu CV aquí..." required></textarea>
+
+                <button type="submit" class="btn-analyze" id="btn-submit">⚡ Analizar CV con Motor ATS</button>
+            </form>
+
+            <div id="results" class="result-box">
+                <div class="score-circle" id="score-val">0%</div>
+                <h2 style="text-align:center; margin-bottom:0.5rem" id="rating-val">Evaluando...</h2>
+                
+                <h3 style="margin: 2rem 0 1rem 0">📊 Desglose de Puntuación</h3>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align:center; margin-bottom: 2rem">
+                    <div style="background:#f8fafc; padding:1rem; border-radius:12px">
+                        <small style="color:#64748b">Estructura</small>
+                        <h4 id="score-struct">0 / 25</h4>
+                    </div>
+                    <div style="background:#f8fafc; padding:1rem; border-radius:12px">
+                        <small style="color:#64748b">Habilidades</small>
+                        <h4 id="score-skills">0 / 50</h4>
+                    </div>
+                    <div style="background:#f8fafc; padding:1rem; border-radius:12px">
+                        <small style="color:#64748b">Formato EU</small>
+                        <h4 id="score-fmt">0 / 25</h4>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom:1rem">🔑 Palabras Clave Relevantes Detectadas</h3>
+                <div id="keywords-list" style="margin-bottom:2rem"></div>
+
+                <h3 style="margin-bottom:1rem">💡 Recomendaciones de Mejora</h3>
+                <div id="recs-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runATSAnalysis(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            btn.innerText = '⏳ Analizando...';
+            btn.disabled = true;
+
+            const cvText = document.getElementById('cvText').value;
+            const jobTitle = document.getElementById('jobTitle').value;
+
+            try {
+                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
+                const res = await fetch(`${apiBase}/ats/evaluate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cvText, jobTitle })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    const ans = data.analysis;
+                    document.getElementById('results').style.display = 'block';
+                    document.getElementById('score-val').innerText = `${ans.score}%`;
+                    document.getElementById('rating-val').innerText = ans.rating;
+
+                    document.getElementById('score-struct').innerText = `${ans.breakdown.estructura} / 25`;
+                    document.getElementById('score-skills').innerText = `${ans.breakdown.habilidades} / 50`;
+                    document.getElementById('score-fmt').innerText = `${ans.breakdown.formatoEuropa} / 25`;
+
+                    document.getElementById('keywords-list').innerHTML = ans.keywordsFound.length > 0 
+                        ? ans.keywordsFound.map(k => `<span class="badge">✓ ${k}</span>`).join('')
+                        : '<p style="color:#64748b">No se identificaron habilidades técnicas estándar. Agrega términos más específicos.</p>';
+
+                    document.getElementById('recs-list').innerHTML = ans.recommendations.map(r => `<div class="rec-item">💡 ${r}</div>`).join('');
+                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert(data.error || 'Error en el análisis');
+                }
+            } catch (err) {
+                alert('No se pudo conectar con el motor ATS.');
+            } finally {
+                btn.innerText = '⚡ Analizar CV con Motor ATS';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados de Empleo | PuentesGlobales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        :root { --primary: #1e293b; --accent: #2563eb; --border: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: #f8fafc; color: var(--primary); padding-bottom: 4rem; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; border-bottom: 1px solid var(--border); }
+        .logo { font-weight: 800; font-size: 1.5rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 3rem 5%; }
+        .job-card { background: white; padding: 2rem; border-radius: 20px; margin-bottom: 1.25rem; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+        .job-card:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        .job-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .job-meta { display: flex; gap: 1.25rem; color: #64748b; font-size: 0.9rem; margin-top: 0.5rem; }
+        .btn-apply { padding: 0.75rem 1.5rem; background: var(--accent); color: white; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 0.95rem; }
+        @media (max-width: 768px) {
+            .job-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .btn-apply { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">PuentesGlobales.</div>
+        <a href="index.html" style="text-decoration:none; color:inherit; font-weight:600">← Volver al Inicio</a>
+    </nav>
+
+    <div class="container">
+        <h1 id="search-title" style="font-weight: 800; margin-bottom: 0.5rem">Buscando empleos...</h1>
+        <p id="search-count" style="color: #64748b; margin-bottom: 2rem"></p>
+
+        <div id="jobs-list">
+            <p style="color: #64748b; text-align: center; padding: 3rem">Cargando empleos en tiempo real desde el servidor de Render...</p>
+        </div>
+    </div>
+
+    <script>
+        async function fetchJobs() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const q = urlParams.get('q') || urlParams.get('profession') || '';
+            const location = urlParams.get('country') || urlParams.get('location') || '';
+
+            document.getElementById('search-title').innerText = q 
+                ? `Resultados para "${q}" ${location ? 'en ' + location : ''}`
+                : 'Oportunidades de Empleo en Europa';
+
+            try {
+                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
+                const response = await fetch(`${apiBase}/jobs/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(location)}`);
+                const data = await response.json();
+
+                const list = document.getElementById('jobs-list');
+                if (data.success && data.items && data.items.length > 0) {
+                    document.getElementById('search-count').innerText = `Se encontraron ${data.total} empleos disponibles.`;
+                    list.innerHTML = data.items.map(j => `
+                        <div class="job-card">
+                            <div>
+                                <div class="job-title">${j.title}</div>
+                                <p style="color:#475569; font-size:0.95rem; margin-top:0.4rem">${j.description}</p>
+                                <div class="job-meta">
+                                    <span>🏢 ${j.company}</span>
+                                    <span>📍 ${j.location}</span>
+                                    <span style="color:var(--accent)">🔗 ${j.source}</span>
+                                </div>
+                            </div>
+                            <a href="${j.url}" target="_blank" class="btn-apply">Ver Oferta</a>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('search-count').innerText = 'No se encontraron ofertas.';
+                    list.innerHTML = '<p style="text-align:center; padding:3rem; color:#64748b">No encontramos resultados para tu búsqueda. Intenta con otros términos.</p>';
+                }
+            } catch (err) {
+                document.getElementById('jobs-list').innerHTML = `
+                    <div style="text-align:center; padding:3rem; color:#ef4444">
+                        <p style="font-weight:700; font-size:1.2rem">Error al conectar con la API del servidor.</p>
+                    </div>
+                `;
+            }
+        }
+
+        fetchJobs();
+    </script>
+
+    <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->
+    <script
+      src="https://whatsapp-fullstack-ylsx.onrender.com/widget.js"
+      data-tenant="0e8a4312-7b38-42fe-bfa1-58dde5e3ca21"
+      data-instance="v5_125230a0-8cc7-4758-8102-c5f03628ec9b"
+      data-color="#6366f1"
+      data-title="¡Hola! 👋"
+      data-subtitle="¿En qué te puedo ayudar?"
+      data-position="right"
+    ></script>
+</body>
+</html>

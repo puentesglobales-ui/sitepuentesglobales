@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Psicométrico de Idoneidad | PuentesGlobales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--primary); padding-bottom: 4rem; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; border-bottom: 1px solid #e2e8f0; }
+        .logo { font-weight: 800; font-size: 1.5rem; }
+        .container { max-width: 800px; margin: 3rem auto; padding: 0 1.5rem; }
+        .card { background: var(--card); border-radius: 24px; padding: 2.5rem; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.75rem; }
+        p.subtitle { color: #64748b; font-size: 1.05rem; margin-bottom: 2rem; }
+        .q-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem; }
+        .q-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; }
+        .option-lbl { display: flex; align-items: center; gap: 0.75rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 0.75rem; cursor: pointer; transition: border 0.2s; }
+        .option-lbl:hover { border-color: var(--accent); }
+        .option-lbl input { width: auto; margin: 0; }
+        .btn-submit { background: var(--accent); color: white; border: none; padding: 1rem 2.5rem; border-radius: 100px; font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%; margin-top: 1rem; }
+        .result-box { display: none; text-align: center; }
+        .dim-bar { background: #e2e8f0; border-radius: 100px; height: 12px; overflow: hidden; margin-top: 0.4rem; }
+        .dim-fill { background: var(--accent); height: 100%; width: 0%; transition: width 0.6s ease; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">PuentesGlobales.</div>
+        <a href="index.html" style="text-decoration:none; color:inherit; font-weight:600">← Volver al Inicio</a>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1>🧠 Test Psicométrico de Idoneidad Laboral</h1>
+            <p class="subtitle">Evalúa tu nivel de adaptabilidad, autonomía y resiliencia para trabajar en Europa.</p>
+
+            <form id="quiz-form" onsubmit="submitQuiz(event)">
+                <div id="questions-container">Cargando evaluación...</div>
+                <button type="submit" class="btn-submit" id="btn-quiz">📊 Obtener Diagnóstico Psicométrico</button>
+            </form>
+
+            <div id="quiz-results" class="result-box">
+                <h2 style="font-size: 2rem; color: var(--accent); margin-bottom: 0.5rem" id="res-score">0%</h2>
+                <h3 id="res-diag" style="margin-bottom: 2rem">Diagnóstico</h3>
+
+                <div style="text-align: left; background: #f8fafc; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem">
+                    <div style="margin-bottom: 1rem">
+                        <span>Adaptabilidad Cultural: <b id="d-adapt">0%</b></span>
+                        <div class="dim-bar"><div class="dim-fill" id="fill-adapt"></div></div>
+                    </div>
+                    <div style="margin-bottom: 1rem">
+                        <span>Comunicación Multicultural: <b id="d-com">0%</b></span>
+                        <div class="dim-bar"><div class="dim-fill" id="fill-com"></div></div>
+                    </div>
+                    <div style="margin-bottom: 1rem">
+                        <span>Autonomía y Resiliencia: <b id="d-auto">0%</b></span>
+                        <div class="dim-bar"><div class="dim-fill" id="fill-auto"></div></div>
+                    </div>
+                    <div>
+                        <span>Motivación al Logro: <b id="d-mot">0%</b></span>
+                        <div class="dim-bar"><div class="dim-fill" id="fill-mot"></div></div>
+                    </div>
+                </div>
+
+                <a href="search-results.html" class="btn-submit" style="display:inline-block; text-decoration:none">🔍 Buscar Empleos Recomendados</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let loadedQuestions = [];
+
+        async function loadQuestions() {
+            try {
+                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
+                const res = await fetch(`${apiBase}/psychometric/questions`);
+                const data = await res.json();
+
+                if (data.success) {
+                    loadedQuestions = data.questions;
+                    const container = document.getElementById('questions-container');
+                    container.innerHTML = loadedQuestions.map((q, qIdx) => `
+                        <div class="q-card">
+                            <div class="q-title">${qIdx + 1}. ${q.question}</div>
+                            ${q.options.map((opt, oIdx) => `
+                                <label class="option-lbl">
+                                    <input type="radio" name="q_${q.id}" value="${opt.index}" required>
+                                    <span>${opt.text}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                document.getElementById('questions-container').innerText = 'Error al cargar preguntas psicométricas.';
+            }
+        }
+
+        async function submitQuiz(e) {
+            e.preventDefault();
+            const answers = loadedQuestions.map(q => {
+                const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+                return { questionId: q.id, optionIndex: selected ? parseInt(selected.value) : 0 };
+            });
+
+            try {
+                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
+                const res = await fetch(`${apiBase}/psychometric/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ answers })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    const ev = data.evaluation;
+                    document.getElementById('quiz-form').style.display = 'none';
+                    document.getElementById('quiz-results').style.display = 'block';
+
+                    document.getElementById('res-score').innerText = `Idoneidad: ${ev.overallScore}%`;
+                    document.getElementById('res-diag').innerText = ev.diagnostic;
+
+                    document.getElementById('d-adapt').innerText = `${ev.dimensions.adaptabilidad}%`;
+                    document.getElementById('fill-adapt').style.width = `${ev.dimensions.adaptabilidad}%`;
+
+                    document.getElementById('d-com').innerText = `${ev.dimensions.comunicacion}%`;
+                    document.getElementById('fill-com').style.width = `${ev.dimensions.comunicacion}%`;
+
+                    document.getElementById('d-auto').innerText = `${ev.dimensions.autonomia}%`;
+                    document.getElementById('fill-auto').style.width = `${ev.dimensions.autonomia}%`;
+
+                    document.getElementById('d-mot').innerText = `${ev.dimensions.motivacion}%`;
+                    document.getElementById('fill-mot').style.width = `${ev.dimensions.motivacion}%`;
+                }
+            } catch (err) {
+                alert('No se pudo enviar la evaluación.');
+            }
+        }
+
+        loadQuestions();
+    </script>
+</body>
+</html>
