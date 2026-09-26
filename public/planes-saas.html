@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes Enterprise | PuentesGlobales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--primary); padding-bottom: 4rem; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; border-bottom: 1px solid #e2e8f0; }
+        .logo { font-weight: 800; font-size: 1.5rem; }
+        .container { max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; text-align: left; }
+        .plan-card { background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; }
+        .plan-card.popular { border: 2px solid var(--accent); position: relative; }
+        .badge { position: absolute; top: -12px; right: 20px; background: var(--accent); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .price { font-size: 2.2rem; font-weight: 800; color: var(--accent); margin: 1rem 0; }
+        .features-list { list-style: none; margin-bottom: 2rem; }
+        .features-list li { margin-bottom: 0.75rem; font-size: 0.95rem; color: #475569; }
+        .btn-plan { display: block; text-align: center; background: var(--accent); color: white; padding: 1rem; border-radius: 100px; text-decoration: none; font-weight: 700; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">PuentesGlobales.</div>
+        <a href="index.html" style="text-decoration:none; color:inherit; font-weight:600">← Volver al Inicio</a>
+    </nav>
+
+    <div class="container">
+        <h1 style="font-size: 2.8rem; font-weight: 800">Planes & Soluciones Enterprise</h1>
+        <p style="color: #64748b; font-size: 1.1rem">Plataforma unificada de empleo, evaluación ATS y reclutamiento con IA.</p>
+
+        <div class="grid">
+            <div class="plan-card">
+                <div>
+                    <h3>Candidate Free</h3>
+                    <p style="color:#64748b; font-size:0.9rem">Para postulantes individuales</p>
+                    <div class="price">$0 <span style="font-size:1rem; font-weight:400; color:#64748b">/ mes</span></div>
+                    <ul class="features-list">
+                        <li>✓ 5 búsquedas diarias</li>
+                        <li>✓ 2 escaneos ATS básicos</li>
+                        <li>✓ 1 Test Psicométrico</li>
+                        <li>✓ Widget Asistente Alex IO</li>
+                    </ul>
+                </div>
+                <a href="index.html" class="btn-plan" style="background:#e2e8f0; color:#1e293b">Comenzar Gratis</a>
+            </div>
+
+            <div class="plan-card popular">
+                <div class="badge">RECOMENDADO</div>
+                <div>
+                    <h3>Pro Candidate</h3>
+                    <p style="color:#64748b; font-size:0.9rem">Para la búsqueda activa en Europa</p>
+                    <div class="price">$19 <span style="font-size:1rem; font-weight:400; color:#64748b">/ mes</span></div>
+                    <ul class="features-list">
+                        <li>✓ Búsquedas ilimitadas</li>
+                        <li>✓ 50 Escaneos ATS detallados</li>
+                        <li>✓ 10 Tests Psicométricos</li>
+                        <li>✓ Simulador Entrevistas IA TalkMe</li>
+                        <li>✓ Asesoría de Visados con Alex IO</li>
+                    </ul>
+                </div>
+                <a href="#" class="btn-plan">Suscribirme Pro</a>
+            </div>
+
+            <div class="plan-card">
+                <div>
+                    <h3>Enterprise Whitelabel</h3>
+                    <p style="color:#64748b; font-size:0.9rem">Para empresas, agencias y escuelas</p>
+                    <div class="price">$99 <span style="font-size:1rem; font-weight:400; color:#64748b">/ mes</span></div>
+                    <ul class="features-list">
+                        <li>✓ Marca blanca y dominio propio</li>
+                        <li>✓ Multi-tenancy con Organizaciones</li>
+                        <li>✓ Bot Alex IO en WhatsApp API</li>
+                        <li>✓ Escáner ATS masivo para CVs</li>
+                        <li>✓ Soporte dedicado 24/7</li>
+                    </ul>
+                </div>
+                <a href="#" class="btn-plan" style="background:#0f172a">Contactar Ventas</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

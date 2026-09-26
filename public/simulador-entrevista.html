@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Entrevistas IA | PuentesGlobales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: var(--bg); color: var(--primary); padding-bottom: 4rem; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; border-bottom: 1px solid #e2e8f0; }
+        .logo { font-weight: 800; font-size: 1.5rem; }
+        .container { max-width: 800px; margin: 3rem auto; padding: 0 1.5rem; }
+        .card { background: var(--card); border-radius: 24px; padding: 2.5rem; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.75rem; }
+        p.subtitle { color: #64748b; font-size: 1.05rem; margin-bottom: 2rem; }
+        .chat-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 16px; padding: 1.5rem; height: 350px; overflow-y: auto; margin-bottom: 1.5rem; }
+        .msg { margin-bottom: 1rem; padding: 1rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; }
+        .msg-ai { background: #eff6ff; border-left: 4px solid var(--accent); color: #1e3a8a; }
+        .msg-user { background: #e2e8f0; border-left: 4px solid #64748b; color: #0f172a; margin-left: 2rem; }
+        .input-row { display: flex; gap: 1rem; }
+        input[type="text"] { flex: 1; padding: 1rem; border: 1px solid #cbd5e1; border-radius: 100px; outline: none; font-family: inherit; font-size: 1rem; }
+        .btn-send { background: var(--accent); color: white; border: none; padding: 1rem 2rem; border-radius: 100px; font-weight: 700; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">PuentesGlobales.</div>
+        <a href="index.html" style="text-decoration:none; color:inherit; font-weight:600">← Volver al Inicio</a>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1>🎤 Simulador de Entrevistas de Trabajo con IA</h1>
+            <p class="subtitle">Entrena tus respuestas para postulaciones laborales en empresas de Europa.</p>
+
+            <div style="margin-bottom: 1.5rem">
+                <label style="font-weight:600; display:block; margin-bottom:0.5rem">Puesto a simular:</label>
+                <input type="text" id="roleInput" value="Desarrollador Software" style="width:100%; border-radius:12px; margin-bottom:1rem">
+                <button onclick="startInterview()" style="background:#059669; color:white; border:none; padding:0.75rem 1.5rem; border-radius:100px; font-weight:700; cursor:pointer">🚀 Iniciar Simulación</button>
+            </div>
+
+            <div class="chat-box" id="chat-history">
+                <div class="msg msg-ai">🤖 <b>Reclutador IA:</b> Haz clic en "Iniciar Simulación" para comenzar la entrevista simulada.</div>
+            </div>
+
+            <div class="input-row">
+                <input type="text" id="userInput" placeholder="Escribe tu respuesta a la entrevista..." onkeypress="if(event.key==='Enter') sendAnswer()">
+                <button class="btn-send" onclick="sendAnswer()">Responder</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        async function startInterview() {
+            currentStep = 1;
+            const role = document.getElementById('roleInput').value;
+            const history = document.getElementById('chat-history');
+            history.innerHTML = '<div class="msg msg-ai">⏳ Conectando con Reclutador IA TalkMe...</div>';
+
+            try {
+                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
+                const res = await fetch(`${apiBase}/talkme/interview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jobTitle: role, candidateAnswer: '', step: currentStep })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    history.innerHTML = `<div class="msg msg-ai">🤖 <b>Reclutador IA (Pregunta ${data.data.step}/${data.data.totalSteps}):</b><br>${data.data.question}</div>`;
+                }
+            } catch (err) {
+                history.innerHTML = '<div class="msg msg-ai">Error al conectar con la sala de entrevistas.</div>';
+            }
+        }
+
+        async function sendAnswer() {
+            const input = document.getElementById('userInput');
+            const answer = input.value.trim();
+            if (!answer) return;
+
+            const role = document.getElementById('roleInput').value;
+            const history = document.getElementById('chat-history');
+
+            history.innerHTML += `<div class="msg msg-user">👤 <b>Tú:</b> ${answer}</div>`;
+            input.value = '';
+            history.scrollTop = history.scrollHeight;
+
+            currentStep++;
+
+            try {
+                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
+                const res = await fetch(`${apiBase}/talkme/interview`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jobTitle: role, candidateAnswer: answer, step: currentStep })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    if (data.data.feedback) {
+                        history.innerHTML += `<div class="msg msg-ai" style="background:#fef3c7; border-color:#d97706; color:#92400e">${data.data.feedback}</div>`;
+                    }
+                    history.innerHTML += `<div class="msg msg-ai">🤖 <b>Reclutador IA (Pregunta ${data.data.step}/${data.data.totalSteps}):</b><br>${data.data.question}</div>`;
+                    history.scrollTop = history.scrollHeight;
+                }
+            } catch (err) {
+                history.innerHTML += '<div class="msg msg-ai">Error de comunicación.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
