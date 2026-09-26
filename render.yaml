@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: puentes-globales-api
+    name: puentes-globales-app
     env: node
     buildCommand: npm install
     startCommand: npm start
