@@ -18,10 +18,10 @@ export const handleInterviewStep = (req, res) => {
   }
 };
 
-export const handleAlexChat = (req, res) => {
+export const handleAlexChat = async (req, res) => {
   try {
     const { message } = req.body;
-    const response = TalkMeEngine.chatWithAlex(message || '');
+    const response = await TalkMeEngine.chatWithAlex(message || '');
 
     res.json({
       success: true,
