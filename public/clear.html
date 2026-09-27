@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Limpiando datos...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Outfit', sans-serif; }
+        body { display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0f172a; color: white; }
+        .box { text-align: center; }
+        .check { font-size: 5rem; margin-bottom: 1rem; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        p { color: #94a3b8; }
+        .stats { margin-top: 2rem; background: rgba(255,255,255,0.05); padding: 1.5rem 2rem; border-radius: 16px; text-align: left; }
+        .stat-line { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .stat-line:last-child { border-bottom: none; }
+        .label { color: #94a3b8; }
+        .value { color: #f87171; font-weight: 700; }
+        .redirect { margin-top: 2rem; color: #60a5fa; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="check">🗑️</div>
+        <h1>Datos eliminados</h1>
+        <p>Se limpiaron todas las ofertas y el historial</p>
+        <div class="stats" id="stats"></div>
+        <p class="redirect">Redirigiendo al Admin en <span id="countdown">3</span>s...</p>
+    </div>
+    <script>
+        // Count before clearing
+        const jobs = JSON.parse(localStorage.getItem('pg_all_jobs') || '[]');
+        const history = JSON.parse(localStorage.getItem('pg_sync_history') || '[]');
+        const apis = JSON.parse(localStorage.getItem('pg_api_sources') || '[]');
+        const rss = JSON.parse(localStorage.getItem('pg_rss_feeds') || '[]');
+
+        // Display stats
+        document.getElementById('stats').innerHTML = `
+            <div class="stat-line"><span class="label">Ofertas laborales eliminadas</span><span class="value">${jobs.length}</span></div>
+            <div class="stat-line"><span class="label">Registros de historial</span><span class="value">${history.length}</span></div>
+            <div class="stat-line"><span class="label">Fuentes API (se mantienen)</span><span class="value" style="color:#34d399">${apis.length}</span></div>
+            <div class="stat-line"><span class="label">Feeds RSS (se mantienen)</span><span class="value" style="color:#34d399">${rss.length}</span></div>
+        `;
+
+        // Clear jobs and history, keep API sources and RSS feeds config
+        localStorage.removeItem('pg_all_jobs');
+        localStorage.removeItem('pg_sync_history');
+
+        // Reset API source stats (last_sync, jobs_found)
+        if (apis.length > 0) {
+            const cleanApis = apis.map(a => ({ ...a, last_sync: null, jobs_found: 0, status: 'ready' }));
+            localStorage.setItem('pg_api_sources', JSON.stringify(cleanApis));
+        }
+
+        // Countdown and redirect
+        let count = 3;
+        const interval = setInterval(() => {
+            count--;
+            document.getElementById('countdown').textContent = count;
+            if (count <= 0) {
+                clearInterval(interval);
+                window.location.href = 'admin.html';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

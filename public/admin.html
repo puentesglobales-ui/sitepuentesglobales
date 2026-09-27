@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PuentesGlobales - Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --sidebar: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-text: #94a3b8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-nav {
+            padding: 1.5rem 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: var(--transition);
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            margin-left: 260px;
+            padding: 2rem;
+            width: calc(100% - 260px);
+            transition: var(--transition);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #fecaca;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #eff6ff;
+            color: var(--primary);
+        }
+
+        .stat-info h3 {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Tables */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+            width: 250px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .job-title {
+            font-weight: 500;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .job-title:hover {
+            text-decoration: underline;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-info { background-color: #dbeafe; color: #1e40af; }
+        .badge-secondary { background-color: #f1f5f9; color: #475569; }
+
+        /* Sections */
+        .section-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* API Cards Grid */
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .api-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .api-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .api-card-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .api-card-url {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            word-break: break-all;
+        }
+
+        .api-card-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 2000;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        
+        .toast-icon { font-size: 1.25rem; }
+        .toast.success .toast-icon { color: var(--success); }
+        .toast.error .toast-icon { color: var(--danger); }
+
+        .toast-content h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.125rem;
+        }
+        
+        .toast-content p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pagination */
+        .pagination {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i data-lucide="globe-2" style="color: var(--primary);"></i>
+            <h2>PuentesGlobales</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-target="dashboard">
+                <i data-lucide="layout-dashboard"></i> Dashboard
+            </a>
+            <a class="nav-item" data-target="ofertas">
+                <i data-lucide="briefcase"></i> Ofertas
+            </a>
+            <a class="nav-item" data-target="apis">
+                <i data-lucide="code-2"></i> APIs Abiertas
+            </a>
+            <a class="nav-item" data-target="rss">
+                <i data-lucide="rss"></i> Feeds RSS
+            </a>
+            <a class="nav-item" data-target="historial">
+                <i data-lucide="history"></i> Historial
+            </a>
+            <a class="nav-item" data-target="candidatos">
+                <i data-lucide="users"></i> Candidatos / Leads
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section-content active">
+            <div class="header">
+                <h1>Dashboard</h1>
+                <button class="btn btn-primary" onclick="syncAllSources()" id="btn-sync-all">
+                    <i data-lucide="refresh-cw" class="sync-icon"></i> Sincronizar Todo
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-icon"><i data-lucide="code-2"></i></div>
+                    <div class="stat-info">
+                        <h3>Total APIs</h3>
+                        <p id="stat-apis">0</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="background: #fef3c7; color: var(--warning);"><i data-lucide="rss"></i></div>
+                    <div class="stat-info">
+                        <h3>Total RSS Feeds</h3>
+                        <p id="stat-rss">0</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="background: #d1fae5; color: var(--success);"><i data-lucide="briefcase"></i></div>
+                    <div class="stat-info">
+                        <h3>Ofertas (Total)</h3>
+                        <p id="stat-jobs">0</p>
+                    </div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-icon" style="background: #f3e8ff; color: #9333ea;"><i data-lucide="clock"></i></div>
+                    <div class="stat-info">
+                        <h3>Última Sincronización</h3>
+                        <p id="stat-last-sync" style="font-size: 1.1rem; margin-top: 0.2rem;">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Actividad Reciente</h3>
+                    <button class="btn btn-outline" onclick="switchTab('historial')">Ver todo</button>
+                </div>
+                <table id="recent-activity-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Fuente</th>
+                            <th>Encontrados</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Ofertas Section -->
+        <section id="ofertas" class="section-content">
+            <div class="header">
+                <h1>Todas las Ofertas</h1>
+                <div>
+                    <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCSVImport(event)">
+                    <button class="btn btn-outline" onclick="document.getElementById('csv-file-input').click()">
+                        <i data-lucide="upload"></i> Importar CSV
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <input type="text" id="job-search" class="search-input" placeholder="Buscar por título, empresa..." onkeyup="filterJobs()">
+                    <span id="jobs-count-badge" class="badge badge-primary">0 ofertas</span>
+                </div>
+                <table id="all-jobs-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Empresa</th>
+                            <th>Ubicación</th>
+                            <th>Fuente</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <span class="text-muted" id="jobs-page-info">Mostrando 0-0 de 0</span>
+                    <div>
+                        <button class="btn btn-outline" id="btn-prev-jobs" onclick="changeJobsPage(-1)">Anterior</button>
+                        <button class="btn btn-outline" id="btn-next-jobs" onclick="changeJobsPage(1)" style="margin-left: 0.5rem;">Siguiente</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- APIs Abiertas Section -->
+        <section id="apis" class="section-content">
+            <div class="header">
+                <h1>APIs Abiertas</h1>
+                <button class="btn btn-primary" onclick="syncAllAPIs()">
+                    <i data-lucide="refresh-cw"></i> Sincronizar APIs
+                </button>
+            </div>
+
+            <div class="api-grid" id="api-cards-container">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- Feeds RSS Section -->
+        <section id="rss" class="section-content">
+            <div class="header">
+                <h1>Feeds RSS</h1>
+                <div>
+                    <button class="btn btn-primary" onclick="syncAllRSS()" style="margin-right: 0.5rem;">
+                        <i data-lucide="refresh-cw"></i> Sincronizar RSS
+                    </button>
+                    <button class="btn btn-outline" onclick="openAddRssModal()">
+                        <i data-lucide="plus"></i> Añadir Feed
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="rss-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>URL</th>
+                            <th>Categoría</th>
+                            <th>Última Sinc</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Historial Section -->
+        <section id="historial" class="section-content">
+            <div class="header">
+                <h1>Historial de Sincronización</h1>
+                <button class="btn btn-outline" onclick="clearHistory()">
+                    <i data-lucide="trash-2"></i> Limpiar Historial
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Fuente</th>
+                            <th>Encontrados</th>
+                            <th>Nuevos</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Candidatos Section -->
+        <section id="candidatos" class="section-content">
+            <div class="header">
+                <h1>Candidatos Registrados</h1>
+                <button class="btn btn-danger" onclick="clearCandidateLeads()">
+                    <i data-lucide="trash-2"></i> Limpiar Leads
+                </button>
+            </div>
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Leads de Postulantes</h3>
+                    <span id="leads-count-badge" class="badge badge-primary">0 registrados</span>
+                </div>
+                <table id="candidatos-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>WhatsApp / Teléfono</th>
+                            <th>Área / Profesión</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Add RSS -->
+    <div class="modal-overlay" id="add-rss-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Añadir Feed RSS</h3>
+                <button class="btn-outline" style="border:none; padding: 0.25rem;" onclick="closeAddRssModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nombre del Feed</label>
+                    <input type="text" id="rss-name" class="form-control" placeholder="Ej: WeWorkRemotely">
+                </div>
+                <div class="form-group">
+                    <label>URL del RSS</label>
+                    <input type="url" id="rss-url" class="form-control" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <input type="text" id="rss-category" class="form-control" placeholder="Ej: Programación">
+                </div>
+                <div class="form-group">
+                    <label>País / Ubicación</label>
+                    <input type="text" id="rss-location" class="form-control" placeholder="Ej: Global">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeAddRssModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveRssFeed()">Guardar Feed</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ALEX IO Widget -->
+    <script
+      src="https://whatsapp-fullstack-ylsx.onrender.com/widget.js"
+      data-tenant="0e8a4312-7b38-42fe-bfa1-58dde5e3ca21"
+      data-instance="v5_125230a0-8cc7-4758-8102-c5f03628ec9b"
+      data-color="#6366f1"
+      data-title="¡Hola! 👋"
+      data-subtitle="¿En qué te puedo ayudar?"
+      data-position="right"
+    ></script>
+
+    <script>
+        // --- Init Lucide Icons ---
+        lucide.createIcons();
+
+        // --- Default Data ---
+        const defaultAPIs = [
+            { id: 'arbeitnow', name: 'Arbeitnow', url: 'https://www.arbeitnow.com/api/job-board-api', type: 'api' },
+            { id: 'remoteok', name: 'RemoteOK', url: 'https://remoteok.com/api', type: 'api' },
+            { id: 'remotive', name: 'Remotive', url: 'https://remotive.com/api/remote-jobs', type: 'api' },
+            { id: 'jobicy', name: 'Jobicy Remote', url: 'https://jobicy.com/api/v2/remote-jobs', type: 'api' },
+            { id: 'adzuna', name: 'Adzuna Jobs', url: 'https://api.adzuna.com/v1/api/jobs/gb/search/1?app_id=demo&app_key=demo', type: 'api' }
+        ];
+
+        const defaultRSS = [
+            { id: 'wwr-prog', name: 'WWR Programming', url: 'https://weworkremotely.com/categories/remote-programming-jobs.rss', category: 'Programming', location: 'Global' },
+            { id: 'remoteok-rss', name: 'RemoteOK RSS', url: 'https://remoteok.com/remote-jobs.rss', category: 'All', location: 'Global' },
+            { id: 'reddit-forhire', name: 'Reddit ForHire', url: 'https://www.reddit.com/r/forhire/new/.rss', category: 'Freelance', location: 'Global' },
+            { id: 'dribbble-jobs', name: 'Dribbble Jobs', url: 'https://dribbble.com/jobs.rss', category: 'Design', location: 'Global' }
+        ];
+
+        // --- State Management ---
+        let apiSources = JSON.parse(localStorage.getItem('pg_api_sources')) || defaultAPIs;
+        let rssFeeds = JSON.parse(localStorage.getItem('pg_rss_feeds')) || defaultRSS;
+        let syncHistory = JSON.parse(localStorage.getItem('pg_sync_history')) || [];
+        let allJobs = JSON.parse(localStorage.getItem('pg_all_jobs')) || [];
+        
+        let currentJobsPage = 1;
+        const jobsPerPage = 50;
+        let filteredJobs = [...allJobs];
+
+        // Save defaults if not present
+        if (!localStorage.getItem('pg_api_sources')) localStorage.setItem('pg_api_sources', JSON.stringify(apiSources));
+        if (!localStorage.getItem('pg_rss_feeds')) localStorage.setItem('pg_rss_feeds', JSON.stringify(rssFeeds));
+
+        // --- UI Navigation ---
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                const target = item.getAttribute('data-target');
+                switchTab(target);
+            });
+        });
+
+        function switchTab(target) {
+            document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(target).classList.add('active');
+            
+            // Sync nav item if changed programmatically
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.toggle('active', nav.getAttribute('data-target') === target);
+            });
+
+            if (target === 'dashboard') updateDashboard();
+            if (target === 'ofertas') renderJobsTable();
+            if (target === 'apis') renderAPICards();
+            if (target === 'rss') renderRSSTable();
+            if (target === 'historial') renderHistoryTable();
+            if (target === 'candidatos') renderCandidatosTable();
+        }
+
+        // --- Toast Notifications ---
+        function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'alert-circle' : 'info');
+            
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="toast-icon"></i>
+                <div class="toast-content">
+                    <h4>${title}</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons({ root: toast });
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Core Functions ---
+        function saveToStorage() {
+            localStorage.setItem('pg_api_sources', JSON.stringify(apiSources));
+            localStorage.setItem('pg_rss_feeds', JSON.stringify(rssFeeds));
+            localStorage.setItem('pg_sync_history', JSON.stringify(syncHistory));
+            localStorage.setItem('pg_all_jobs', JSON.stringify(allJobs));
+        }
+
+        function addHistoryRecord(sourceName, found, newJobs, status) {
+            const record = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                source: sourceName,
+                found: found,
+                new: newJobs,
+                status: status // 'success', 'error'
+            };
+            syncHistory.unshift(record);
+            if (syncHistory.length > 100) syncHistory.pop(); // Keep last 100
+            saveToStorage();
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '-';
+            const d = new Date(isoString);
+            return d.toLocaleString('es-ES', { 
+                day: '2-digit', month: '2-digit', year: 'numeric', 
+                hour: '2-digit', minute:'2-digit'
+            });
+        }
+
+        // --- Dashboard ---
+        function updateDashboard() {
+            document.getElementById('stat-apis').textContent = apiSources.length;
+            document.getElementById('stat-rss').textContent = rssFeeds.length;
+            document.getElementById('stat-jobs').textContent = allJobs.length;
+            
+            if (syncHistory.length > 0) {
+                document.getElementById('stat-last-sync').textContent = formatDate(syncHistory[0].date);
+            }
+
+            const tbody = document.querySelector('#recent-activity-table tbody');
+            tbody.innerHTML = '';
+            
+            syncHistory.slice(0, 5).forEach(hist => {
+                const tr = document.createElement('tr');
+                const statusBadge = hist.status === 'success' 
+                    ? '<span class="badge badge-success">Éxito</span>' 
+                    : '<span class="badge badge-danger">Error</span>';
+                
+                tr.innerHTML = `
+                    <td>${formatDate(hist.date)}</td>
+                    <td>${hist.source}</td>
+                    <td>${hist.found}</td>
+                    <td>${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Jobs Logic ---
+        function mergeJobs(newJobsList) {
+            let newCount = 0;
+            // Simple deduplication based on URL or title+company
+            newJobsList.forEach(job => {
+                const exists = allJobs.some(existing => 
+                    (existing.url && job.url && existing.url === job.url) || 
+                    (existing.title === job.title && existing.company === job.company)
+                );
+                if (!exists) {
+                    allJobs.unshift(job);
+                    newCount++;
+                }
+            });
+            filteredJobs = [...allJobs];
+            saveToStorage();
+            return newCount;
+        }
+
+        function filterJobs() {
+            const query = document.getElementById('job-search').value.toLowerCase();
+            filteredJobs = allJobs.filter(job => 
+                job.title.toLowerCase().includes(query) || 
+                job.company.toLowerCase().includes(query) ||
+                job.source.toLowerCase().includes(query)
+            );
+            currentJobsPage = 1;
+            renderJobsTable();
+        }
+
+        function changeJobsPage(delta) {
+            const maxPage = Math.ceil(filteredJobs.length / jobsPerPage);
+            currentJobsPage += delta;
+            if (currentJobsPage < 1) currentJobsPage = 1;
+            if (currentJobsPage > maxPage) currentJobsPage = maxPage;
+            renderJobsTable();
+        }
+
+        function renderJobsTable() {
+            const tbody = document.querySelector('#all-jobs-table tbody');
+            tbody.innerHTML = '';
+            
+            document.getElementById('jobs-count-badge').textContent = `${filteredJobs.length} ofertas`;
+
+            const startIndex = (currentJobsPage - 1) * jobsPerPage;
+            const endIndex = startIndex + jobsPerPage;
+            const jobsToShow = filteredJobs.slice(startIndex, endIndex);
+
+            jobsToShow.forEach(job => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <a href="${job.url}" target="_blank" class="job-title">${job.title}</a>
+                        ${job.tags && job.tags.length > 0 ? `<br><small class="text-muted">${job.tags.slice(0,3).join(', ')}</small>` : ''}
+                    </td>
+                    <td>${job.company || 'N/A'}</td>
+                    <td>${job.location || 'Remote'}</td>
+                    <td><span class="badge badge-secondary">${job.source}</span></td>
+                    <td>${formatDate(job.date)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const maxPage = Math.ceil(filteredJobs.length / jobsPerPage);
+            document.getElementById('jobs-page-info').textContent = 
+                `Mostrando ${filteredJobs.length > 0 ? startIndex + 1 : 0}-${Math.min(endIndex, filteredJobs.length)} de ${filteredJobs.length}`;
+            
+            document.getElementById('btn-prev-jobs').disabled = currentJobsPage === 1;
+            document.getElementById('btn-next-jobs').disabled = currentJobsPage === maxPage || maxPage === 0;
+        }
+
+        // --- CSV Import ---
+        function handleCSVImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const lines = content.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                    if (lines.length < 2) {
+                        showToast('Error CSV', 'El archivo está vacío o no contiene ofertas validas.', 'error');
+                        return;
+                    }
+
+                    const headers = lines[0].toLowerCase().split(',').map(h => h.replace(/["']/g, '').trim());
+                    const titleIdx = headers.findIndex(h => h.includes('titulo') || h.includes('title') || h.includes('puesto'));
+                    const companyIdx = headers.findIndex(h => h.includes('empresa') || h.includes('company'));
+                    const locationIdx = headers.findIndex(h => h.includes('ubicacion') || h.includes('location') || h.includes('pais'));
+                    const urlIdx = headers.findIndex(h => h.includes('url') || h.includes('link'));
+
+                    const importedJobs = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        const cols = lines[i].split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
+                        const title = titleIdx !== -1 && cols[titleIdx] ? cols[titleIdx] : cols[0];
+                        const company = companyIdx !== -1 && cols[companyIdx] ? cols[companyIdx] : (cols[1] || 'Importado');
+                        const location = locationIdx !== -1 && cols[locationIdx] ? cols[locationIdx] : (cols[2] || 'Global');
+                        const url = urlIdx !== -1 && cols[urlIdx] ? cols[urlIdx] : (cols[3] || '#');
+
+                        if (title && title.length > 2) {
+                            importedJobs.push({
+                                title: title,
+                                company: company,
+                                location: location,
+                                url: url,
+                                source: 'CSV Upload',
+                                date: new Date().toISOString()
+                            });
+                        }
+                    }
+
+                    const newCount = mergeJobs(importedJobs);
+                    addHistoryRecord('Importación CSV', importedJobs.length, newCount, 'success');
+                    showToast('Importación Exitosa', `${importedJobs.length} procesadas, ${newCount} nuevas ofertas.`);
+                    renderJobsTable();
+                    if (document.getElementById('dashboard').classList.contains('active')) updateDashboard();
+
+                } catch (err) {
+                    console.error('Error importando CSV:', err);
+                    showToast('Error CSV', 'Fallo al procesar el archivo CSV.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // --- APIs Section ---
+        function renderAPICards() {
+            const container = document.getElementById('api-cards-container');
+            container.innerHTML = '';
+
+            apiSources.forEach(api => {
+                const historyMatch = syncHistory.find(h => h.source === api.name);
+                const lastSync = historyMatch ? formatDate(historyMatch.date) : 'Nunca';
+                const jobsFound = historyMatch ? historyMatch.found : 0;
+                
+                const card = document.createElement('div');
+                card.className = 'card api-card';
+                card.innerHTML = `
+                    <div class="api-card-header">
+                        <div>
+                            <h3 class="api-card-title">${api.name}</h3>
+                            <div class="api-card-url">${api.url}</div>
+                        </div>
+                        <span class="badge ${historyMatch && historyMatch.status === 'success' ? 'badge-success' : (historyMatch ? 'badge-danger' : 'badge-warning')}">
+                            ${historyMatch ? (historyMatch.status === 'success' ? 'Activo' : 'Error') : 'Pendiente'}
+                        </span>
+                    </div>
+                    <div class="api-card-stats">
+                        <span>Última sinc: <strong>${lastSync}</strong></span>
+                        <span>Ofertas: <strong>${jobsFound}</strong></span>
+                    </div>
+                    <button class="btn btn-outline" onclick="syncAPI('${api.id}')" id="btn-sync-api-${api.id}">
+                        <i data-lucide="refresh-cw"></i> Sincronizar
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        async function syncAPI(apiId) {
+            const api = apiSources.find(a => a.id === apiId);
+            const btn = document.getElementById(`btn-sync-api-${apiId}`);
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i data-lucide="loader-2" class="spinner"></i> Sincronizando...';
+                lucide.createIcons();
+            }
+
+            try {
+                let jobs = [];
+                const response = await fetch(api.url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+
+                if (api.id === 'arbeitnow') {
+                    jobs = data.data.map(item => ({
+                        title: item.title,
+                        company: item.company_name,
+                        location: item.location,
+                        url: item.url,
+                        source: api.name,
+                        date: new Date(item.created_at * 1000).toISOString(),
+                        tags: item.tags
+                    }));
+                } else if (api.id === 'remoteok') {
+                    // First element is legal/meta
+                    jobs = data.slice(1).map(item => ({
+                        title: item.position,
+                        company: item.company,
+                        location: item.location,
+                        url: item.url,
+                        source: api.name,
+                        date: item.date,
+                        tags: item.tags
+                    }));
+                } else if (api.id === 'remotive') {
+                    jobs = data.jobs.map(item => ({
+                        title: item.title,
+                        company: item.company_name,
+                        location: item.candidate_required_location,
+                        url: item.url,
+                        source: api.name,
+                        date: item.publication_date,
+                        tags: item.tags
+                    }));
+                } else if (api.id === 'jobicy') {
+                    jobs = (data.jobs || []).map(item => ({
+                        title: item.jobTitle,
+                        company: item.companyName,
+                        location: item.jobGeo || item.jobLevel || 'Remoto',
+                        url: item.url,
+                        source: api.name,
+                        date: item.pubDate || new Date().toISOString(),
+                        tags: [item.jobCategory, item.jobType].filter(Boolean)
+                    }));
+                } else if (api.id === 'adzuna') {
+                    jobs = (data.results || []).map(item => ({
+                        title: item.title,
+                        company: item.company ? item.company.display_name : 'N/A',
+                        location: item.location ? item.location.display_name : 'Reino Unido / Europa',
+                        url: item.redirect_url,
+                        source: api.name,
+                        date: item.created || new Date().toISOString(),
+                        tags: [item.category ? item.category.label : null].filter(Boolean)
+                    }));
+                }
+
+                const newCount = mergeJobs(jobs);
+                addHistoryRecord(api.name, jobs.length, newCount, 'success');
+                showToast(`Sincronización Exitosa`, `${api.name}: ${jobs.length} encontradas, ${newCount} nuevas.`);
+            } catch (error) {
+                console.error(`Error syncing ${api.name}:`, error);
+                addHistoryRecord(api.name, 0, 0, 'error');
+                showToast(`Error de Sincronización`, `Fallo en ${api.name}: ${error.message}`, 'error');
+            } finally {
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="refresh-cw"></i> Sincronizar';
+                }
+                renderAPICards();
+                if (document.getElementById('dashboard').classList.contains('active')) updateDashboard();
+            }
+        }
+
+        async function syncAllAPIs() {
+            for (const api of apiSources) {
+                await syncAPI(api.id);
+            }
+        }
+
+        // --- RSS Section ---
+        function renderRSSTable() {
+            const tbody = document.querySelector('#rss-table tbody');
+            tbody.innerHTML = '';
+
+            rssFeeds.forEach(feed => {
+                const historyMatch = syncHistory.find(h => h.source === feed.name);
+                const lastSync = historyMatch ? formatDate(historyMatch.date) : 'Nunca';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${feed.name}</strong></td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <a href="${feed.url}" target="_blank" title="${feed.url}">${feed.url}</a>
+                    </td>
+                    <td><span class="badge badge-secondary">${feed.category}</span></td>
+                    <td>${lastSync}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-primary" style="padding: 0.4rem;" onclick="syncRSS('${feed.id}')" id="btn-sync-rss-${feed.id}" title="Sincronizar">
+                                <i data-lucide="refresh-cw"></i>
+                            </button>
+                            <button class="btn btn-danger" style="padding: 0.4rem;" onclick="deleteRSS('${feed.id}')" title="Eliminar">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function openAddRssModal() {
+            document.getElementById('add-rss-modal').classList.add('active');
+        }
+
+        function closeAddRssModal() {
+            document.getElementById('add-rss-modal').classList.remove('active');
+            document.getElementById('rss-name').value = '';
+            document.getElementById('rss-url').value = '';
+            document.getElementById('rss-category').value = '';
+            document.getElementById('rss-location').value = '';
+        }
+
+        function saveRssFeed() {
+            const name = document.getElementById('rss-name').value;
+            const url = document.getElementById('rss-url').value;
+            const category = document.getElementById('rss-category').value || 'General';
+            const location = document.getElementById('rss-location').value || 'Global';
+
+            if (!name || !url) {
+                showToast('Error', 'Nombre y URL son requeridos', 'error');
+                return;
+            }
+
+            const newFeed = {
+                id: 'rss-' + Date.now(),
+                name, url, category, location
+            };
+
+            rssFeeds.push(newFeed);
+            saveToStorage();
+            closeAddRssModal();
+            renderRSSTable();
+            showToast('Feed Añadido', `El feed ${name} ha sido guardado.`);
+        }
+
+        function deleteRSS(id) {
+            if(confirm('¿Estás seguro de eliminar este Feed RSS?')) {
+                rssFeeds = rssFeeds.filter(f => f.id !== id);
+                saveToStorage();
+                renderRSSTable();
+                showToast('Feed Eliminado', 'El feed ha sido removido.', 'info');
+            }
+        }
+
+        async function syncRSS(feedId) {
+            const feed = rssFeeds.find(f => f.id === feedId);
+            const btn = document.getElementById(`btn-sync-rss-${feedId}`);
+            if(btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i data-lucide="loader-2" class="spinner"></i>';
+                lucide.createIcons();
+            }
+
+            try {
+                // Use AllOrigins as CORS proxy
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`;
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Proxy network error');
+                
+                const data = await response.json();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+                
+                const items = xmlDoc.querySelectorAll("item");
+                const jobs = Array.from(items).map(item => {
+                    const title = item.querySelector("title")?.textContent || 'Sin título';
+                    const link = item.querySelector("link")?.textContent || '';
+                    const pubDate = item.querySelector("pubDate")?.textContent || new Date().toISOString();
+                    // Basic attempt to extract company from title if format is "Company: Job" or similar
+                    let company = 'N/A';
+                    let cleanTitle = title;
+                    if (title.includes(':')) {
+                        const parts = title.split(':');
+                        company = parts[0].trim();
+                        cleanTitle = parts.slice(1).join(':').trim();
+                    } else if (title.includes(' at ')) {
+                        const parts = title.split(' at ');
+                        cleanTitle = parts[0].trim();
+                        company = parts[1].trim();
+                    }
+
+                    return {
+                        title: cleanTitle,
+                        company: company,
+                        location: feed.location,
+                        url: link,
+                        source: `RSS: ${feed.name}`,
+                        date: new Date(pubDate).toISOString()
+                    };
+                });
+
+                const newCount = mergeJobs(jobs);
+                addHistoryRecord(feed.name, jobs.length, newCount, 'success');
+                showToast(`RSS Sincronizado`, `${feed.name}: ${jobs.length} encontradas, ${newCount} nuevas.`);
+
+            } catch (error) {
+                console.error(`Error syncing RSS ${feed.name}:`, error);
+                addHistoryRecord(feed.name, 0, 0, 'error');
+                showToast(`Error RSS`, `Fallo en ${feed.name}: ${error.message}`, 'error');
+            } finally {
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="refresh-cw"></i>';
+                }
+                renderRSSTable();
+            }
+        }
+
+        async function syncAllRSS() {
+            for (const feed of rssFeeds) {
+                await syncRSS(feed.id);
+            }
+        }
+
+        // --- History Section ---
+        function renderHistoryTable() {
+            const tbody = document.querySelector('#history-table tbody');
+            tbody.innerHTML = '';
+
+            syncHistory.forEach(hist => {
+                const tr = document.createElement('tr');
+                const statusBadge = hist.status === 'success' 
+                    ? '<span class="badge badge-success">Éxito</span>' 
+                    : '<span class="badge badge-danger">Error</span>';
+                
+                tr.innerHTML = `
+                    <td>${formatDate(hist.date)}</td>
+                    <td>${hist.source}</td>
+                    <td>${hist.found}</td>
+                    <td><span class="badge badge-info">+${hist.new}</span></td>
+                    <td>${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearHistory() {
+            if(confirm('¿Eliminar todo el historial de sincronización?')) {
+                syncHistory = [];
+                saveToStorage();
+                renderHistoryTable();
+                showToast('Historial Limpio', 'El historial ha sido eliminado.', 'info');
+            }
+        }
+
+        // --- Candidatos / Leads Section ---
+        function renderCandidatosTable() {
+            const leads = JSON.parse(localStorage.getItem('pg_candidate_leads')) || [];
+            document.getElementById('leads-count-badge').textContent = `${leads.length} registrados`;
+            const tbody = document.querySelector('#candidatos-table tbody');
+            tbody.innerHTML = '';
+
+            if (leads.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:#9ca3af;">No hay postulantes registrados todavía.</td></tr>';
+                return;
+            }
+
+            leads.forEach(lead => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(lead.registeredAt)}</td>
+                    <td><strong>${lead.name}</strong></td>
+                    <td><a href="mailto:${lead.email}">${lead.email}</a></td>
+                    <td><a href="https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color:#2563eb; font-weight:600;">💬 ${lead.phone}</a></td>
+                    <td><span class="badge badge-secondary">${lead.profession || 'General'}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearCandidateLeads() {
+            if (confirm('¿Eliminar todos los registros de candidatos?')) {
+                localStorage.removeItem('pg_candidate_leads');
+                renderCandidatosTable();
+                showToast('Leads Limpiados', 'Se han borrado los registros de candidatos.', 'info');
+            }
+        }
+
+        // --- Global Sync ---
+        async function syncAllSources() {
+            const btn = document.getElementById('btn-sync-all');
+            const icon = btn.querySelector('.sync-icon');
+            btn.disabled = true;
+            icon.classList.remove('lucide-refresh-cw');
+            icon.classList.add('lucide-loader-2', 'spinner');
+            
+            showToast('Sincronización Iniciada', 'Obteniendo datos de todas las fuentes...', 'info');
+
+            await syncAllAPIs();
+            await syncAllRSS();
+
+            btn.disabled = false;
+            icon.classList.remove('lucide-loader-2', 'spinner');
+            icon.classList.add('lucide-refresh-cw');
+            
+            updateDashboard();
+            showToast('Sincronización Completa', 'Todas las fuentes han sido actualizadas.');
+        }
+
+        // --- Initialize ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDashboard();
+        });
+
+    </script>
+</body>
+</html>

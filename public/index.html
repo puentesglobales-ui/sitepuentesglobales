@@ -3,174 +3,783 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PuentesGlobales | Tu Futuro Profesional en Europa</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <title>PuentesGlobales | Tu Tutor de Idiomas IA & Empleo en Europa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="config.js"></script>
     <style>
         :root {
-            --primary: #1a1a1a;
-            --accent: #2563eb;
-            --bg: #ffffff;
-            --gray: #f9fafb;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-card: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --brand-blue: #2563eb;
+            --brand-cyan: #00A8CC;
+            --brand-hover: #1d4ed8;
+            --claude-warm: #fbf7f5;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--primary); overflow-x: hidden; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
 
         /* Navbar */
         nav {
-            padding: 1.5rem 5%;
+            padding: 1rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: absolute;
-            width: 100%;
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-card);
             z-index: 100;
         }
-        .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; }
-        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
-        .nav-links a { text-decoration: none; color: inherit; font-weight: 600; font-size: 0.95rem; }
-        .btn-nav { background: var(--accent); color: white !important; padding: 0.6rem 1.25rem; border-radius: 100px; }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .logo-text {
+            font-weight: 900;
+            font-size: 1.45rem;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+        }
+
+        .logo-text span {
+            color: var(--brand-blue);
+        }
 
         /* Hero */
         .hero {
-            height: 90vh;
+            padding: 4.5rem 5% 3.5rem;
             display: flex;
+            justify-content: center;
             align-items: center;
-            padding: 0 5%;
-            background: linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0.1)), 
-                        url('assets/img/hero.png');
-            background-size: cover;
-            background-position: center;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.88) 0%, rgba(248, 250, 252, 0.96) 100%), url('assets/img/hero.png') center/cover no-repeat;
         }
-        .hero-content { max-width: 650px; }
-        .hero h1 { font-size: 3.8rem; line-height: 1.05; font-weight: 800; margin-bottom: 1.5rem; letter-spacing: -2px; }
-        .hero p { font-size: 1.2rem; color: #4b5563; margin-bottom: 2.5rem; font-weight: 300; }
+
+        .hero-content {
+            max-width: 820px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            font-weight: 900;
+            margin-bottom: 1.25rem;
+            letter-spacing: -1.5px;
+            color: #0f172a;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            font-weight: 400;
+        }
 
         /* Search Box */
         .search-container {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-            border: 1px solid #eee;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 1.25rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.06);
         }
-        .search-container input, .search-container select {
-            border: 1px solid #e5e7eb;
+
+        .search-select, .search-input {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
             padding: 0.85rem 1.25rem;
+            border-radius: 12px;
             font-size: 0.95rem;
             outline: none;
-            border-radius: 12px;
+            transition: all 0.2s;
             font-family: inherit;
         }
+
+        .search-select:focus, .search-input:focus {
+            border-color: var(--brand-blue);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
         .btn-search {
-            background: var(--accent);
+            background: var(--brand-blue);
             color: white;
             padding: 0.85rem 2rem;
-            border-radius: 100px;
+            border-radius: 12px;
             border: none;
             font-weight: 700;
-            cursor: pointer;
             font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
         }
 
-        /* Feature Cards */
-        .features { padding: 5rem 5%; background: var(--gray); display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
-        .feature-card { background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid #eee; transition: transform 0.3s; }
-        .feature-card:hover { transform: translateY(-5px); }
-        .feature-card h3 { font-size: 1.4rem; font-weight: 700; margin: 1rem 0 0.5rem 0; }
-        .feature-card p { color: #6b7280; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; }
-        .feature-card a { color: var(--accent); font-weight: 700; text-decoration: none; }
+        .btn-search:hover {
+            background: var(--brand-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Light Glass Cards */
+        .card-light {
+            background: #ffffff;
+            border: 1px solid var(--border-card);
+            border-radius: 18px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .card-light:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
+        }
+
+        /* Sector Images */
+        .sector-img {
+            height: 190px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 1rem;
+        }
 
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2.2rem; }
-            .features { grid-template-columns: 1fr; }
-            .nav-links { display: none; }
+            .hero h1 { font-size: 2.25rem; }
+            .hero { padding-top: 2.5rem; }
+            .search-container div { flex-direction: column !important; }
         }
-        footer { padding: 3rem 5%; text-align: center; border-top: 1px solid #eee; color: #6b7280; }
+
+        footer {
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Navigation Header -->
     <nav>
-        <div class="logo">PuentesGlobales.</div>
-        <div class="nav-links">
-            <a href="ats-scanner.html">🔍 Escáner ATS</a>
-            <a href="test-psicometrico.html">🧠 Test Psicométrico</a>
-            <a href="simulador-entrevista.html">🎤 Simulador IA</a>
-            <a href="planes-saas.html">💎 Planes SaaS</a>
-            <a href="search-results.html" class="btn-nav">Buscar Empleos</a>
+        <a href="index.html" class="logo-box">
+            <img src="assets/img/logo_official.png" alt="PUENTES GLOBALES" style="height: 42px; width: auto; object-fit: contain;">
+        </a>
+
+        <div style="display:flex; gap:1rem; align-items:center;">
+            <a href="home/" style="text-decoration:none; color:var(--brand-blue); font-weight:700; background:#eff6ff; border:1px solid #bfdbfe; padding:0.45rem 1rem; border-radius:100px; font-size:0.9rem; transition:0.2s;">🎓 Tutor IA Idiomas</a>
+            <a href="admin.html" style="text-decoration:none; color:var(--text-muted); font-weight:600; font-size:0.9rem; transition:0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='var(--text-muted)'">⚙️ Admin</a>
+            <div id="nav-user-area">
+                <a href="#" onclick="openAuthModal(event)" style="text-decoration:none; color:#0f172a; font-weight:600; background:#f1f5f9; border:1px solid #cbd5e1; padding:0.45rem 1rem; border-radius:100px; font-size:0.9rem;">🔑 Acceso Postulantes</a>
+            </div>
         </div>
     </nav>
 
+    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Tu puente al empleo europeo.</h1>
-            <p>Miles de oportunidades laborales en Europa, actualizadas diariamente desde las mejores fuentes. Consulta a ALEX IO para ver cómo te podemos ayudar a migrar a Europa.</p>
+            <!-- Badges -->
+            <div style="display:flex; justify-content:center; align-items:center; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+                <div style="display:inline-flex; align-items:center; gap:0.5rem; background:#eff6ff; border:1px solid #bfdbfe; color:#2563eb; font-weight:800; font-size:0.8rem; padding:0.45rem 1.1rem; border-radius:100px; letter-spacing:1px; text-transform:uppercase;">
+                    <span>⚡</span>
+                    <span>EMIGRAR CON CONFIANZA</span>
+                </div>
+                <div style="display:inline-flex; align-items:center; gap:0.5rem; background:#ffffff; border:1px solid #e2e8f0; color:#475569; font-weight:600; font-size:0.85rem; padding:0.45rem 1.1rem; border-radius:100px; box-shadow:0 2px 5px rgba(0,0,0,0.03);">
+                    <span>🤖 Conectado a <a href="https://alexio.online" target="_blank" style="color:var(--brand-blue); text-decoration:underline; font-weight:700;">alexio.online</a></span>
+                </div>
+            </div>
+
+            <h1 style="font-size: 3.8rem; line-height: 1.05; font-weight: 900; color: #0f172a; margin-bottom: 1.25rem; letter-spacing: -1.5px;">
+                No emigres <br>
+                <span style="color: #f97316; font-style: italic; background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">a la suerte.</span>
+            </h1>
+            <p><strong>Tu Tutor de Idiomas IA & Empleo en Europa.</strong> Aprende el idioma que necesitas y postulate a empleos internacionales con patrocinio de visado. La plataforma integral para profesionales de Latinoamérica.</p>
             
-            <form action="search-results.html" method="GET" class="search-container">
-                <div style="display: flex; gap: 1rem; width: 100%;">
-                    <select name="country" style="flex: 1;">
+            <form action="#" method="GET" class="search-container" style="display:flex; flex-direction:column; gap:1rem;">
+                <div style="display:flex; gap:1rem; width:100%;">
+                    <select name="country" class="search-select" style="flex:1;">
                         <option value="">🌍 Todos los países</option>
-                        <option value="España">🇪🇸 España</option>
                         <option value="Alemania">🇩🇪 Alemania</option>
-                        <option value="Francia">🇫🇷 Francia</option>
-                        <option value="Italia">🇮🇹 Italia</option>
+                        <option value="España">🇪🇸 España</option>
                         <option value="Reino Unido">🇬🇧 Reino Unido</option>
-                        <option value="Irlanda">🇮🇪 Irlanda</option>
-                        <option value="Remoto">💻 Remoto</option>
+                        <option value="Holanda">🇳🇱 Holanda</option>
+                        <option value="Francia">🇫🇷 Francia</option>
+                        <option value="Remoto">🌐 100% Remoto</option>
                     </select>
-                    
-                    <select name="profession" style="flex: 1;">
+
+                    <select name="profession" class="search-select" style="flex:1;">
                         <option value="">💼 Todas las profesiones</option>
                         <option value="IT">💻 Tecnología / IT</option>
-                        <option value="Salud">🏥 Salud</option>
+                        <option value="Salud">🏥 Salud / Medicina</option>
                         <option value="Ingeniería">⚙️ Ingeniería</option>
-                        <option value="Construcción">🏗️ Construcción</option>
-                        <option value="Hostelería">🍽️ Hostelería</option>
+                        <option value="Construcción">🏗️ Oficios Técnicos</option>
+                        <option value="Logística">🚚 Transporte / Logística</option>
+                        <option value="Finanzas">📊 Gestión y Admin</option>
                     </select>
                 </div>
-                
-                <div style="display: flex; gap: 1rem; width: 100%;">
-                    <input type="text" name="q" placeholder="Busca por puesto, empresa o habilidad..." required style="flex: 1;">
-                    <button type="submit" class="btn-search">Buscar Empleos</button>
+
+                <div style="display:flex; gap:1rem; width:100%;">
+                    <input type="text" name="q" class="search-input" placeholder="Busca por puesto, empresa o tecnología..." style="flex:1;">
+                    <button type="submit" class="btn-search">Buscar Oportunidades</button>
                 </div>
             </form>
         </div>
     </section>
 
-    <section class="features">
-        <div class="feature-card">
-            <div style="font-size: 2rem">🌐</div>
-            <h3>Agregador Multi-API</h3>
-            <p>Búsquedas en tiempo real conectadas a múltiples fuentes de empleo en Europa (Arbeitnow, RemoteOK, Remotive).</p>
-            <a href="search-results.html">Buscar Oportunidades →</a>
-        </div>
-
-        <div class="feature-card">
-            <div style="font-size: 2rem">📄</div>
-            <h3>Filtro ATS Mejorado</h3>
-            <p>Escanea y califica tu CV contra los algoritmos de reclutadores europeos antes de enviar tu postulación.</p>
-            <a href="ats-scanner.html">Escanear mi CV →</a>
-        </div>
-
-        <div class="feature-card">
-            <div style="font-size: 2rem">🧠</div>
-            <h3>Test Psicométrico</h3>
-            <p>Diagnóstico de idoneidad, adaptación cultural y motivación para relocalización laboral en Europa.</p>
-            <a href="test-psicometrico.html">Hacer Evaluación →</a>
+    <!-- Módulo Tutor de Idiomas IA Banner -->
+    <section style="padding: 0 5% 3.5rem; max-width: 1200px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 24px; padding: 2.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.25);">
+            <div style="max-width: 650px;">
+                <span style="background: rgba(0, 168, 204, 0.2); color: #38bdf8; font-weight: 700; font-size: 0.8rem; padding: 0.35rem 0.85rem; border-radius: 100px; text-transform: uppercase;">Módulo Especializado</span>
+                <h2 style="font-size: 1.85rem; font-weight: 800; margin-top: 0.5rem; margin-bottom: 0.5rem; color: white;">🎓 Prepara tu Idioma con nuestro Tutor IA</h2>
+                <p style="color: #94a3b8; font-size: 1rem; line-height: 1.5;">Simula entrevistas en Alemán, Inglés o Francés, aprende vocabulario profesional y acelera tu contratación.</p>
+            </div>
+            <div>
+                <a href="home/" style="display: inline-block; background: var(--brand-blue); color: white; font-weight: 800; font-size: 1rem; padding: 0.9rem 1.8rem; border-radius: 14px; text-decoration: none; transition: background 0.2s;">Ingresar al Tutor IA →</a>
+            </div>
         </div>
     </section>
 
+    <!-- Sectores / Especialidades (Fotos corporativas limpias) -->
+    <section style="padding: 3rem 5%; max-width: 1200px; margin: 0 auto;">
+        <h2 style="font-size: 2.25rem; text-align: center; margin-bottom: 2.5rem; font-weight: 800; color: #0f172a;">Sectores de Alta Demanda</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem;">
+            
+            <div class="card-light">
+                <div class="sector-img" style="background-image: url('assets/img/medical_clean_v3_1790543428443.png');"></div>
+                <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem;">Sector Salud</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Médicos, enfermeros y especialistas cualificados.</p>
+            </div>
+
+            <div class="card-light">
+                <div class="sector-img" style="background-image: url('assets/img/tech_clean_v3_1790543441002.png');"></div>
+                <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem;">Ingeniería y Tech</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Desarrollo de software, cloud y sistemas.</p>
+            </div>
+
+            <div class="card-light">
+                <div class="sector-img" style="background-image: url('assets/img/technical_clean_v3_1790543455603.png');"></div>
+                <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem;">Oficios Técnicos</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Electricistas, técnicos e industrias avanzadas.</p>
+            </div>
+
+            <div class="card-light">
+                <div class="sector-img" style="background-image: url('assets/img/logistics_clean_v3_1790543468348.png');"></div>
+                <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem;">Transporte y Logística</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Conductores internacionales y operaciones.</p>
+            </div>
+
+            <div class="card-light">
+                <div class="sector-img" style="background-image: url('assets/img/admin_clean_v3_1790543481908.png');"></div>
+                <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem;">Gestión y Admin</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Perfiles ejecutivos y administrativos.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Ofertas Dinámicas en Vivo -->
+    <section id="ofertas-sec" style="padding: 4rem 5%; max-width: 1200px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <h2 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; color: #0f172a;">Ofertas de Empleo en Vivo</h2>
+            <p style="color: var(--text-muted); font-size: 1.05rem;">Sincronizadas desde las principales fuentes internacionales</p>
+        </div>
+
+        <!-- Banderas de Filtro Rápido -->
+        <div style="display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.25rem;" id="flags-bar">
+            <button class="flag-btn active" onclick="filterByFlag('')" style="padding: 0.55rem 1.2rem; border-radius: 100px; border: 1px solid var(--brand-blue); background: var(--brand-blue); color: white; font-weight: 600; cursor: pointer; transition: 0.2s;">🌟 Todas</button>
+            <button class="flag-btn" onclick="filterByFlag('Alemania')" style="padding: 0.55rem 1.2rem; border-radius: 100px; border: 1px solid #cbd5e1; background: white; color: #334155; font-weight: 600; cursor: pointer; transition: 0.2s;">🇩🇪 Alemania</button>
+            <button class="flag-btn" onclick="filterByFlag('España')" style="padding: 0.55rem 1.2rem; border-radius: 100px; border: 1px solid #cbd5e1; background: white; color: #334155; font-weight: 600; cursor: pointer; transition: 0.2s;">🇪🇸 España</button>
+            <button class="flag-btn" onclick="filterByFlag('Reino Unido')" style="padding: 0.55rem 1.2rem; border-radius: 100px; border: 1px solid #cbd5e1; background: white; color: #334155; font-weight: 600; cursor: pointer; transition: 0.2s;">🇬🇧 Reino Unido</button>
+            <button class="flag-btn" onclick="filterByFlag('Holanda')" style="padding: 0.55rem 1.2rem; border-radius: 100px; border: 1px solid #cbd5e1; background: white; color: #334155; font-weight: 600; cursor: pointer; transition: 0.2s;">🇳🇱 Holanda</button>
+            <button class="flag-btn" onclick="filterByFlag('Remoto')" style="padding: 0.55rem 1.2rem; border-radius: 100px; border: 1px solid #cbd5e1; background: white; color: #334155; font-weight: 600; cursor: pointer; transition: 0.2s;">🌐 100% Remoto</button>
+        </div>
+
+        <div id="public-jobs-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1.25rem;">
+            <!-- Rendered by JS -->
+        </div>
+    </section>
+
+    <!-- Centro de Guías Migratorias LATAM -> Europa -->
+    <section style="padding: 4.5rem 5%; background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <span style="background: #eff6ff; color: var(--brand-blue); font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 100px; font-size: 0.85rem; text-transform: uppercase;">Recursos LATAM</span>
+                <h2 style="font-size: 2.25rem; font-weight: 800; margin-top: 0.5rem; color: #0f172a;">Centro de Guías Migratorias</h2>
+                <p style="color: var(--text-muted); font-size: 1.05rem;">Información clara y requisitos oficiales</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; margin-bottom: 3.5rem;">
+                <div class="card-light" style="display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🇩🇪</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">Visa Chancenkarte (Alemania)</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem;">Conoce el nuevo sistema de tarjeta de oportunidad por puntos para buscar empleo presencial en Alemania.</p>
+                    </div>
+                    <button onclick="openGuideModal('chancenkarte')" style="background:none; border:none; color: var(--brand-blue); font-weight: 700; cursor:pointer; text-align:left; padding:0; font-size:0.9rem;">Leer Guía Completa →</button>
+                </div>
+
+                <div class="card-light" style="display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🇪🇸</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">Ley de Nómadas (España)</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem;">Requisitos para obtener la residencia de trabajo remoto en España con beneficios fiscales (Ley Beckham).</p>
+                    </div>
+                    <button onclick="openGuideModal('nomada_espana')" style="background:none; border:none; color: var(--brand-blue); font-weight: 700; cursor:pointer; text-align:left; padding:0; font-size:0.9rem;">Leer Guía Completa →</button>
+                </div>
+
+                <div class="card-light" style="display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 0.75rem;">📜</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">Homologación de Títulos</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem;">Paso a paso para hacer valer tus diplomas universitarios y técnicos en la Unión Europea.</p>
+                    </div>
+                    <button onclick="openGuideModal('homologacion')" style="background:none; border:none; color: var(--brand-blue); font-weight: 700; cursor:pointer; text-align:left; padding:0; font-size:0.9rem;">Leer Guía Completa →</button>
+                </div>
+
+                <div class="card-light" style="display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🇬🇧</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem; color: #0f172a;">Skilled Worker Visa (UK)</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem;">Cómo conseguir patrocinio (Sponsor) de empresas británicas autorizadas por el Home Office.</p>
+                    </div>
+                    <button onclick="openGuideModal('skilled_worker_uk')" style="background:none; border:none; color: var(--brand-blue); font-weight: 700; cursor:pointer; text-align:left; padding:0; font-size:0.9rem;">Leer Guía Completa →</button>
+                </div>
+            </div>
+
+            <!-- Calculadora de Elegibilidad -->
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 20px; padding: 2.25rem;">
+                <div style="max-width: 650px; margin: 0 auto; text-align: center;">
+                    <span style="background: #eff6ff; color: var(--brand-blue); font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 100px; font-size: 0.85rem;">⚡ Evaluador Rápido</span>
+                    <h3 style="font-size: 1.75rem; font-weight: 800; margin-top: 0.5rem; margin-bottom: 1.5rem; color:#0f172a;">¿Calificas para una Visa de Trabajo Europea?</h3>
+
+                    <form onsubmit="calculateVisaEligibility(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">Nivel Educativo Alcanzado</label>
+                            <select id="calc-edu" required class="search-select" style="width:100%;">
+                                <option value="3">🎓 Título Universitario / Grado</option>
+                                <option value="2">📜 Terciario / Formación Técnica</option>
+                                <option value="1">🏫 Bachillerato / Secundaria</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">Nivel de Idioma (Inglés o Alemán)</label>
+                            <select id="calc-lang" required class="search-select" style="width:100%;">
+                                <option value="3">🗣️ Avanzado / Fluido (B2/C1)</option>
+                                <option value="2">💬 Intermedio (B1)</option>
+                                <option value="1">🌱 Básico / Principiante (A1/A2)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">Años de Experiencia Profesional</label>
+                            <select id="calc-exp" required class="search-select" style="width:100%;">
+                                <option value="3">⭐ Más de 5 años</option>
+                                <option value="2">🔹 Entre 2 y 5 años</option>
+                                <option value="1">🔸 Menos de 2 años</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-search" style="margin-top: 0.5rem;">Evaluar mi Perfil Ahora →</button>
+                    </form>
+
+                    <div id="calc-result" style="display:none; margin-top: 1.5rem; padding: 1.25rem; border-radius: 14px; background: white; border: 1px solid #cbd5e1; text-align: center;">
+                        <!-- Results by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer>
-        <p>&copy; 2026 PuentesGlobales. Todos los derechos reservados.</p>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">&copy; 2026 PuentesGlobales. Todos los derechos reservados.</p>
+        <p style="margin-top:0.5rem; font-size:0.85rem; color:#64748b;">🤖 Conectado a <a href="https://alexio.online" target="_blank" style="color:var(--brand-blue); font-weight:700; text-decoration:none;">alexio.online</a> para asistirte en tiempo real.</p>
     </footer>
 
+    <script>
+        lucide.createIcons();
+
+        // Sample / Fallback Jobs
+        const fallbackJobs = [
+            { title: "Senior Full Stack Developer", company: "TechEurope Gmbh", location: "Alemania / Remoto", url: "#", source: "Arbeitnow", date: new Date().toISOString(), visa: "Visa Sponsor", salary: "€65,000 - €85,000" },
+            { title: "Ingeniero de Software DevOps", company: "CloudInnovate UK", location: "Reino Unido", url: "#", source: "RemoteOK", date: new Date().toISOString(), visa: "Relocation Package", salary: "£70,000 - £90,000" },
+            { title: "Enfermero/a Titulado", company: "Grupo Hospitalario Madrid", location: "España", url: "#", source: "CSV Upload", date: new Date().toISOString(), visa: "Pasaporte UE / Homologado", salary: "€32,000 - €42,000" },
+            { title: "Product Designer (UI/UX)", company: "Nordic Digital Studio", location: "Holanda / Remoto", url: "#", source: "Jobicy", date: new Date().toISOString(), visa: "Visa Nómada Digital", salary: "€55,000 - €70,000" },
+            { title: "Chofer Logístico Internacional (C+E)", company: "Express Trans Europe", location: "Alemania / Polonia", url: "#", source: "RSS: Direct", date: new Date().toISOString(), visa: "Sponsor Permiso Conducir", salary: "€3,200 / mes" }
+        ];
+
+        let storedJobs = JSON.parse(localStorage.getItem('pg_all_jobs')) || fallbackJobs;
+        if (storedJobs.length === 0) storedJobs = fallbackJobs;
+
+        let activeFlagFilter = '';
+
+        function renderPublicJobs() {
+            const container = document.getElementById('public-jobs-container');
+            container.innerHTML = '';
+
+            const searchForm = document.querySelector('form.search-container');
+            const searchInput = searchForm ? searchForm.querySelector('input[name="q"]').value.toLowerCase() : '';
+            const countrySelect = searchForm ? searchForm.querySelector('select[name="country"]').value.toLowerCase() : '';
+
+            const filtered = storedJobs.filter(job => {
+                const matchFlag = !activeFlagFilter || job.location.toLowerCase().includes(activeFlagFilter.toLowerCase());
+                const matchSearch = !searchInput || job.title.toLowerCase().includes(searchInput) || job.company.toLowerCase().includes(searchInput);
+                const matchCountry = !countrySelect || job.location.toLowerCase().includes(countrySelect);
+                return matchFlag && matchSearch && matchCountry;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: #ffffff; border-radius: 18px; border: 1px solid #e2e8f0;">
+                        <p style="font-size: 1.2rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem;">No se encontraron ofertas con estos filtros</p>
+                        <p style="color: #64748b; font-size: 0.95rem;">Prueba limpiando la búsqueda o usando la opción "🌟 Todas".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.slice(0, 18).forEach(job => {
+                const flagEmoji = getFlagEmoji(job.location);
+                const visaText = job.visa || (job.location.toLowerCase().includes('remoto') ? '🌐 Remoto 100%' : 'Passport / Visa Sponsor');
+                const salaryText = job.salary || '💰 Competitivo EUR/USD';
+
+                const card = document.createElement('div');
+                card.className = "card-light";
+                card.style.cssText += "display: flex; flex-direction: column; justify-content: space-between;";
+
+                card.innerHTML = `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                            <span style="background: #f1f5f9; color: #334155; font-weight: 600; font-size: 0.8rem; padding: 0.25rem 0.6rem; border-radius: 6px;">${flagEmoji} ${job.location || 'Global'}</span>
+                            <span style="font-size: 0.75rem; color: #64748b;">${job.source || 'Empleo Directo'}</span>
+                        </div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 0.35rem; line-height: 1.3;">${job.title}</h3>
+                        <p style="color: var(--text-muted); font-weight: 500; font-size: 0.95rem; margin-bottom: 1rem;">🏢 ${job.company}</p>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem;">
+                            <span style="background: #eff6ff; color: #1d4ed8; font-weight: 600; font-size: 0.8rem; padding: 0.25rem 0.6rem; border-radius: 6px; border:1px solid #bfdbfe;">${visaText}</span>
+                            <span style="background: #ecfdf5; color: #047857; font-weight: 600; font-size: 0.8rem; padding: 0.25rem 0.6rem; border-radius: 6px; border:1px solid #a7f3d0;">${salaryText}</span>
+                        </div>
+                        <a href="${job.url}" onclick="applyToJob(event, '${encodeURIComponent(job.url)}')" target="_blank" style="display: block; text-align: center; background: var(--brand-blue); color: white; font-weight: 700; padding: 0.75rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; transition: 0.2s;">Postular / Ver Detalle →</a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getFlagEmoji(locationStr) {
+            if (!locationStr) return '🌐';
+            const loc = locationStr.toLowerCase();
+            if (loc.includes('alemania') || loc.includes('germany') || loc.includes('berlin')) return '🇩🇪';
+            if (loc.includes('españa') || loc.includes('spain') || loc.includes('madrid')) return '🇪🇸';
+            if (loc.includes('uk') || loc.includes('reino unido') || loc.includes('london')) return '🇬🇧';
+            if (loc.includes('holanda') || loc.includes('netherlands') || loc.includes('amsterdam')) return '🇳🇱';
+            if (loc.includes('francia') || loc.includes('france') || loc.includes('paris')) return '🇫🇷';
+            if (loc.includes('italia') || loc.includes('italy')) return '🇮🇹';
+            return '🌐';
+        }
+
+        function filterByFlag(flagName) {
+            activeFlagFilter = flagName;
+            document.querySelectorAll('#flags-bar .flag-btn').forEach(btn => {
+                if (btn.innerText.includes(flagName) || (flagName === '' && btn.innerText.includes('Todas'))) {
+                    btn.style.background = 'var(--brand-blue)';
+                    btn.style.borderColor = 'var(--brand-blue)';
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.borderColor = '#cbd5e1';
+                    btn.style.color = '#334155';
+                }
+            });
+            renderPublicJobs();
+        }
+
+        // --- Auth & Session ---
+        let pendingJobUrl = null;
+
+        function checkUserSession() {
+            const user = JSON.parse(localStorage.getItem('pg_user'));
+            const userArea = document.getElementById('nav-user-area');
+            if (user && userArea) {
+                userArea.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:0.75rem; background:#f1f5f9; border:1px solid #cbd5e1; padding:0.4rem 0.9rem; border-radius:100px; font-size:0.9rem;">
+                        <span style="font-weight:600; color:#0f172a;">👤 ${user.name}</span>
+                        <a href="#" onclick="logoutUser(event)" style="color:#ef4444; font-size:0.8rem; text-decoration:none; font-weight:600;">Salir</a>
+                    </div>
+                `;
+            } else if (userArea) {
+                userArea.innerHTML = `
+                    <a href="#" onclick="openAuthModal(event)" style="text-decoration:none; color:#0f172a; font-weight:600; background:#f1f5f9; border:1px solid #cbd5e1; padding:0.45rem 1rem; border-radius:100px; font-size:0.9rem;">🔑 Acceso Postulantes</a>
+                `;
+            }
+        }
+
+        function openAuthModal(e) {
+            if (e) e.preventDefault();
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+            pendingJobUrl = null;
+        }
+
+        function applyToJob(event, encodedUrl) {
+            const user = JSON.parse(localStorage.getItem('pg_user'));
+            const url = decodeURIComponent(encodedUrl);
+            if (!user) {
+                event.preventDefault();
+                pendingJobUrl = url;
+                openAuthModal();
+            }
+        }
+
+        function submitCandidateData(event) {
+            event.preventDefault();
+            const name = document.getElementById('cand-name').value;
+            const email = document.getElementById('cand-email').value;
+            const phone = document.getElementById('cand-phone').value;
+            const profession = document.getElementById('cand-prof').value;
+
+            const candidate = {
+                id: 'cand-' + Date.now(),
+                name, email, phone, profession,
+                registeredAt: new Date().toISOString()
+            };
+
+            localStorage.setItem('pg_user', JSON.stringify(candidate));
+            let leads = JSON.parse(localStorage.getItem('pg_candidate_leads')) || [];
+            leads.unshift(candidate);
+            localStorage.setItem('pg_candidate_leads', JSON.stringify(leads));
+
+            checkUserSession();
+            closeAuthModal();
+
+            if (pendingJobUrl && pendingJobUrl !== '#') {
+                window.open(pendingJobUrl, '_blank');
+            } else {
+                alert('¡Registro exitoso! Ya tienes acceso completo.');
+            }
+        }
+
+        function logoutUser(e) {
+            if (e) e.preventDefault();
+            localStorage.removeItem('pg_user');
+            checkUserSession();
+        }
+
+        // --- Guide Modal & Calculator ---
+        const guidesData = {
+            chancenkarte: {
+                title: "🇩🇪 Visa Chancenkarte (Alemania)",
+                content: `
+                    <p style="margin-bottom:1rem; line-height:1.6;">La <strong>Tarjeta de Oportunidad (Chancenkarte)</strong> es el nuevo sistema de visado basado en puntos de Alemania para profesionales extranjeros.</p>
+                    <h4 style="font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Requisitos clave:</h4>
+                    <ul style="padding-left:1.25rem; margin-bottom:1rem; line-height:1.6;">
+                        <li>Título técnico o universitario reconocido en tu país de origen.</li>
+                        <li>Acumular mínimo 6 puntos (por idioma alemán A2/B1, inglés B2, experiencia o edad menor a 35 años).</li>
+                        <li>Demostrar fondos de subsistencia (aprox. €1,027/mes o trabajo permitido de 20hs/sem).</li>
+                    </ul>
+                `
+            },
+            nomada_espana: {
+                title: "🇪🇸 Ley de Nómadas Digitales (España)",
+                content: `
+                    <p style="margin-bottom:1rem; line-height:1.6;">Permite a profesionales y freelancers de LATAM vivir en España mientras trabajan de forma remota.</p>
+                    <h4 style="font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Requisitos principales:</h4>
+                    <ul style="padding-left:1.25rem; margin-bottom:1rem; line-height:1.6;">
+                        <li>Trabajar en remoto para empresas fuera de España.</li>
+                        <li>Ingresos mínimos equivalentes al 200% del Salario Mínimo español (aprox. €2,640/mes).</li>
+                        <li>Beneficio fiscal: Tasa fija reducida de IRPF al 24% (Ley Beckham).</li>
+                    </ul>
+                `
+            },
+            homologacion: {
+                title: "📜 Homologación de Títulos en la UE",
+                content: `
+                    <p style="margin-bottom:1rem; line-height:1.6;">El reconocimiento oficial de tus estudios universitarios o técnicos expedidos en Latinoamérica para validez legal completa en Europa.</p>
+                    <h4 style="font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Pasos:</h4>
+                    <ul style="padding-left:1.25rem; margin-bottom:1rem; line-height:1.6;">
+                        <li>Apostilla de La Haya en tu título y materias.</li>
+                        <li>Traducción jurada al idioma oficial del país de destino.</li>
+                        <li>Presentación ante el Ministerio de Educación correspondiente.</li>
+                    </ul>
+                `
+            },
+            skilled_worker_uk: {
+                title: "🇬🇧 Skilled Worker Visa (Reino Unido)",
+                content: `
+                    <p style="margin-bottom:1rem; line-height:1.6;">Te permite residir y trabajar en una empresa patrocinadora (Sponsor) autorizada por el Home Office del Reino Unido.</p>
+                    <h4 style="font-weight:700; margin-bottom:0.5rem; color:#0f172a;">Requisitos:</h4>
+                    <ul style="padding-left:1.25rem; margin-bottom:1rem; line-height:1.6;">
+                        <li>Oferta de trabajo confirmada de un empleador británico autorizado.</li>
+                        <li>Certificado de patrocinio (CoS).</li>
+                        <li>Nivel de inglés mínimo B1 acreditado.</li>
+                    </ul>
+                `
+            }
+        };
+
+        function openGuideModal(guideKey) {
+            const guide = guidesData[guideKey];
+            if (!guide) return;
+            document.getElementById('guide-modal-title').innerHTML = guide.title;
+            document.getElementById('guide-modal-body').innerHTML = guide.content;
+            document.getElementById('guide-modal').style.display = 'flex';
+        }
+
+        function closeGuideModal() {
+            document.getElementById('guide-modal').style.display = 'none';
+        }
+
+        function calculateVisaEligibility(event) {
+            event.preventDefault();
+            const edu = parseInt(document.getElementById('calc-edu').value);
+            const lang = parseInt(document.getElementById('calc-lang').value);
+            const exp = parseInt(document.getElementById('calc-exp').value);
+            const score = edu + lang + exp;
+
+            const resDiv = document.getElementById('calc-result');
+            resDiv.style.display = 'block';
+
+            if (score >= 8) {
+                resDiv.innerHTML = `
+                    <h4 style="color:#047857; font-weight:800; font-size:1.2rem; margin-bottom:0.25rem;">🌟 Elegibilidad Alta (Puntaje: ${score}/9)</h4>
+                    <p style="color:#334155; font-size:0.95rem;">Tienes un perfil excelente para aplicar a la <strong>Chancenkarte (Alemania)</strong>, <strong>EU Blue Card</strong> o <strong>Visas con Sponsor Directo</strong>.</p>
+                `;
+            } else if (score >= 5) {
+                resDiv.innerHTML = `
+                    <h4 style="color:#d97706; font-weight:800; font-size:1.2rem; margin-bottom:0.25rem;">⚡ Elegibilidad Media (Puntaje: ${score}/9)</h4>
+                    <p style="color:#334155; font-size:0.95rem;">Calificas para <strong>Visas de Nómada Digital (España/Portugal)</strong> o empleos remotos. Te recomendamos subir tu nivel de idioma al B2 para Alemania.</p>
+                `;
+            } else {
+                resDiv.innerHTML = `
+                    <h4 style="color:#2563eb; font-weight:800; font-size:1.2rem; margin-bottom:0.25rem;">🌱 Perfil en Desarrollo (Puntaje: ${score}/9)</h4>
+                    <p style="color:#334155; font-size:0.95rem;">Te sugerimos certificar un nivel intermedio de idioma (Inglés/Alemán) o sumar 2 años de experiencia técnica.</p>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUserSession();
+            renderPublicJobs();
+            const form = document.querySelector('form.search-container');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    renderPublicJobs();
+                });
+            }
+        });
+    </script>
+
+    <!-- Modal Detalle de Guías -->
+    <div id="guide-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(6px); z-index:9999; justify-content:center; align-items:center; padding:1rem;">
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:24px; max-width:550px; width:100%; padding:2.25rem; position:relative; color:#0f172a; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);">
+            <button onclick="closeGuideModal()" style="position:absolute; top:1.25rem; right:1.25rem; border:none; background:#f1f5f9; border-radius:50%; width:32px; height:32px; cursor:pointer; font-weight:bold; font-size:1rem; color:#64748b;">✕</button>
+            <h3 id="guide-modal-title" style="font-size:1.4rem; font-weight:800; color:#0f172a; margin-bottom:1rem;">Guía Migratoria</h3>
+            <div id="guide-modal-body" style="color:#334155; font-size:0.95rem; line-height:1.6; margin-bottom:1.5rem;"></div>
+            <div style="text-align:right;">
+                <button onclick="closeGuideModal()" style="background:var(--brand-blue); color:white; font-weight:700; padding:0.65rem 1.25rem; border:none; border-radius:10px; cursor:pointer;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Acceso / Registro Postulantes -->
+    <div id="auth-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); backdrop-filter:blur(6px); z-index:9999; justify-content:center; align-items:center; padding:1rem;">
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:24px; max-width:440px; width:100%; padding:2rem; position:relative; color:#0f172a; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);">
+            <button onclick="closeAuthModal()" style="position:absolute; top:1.25rem; right:1.25rem; border:none; background:#f1f5f9; border-radius:50%; width:32px; height:32px; cursor:pointer; font-weight:bold; font-size:1rem; color:#64748b;">✕</button>
+            
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <div style="font-size:2.5rem; margin-bottom:0.5rem;">🚀</div>
+                <h3 style="font-size:1.5rem; font-weight:800; color:#0f172a; margin-bottom:0.25rem;">Acceso a Postulaciones</h3>
+                <p style="font-size:0.9rem; color:#64748b;">Ingresa tus datos para ver la oferta directa y acceder a todas las herramientas.</p>
+            </div>
+
+            <form id="auth-form" onsubmit="submitCandidateData(event)" style="display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <label style="font-size:0.85rem; font-weight:600; color:#334155; display:block; margin-bottom:0.35rem;">Nombre Completo</label>
+                    <input type="text" id="cand-name" required placeholder="Ej. Juan Pérez" class="search-input" style="width:100%;">
+                </div>
+
+                <div>
+                    <label style="font-size:0.85rem; font-weight:600; color:#334155; display:block; margin-bottom:0.35rem;">Correo Electrónico</label>
+                    <input type="email" id="cand-email" required placeholder="juan@ejemplo.com" class="search-input" style="width:100%;">
+                </div>
+
+                <div>
+                    <label style="font-size:0.85rem; font-weight:600; color:#334155; display:block; margin-bottom:0.35rem;">WhatsApp / Teléfono</label>
+                    <input type="tel" id="cand-phone" required placeholder="+54 9 11 1234 5678" class="search-input" style="width:100%;">
+                </div>
+
+                <div>
+                    <label style="font-size:0.85rem; font-weight:600; color:#334155; display:block; margin-bottom:0.35rem;">Profesión / Área</label>
+                    <select id="cand-prof" required class="search-select" style="width:100%;">
+                        <option value="">Selecciona tu área...</option>
+                        <option value="Tecnología / IT">💻 Tecnología / IT</option>
+                        <option value="Salud / Enfermería / Medicina">🏥 Salud / Enfermería / Medicina</option>
+                        <option value="Ingeniería / Construcción">⚙️ Ingeniería / Construcción</option>
+                        <option value="Transporte / Logística">🚚 Transporte / Logística</option>
+                        <option value="Administración / Finanzas">📊 Administración / Finanzas</option>
+                        <option value="Hostelería / Servicios">🍽️ Hostelería / Servicios</option>
+                        <option value="Otro">🌐 Otro</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-search" style="margin-top:0.5rem;">Continuar a la Oferta →</button>
+            </form>
+        </div>
+    </div>
+
     <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->
-    <script src="alex-widget.js"></script>
+    <script
+      src="https://whatsapp-fullstack-ylsx.onrender.com/widget.js"
+      data-tenant="0e8a4312-7b38-42fe-bfa1-58dde5e3ca21"
+      data-instance="v5_125230a0-8cc7-4758-8102-c5f03628ec9b"
+      data-color="#6366f1"
+      data-title="¡Hola! 👋"
+      data-subtitle="¿En qué te puedo ayudar?"
+      data-position="right"
+    ></script>
 </body>
 </html>
