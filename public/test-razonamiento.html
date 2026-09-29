@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test de Razonamiento Lógico | PuentesGlobales</title>
+  <meta name="description" content="Evaluá tu razonamiento lógico, series numéricas y analíticas con este test de 15 preguntas diseñado para procesos de selección europeos.">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --white: #ffffff;
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --blue-light: #eff6ff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --orange: #f97316;
+      --green: #22c55e;
+      --green-light: #f0fdf4;
+      --red: #ef4444;
+      --red-light: #fef2f2;
+      --shadow: 0 10px 40px rgba(0,0,0,0.07);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 5%;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-weight: 800; font-size: 1.3rem; color: var(--text); text-decoration: none; }
+    .nav-logo span { color: var(--blue); }
+    .nav-back {
+      font-size: 0.9rem; font-weight: 600; color: var(--muted);
+      text-decoration: none; display: flex; align-items: center; gap: 0.4rem;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--text); }
+
+    /* LAYOUT */
+    .app {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 5rem;
+    }
+
+    /* PROGRESS BAR */
+    .progress-wrap {
+      margin-bottom: 2rem;
+      display: none;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.82rem; font-weight: 700; color: var(--muted);
+      margin-bottom: 0.6rem; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .progress-track {
+      height: 6px; background: var(--border); border-radius: 100px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--blue), #60a5fa);
+      border-radius: 100px; transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    }
+    .bloque-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--blue-light); color: var(--blue);
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 0.3rem 0.75rem; border-radius: 100px; margin-bottom: 1rem;
+    }
+
+    /* SCREENS */
+    .screen { animation: fadeIn 0.35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-40px); } }
+    .slide-out { animation: slideOut 0.25s ease forwards; }
+
+    /* WELCOME SCREEN */
+    .welcome-card {
+      background: var(--white);
+      border-radius: 28px;
+      padding: 3rem 2.5rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .welcome-svg { margin: 0 auto 2rem; display: block; }
+    .welcome-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--blue-light); color: var(--blue);
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      padding: 0.4rem 1rem; border-radius: 100px; margin-bottom: 1.25rem;
+    }
+    .welcome-title {
+      font-size: 2rem; font-weight: 900; line-height: 1.1;
+      margin-bottom: 1rem; letter-spacing: -1px;
+    }
+    .welcome-title span { color: var(--orange); font-style: italic; }
+    .welcome-desc {
+      color: var(--muted); font-size: 1rem; line-height: 1.65;
+      margin-bottom: 2rem;
+    }
+    .info-pills {
+      display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .info-pill {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 100px; padding: 0.45rem 1rem;
+      font-size: 0.85rem; font-weight: 600; color: var(--muted);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .btn-start {
+      display: block; width: 100%;
+      background: var(--blue); color: white;
+      font-size: 1.1rem; font-weight: 800;
+      padding: 1.1rem 2rem; border-radius: 16px; border: none;
+      cursor: pointer; letter-spacing: -0.3px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+    }
+    .btn-start:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(37,99,235,0.45); }
+    .btn-start:active { transform: translateY(0); }
+
+    /* QUESTION CARD */
+    .q-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 2rem 1.75rem 5.5rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      min-height: 400px;
+    }
+    .q-number {
+      font-size: 0.82rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;
+    }
+    .q-text {
+      font-size: 1.2rem; font-weight: 800; line-height: 1.45;
+      margin-bottom: 0.75rem; letter-spacing: -0.3px;
+    }
+    .q-figure {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.25rem;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem; overflow-x: auto;
+    }
+    .options-grid {
+      display: grid; gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    .opt-card {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg); border: 2px solid var(--border);
+      border-radius: 16px; padding: 1rem 1.25rem;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+      font-size: 0.97rem; font-weight: 600;
+    }
+    .opt-card:hover { border-color: var(--blue); background: var(--blue-light); transform: translateY(-1px); }
+    .opt-card.selected {
+      border-color: var(--blue); background: var(--blue-light); color: var(--blue);
+    }
+    .opt-letter {
+      min-width: 32px; height: 32px;
+      background: var(--white); border: 2px solid var(--border);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800; color: var(--muted);
+      transition: all 0.2s;
+    }
+    .opt-card.selected .opt-letter {
+      background: var(--blue); border-color: var(--blue); color: white;
+    }
+    .opt-svg { display: flex; align-items: center; justify-content: center; flex: 1; }
+
+    /* BOTTOM BAR */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.97); backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.25rem; z-index: 50;
+    }
+    .bottom-inner { max-width: 680px; margin: 0 auto; }
+    .btn-next {
+      display: block; width: 100%;
+      background: var(--blue); color: white;
+      font-size: 1rem; font-weight: 800;
+      padding: 1rem; border-radius: 14px; border: none;
+      cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+      opacity: 0.4; pointer-events: none;
+    }
+    .btn-next.active { opacity: 1; pointer-events: all; }
+    .btn-next.active:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+    /* INTERSTITIAL */
+    .interstitial {
+      background: var(--white); border-radius: 24px;
+      padding: 2.5rem; text-align: center;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .interstitial-emoji { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+    .interstitial h2 { font-size: 1.75rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .interstitial p { color: var(--muted); font-size: 1rem; line-height: 1.6; }
+
+    /* RESULTS */
+    .result-screen { animation: fadeIn 0.4s ease; }
+    .result-hero {
+      background: linear-gradient(135deg, var(--blue) 0%, #1e40af 100%);
+      color: white; border-radius: 24px; padding: 2.5rem 2rem;
+      text-align: center; margin-bottom: 1.5rem;
+      box-shadow: 0 12px 40px rgba(37,99,235,0.35);
+    }
+    .result-score {
+      font-size: 5rem; font-weight: 900; line-height: 1;
+      margin-bottom: 0.5rem; letter-spacing: -3px;
+    }
+    .result-level {
+      font-size: 1.1rem; font-weight: 700; opacity: 0.9;
+      background: rgba(255,255,255,0.15);
+      display: inline-block; padding: 0.35rem 1rem; border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+    .result-consejo {
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px; padding: 1rem 1.25rem;
+      font-size: 0.95rem; line-height: 1.6; text-align: left;
+    }
+    .review-section { margin-bottom: 1.5rem; }
+    .review-title { font-weight: 800; font-size: 1.15rem; margin-bottom: 1rem; }
+    .review-item {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.25rem; margin-bottom: 0.75rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .review-item.correct { border-left: 4px solid var(--green); }
+    .review-item.incorrect { border-left: 4px solid var(--red); }
+    .review-q { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem; }
+    .review-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.65rem;
+      border-radius: 100px; margin-bottom: 0.5rem;
+    }
+    .review-badge.correct { background: var(--green-light); color: #15803d; }
+    .review-badge.incorrect { background: var(--red-light); color: #b91c1c; }
+    .review-exp { color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
+    .review-ans { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .btn-retry {
+      display: block; width: 100%;
+      background: var(--blue); color: white;
+      font-size: 1rem; font-weight: 800;
+      padding: 1rem; border-radius: 14px; border: none;
+      cursor: pointer; text-align: center; text-decoration: none;
+      transition: all 0.2s; margin-bottom: 0.75rem;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+    }
+    .btn-retry:hover { background: var(--blue-dark); }
+    .btn-back {
+      display: block; width: 100%;
+      background: var(--bg); color: var(--text);
+      border: 2px solid var(--border);
+      font-size: 1rem; font-weight: 700;
+      padding: 0.9rem; border-radius: 14px; border: 2px solid var(--border);
+      cursor: pointer; text-align: center; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { background: var(--border); }
+
+    @media (max-width: 480px) {
+      .welcome-title { font-size: 1.6rem; }
+      .q-text { font-size: 1.05rem; }
+      .result-score { font-size: 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Puentes<span>Globales</span></a>
+  <a href="index.html" class="nav-back">← Inicio</a>
+</nav>
+
+<div class="app" id="app">
+
+  <!-- WELCOME SCREEN -->
+  <div id="screen-welcome" class="screen">
+    <div class="welcome-card">
+      <svg class="welcome-svg" width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="70" cy="70" r="70" fill="#eff6ff"/>
+        <rect x="30" y="55" width="80" height="52" rx="10" fill="#2563eb" opacity="0.12"/>
+        <rect x="38" y="63" width="64" height="36" rx="7" fill="white" stroke="#2563eb" stroke-width="2"/>
+        <circle cx="55" cy="81" r="9" fill="#2563eb"/>
+        <text x="51" y="85" font-size="11" fill="white" font-weight="bold" font-family="sans-serif">?</text>
+        <line x1="72" y1="75" x2="94" y2="75" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="72" y1="81" x2="88" y2="81" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="72" y1="87" x2="82" y2="87" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M58 42 L62 50 L70 48 L65 55" stroke="#f97316" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="57" cy="41" r="3" fill="#f97316"/>
+      </svg>
+
+      <div class="welcome-badge">⚡ Test 1 de 5 · Razonamiento Lógico</div>
+      <h1 class="welcome-title">¿Cómo funciona<br>tu <span>lógica?</span></h1>
+      <p class="welcome-desc">15 preguntas que evalúan series numéricas, figuras, analogías y deducciones. El mismo tipo de test que usan las empresas europeas en sus procesos de selección.</p>
+
+      <div class="info-pills">
+        <div class="info-pill">🕐 ~8 minutos</div>
+        <div class="info-pill">📊 15 preguntas</div>
+        <div class="info-pill">📱 Táctil</div>
+      </div>
+
+      <button class="btn-start" onclick="startTest()">Empezar Test →</button>
+    </div>
+  </div>
+
+  <!-- QUESTION SCREEN (hidden initially) -->
+  <div id="screen-question" class="screen" style="display:none;">
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label">
+        <span id="prog-text">Pregunta 1 de 15</span>
+        <span id="prog-bloque"></span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="prog-fill"></div>
+      </div>
+    </div>
+
+    <div id="q-content">
+      <!-- Question injected by JS -->
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="screen-result" style="display:none;" class="result-screen"></div>
+
+</div>
+
+<!-- BOTTOM CONTINUE BAR -->
+<div class="bottom-bar" id="bottom-bar" style="display:none;">
+  <div class="bottom-inner">
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Continuar →</button>
+  </div>
+</div>
+
+<script>
+/* ─── DATA ──────────────────────────────────────────────────────────────── */
+const PREGUNTAS = [
+  {
+    id: 1, bloque: "Series numéricas",
+    enunciado: "¿Qué número continúa la serie?  2, 4, 6, 8, ?",
+    opciones: ["9", "10", "12", "11"],
+    correcta: "10",
+    explicacion: "Cada número aumenta de a 2. Después de 8 viene 10."
+  },
+  {
+    id: 2, bloque: "Series de figuras",
+    enunciado: "¿Qué figura continúa la serie?",
+    figura: "pattern_2",
+    opciones: ["Triángulo azul", "Círculo azul", "Cuadrado amarillo", "Estrella amarilla"],
+    correcta: "Triángulo azul",
+    explicacion: "El patrón (círculo, cuadrado, triángulo) se repite cada tres figuras, con los mismos colores. Sigue el triángulo azul."
+  },
+  {
+    id: 3, bloque: "Lógica y deducciones",
+    enunciado: "Todos los ingenieros de una empresa hablan inglés. Marta es ingeniera de esa empresa. ¿Qué se puede concluir?",
+    opciones: ["Marta habla inglés", "Marta no habla inglés", "Marta habla francés", "No se puede saber"],
+    correcta: "Marta habla inglés",
+    explicacion: "Si TODOS los ingenieros hablan inglés y Marta es una de ellos, Marta habla inglés."
+  },
+  {
+    id: 4, bloque: "Series numéricas",
+    enunciado: "¿Qué número continúa la serie?  3, 6, 12, 24, ?",
+    opciones: ["36", "48", "30", "42"],
+    correcta: "48",
+    explicacion: "Cada número es el doble del anterior (×2). 24 × 2 = 48."
+  },
+  {
+    id: 5, bloque: "Series de figuras",
+    enunciado: "¿Dónde debe estar el punto negro en el cuarto cuadro?",
+    figura: "pattern_5",
+    opciones: ["Abajo a la izquierda", "Arriba a la izquierda", "Arriba a la derecha", "Abajo a la derecha"],
+    correcta: "Abajo a la izquierda",
+    explicacion: "El punto avanza una esquina por vez en sentido horario. Después de abajo a la derecha viene abajo a la izquierda."
+  },
+  {
+    id: 6, bloque: "Series numéricas",
+    enunciado: "¿Qué número continúa la serie?  1, 4, 9, 16, ?",
+    opciones: ["20", "24", "25", "36"],
+    correcta: "25",
+    explicacion: "Son los cuadrados de 1, 2, 3, 4. El siguiente es 5² = 25."
+  },
+  {
+    id: 7, bloque: "Lógica y deducciones",
+    enunciado: "Ana llegó antes que Bruno. Carla llegó después de Bruno. Diego llegó antes que Ana. ¿Quién llegó tercero?",
+    opciones: ["Ana", "Bruno", "Carla", "Diego"],
+    correcta: "Bruno",
+    explicacion: "El orden es: Diego, Ana, Bruno, Carla. El tercero fue Bruno."
+  },
+  {
+    id: 8, bloque: "Series de figuras",
+    enunciado: "¿Qué figura continúa la serie?",
+    figura: "pattern_8",
+    opciones: ["Octógono (8 lados)", "Heptágono (7 lados)", "Círculo", "Hexágono (6 lados)"],
+    correcta: "Heptágono (7 lados)",
+    explicacion: "Cada figura tiene un lado más que la anterior: 3, 4, 5, 6 y sigue 7 lados."
+  },
+  {
+    id: 9, bloque: "Analogías",
+    enunciado: "Oruga es a mariposa como renacuajo es a…",
+    opciones: ["Rana", "Pez", "Tortuga", "Lagarto"],
+    correcta: "Rana",
+    explicacion: "La oruga se transforma en mariposa, igual que el renacuajo se transforma en rana."
+  },
+  {
+    id: 10, bloque: "Series numéricas",
+    enunciado: "¿Qué número continúa la serie?  5, 6, 8, 11, 15, ?",
+    opciones: ["18", "19", "20", "21"],
+    correcta: "20",
+    explicacion: "Los saltos son +1, +2, +3, +4, así que el siguiente es +5. 15 + 5 = 20."
+  },
+  {
+    id: 11, bloque: "Series de figuras",
+    enunciado: "¿Hacia dónde apunta la flecha que falta?",
+    figura: "pattern_11",
+    opciones: ["Abajo", "Abajo-izquierda", "Izquierda", "Arriba"],
+    correcta: "Abajo",
+    explicacion: "La flecha gira 45° en sentido horario cada vez. Después de abajo-derecha, el siguiente giro la deja apuntando hacia abajo."
+  },
+  {
+    id: 12, bloque: "Analogías de patrones",
+    enunciado: "Si 1 → 3, 2 → 5 y 4 → 9, ¿cuál es el resultado para 6?",
+    opciones: ["11", "12", "13", "15"],
+    correcta: "13",
+    explicacion: "La regla es duplicar y sumar 1: 1×2+1=3, 2×2+1=5, 4×2+1=9. Entonces 6×2+1 = 13."
+  },
+  {
+    id: 13, bloque: "Lógica y deducciones",
+    enunciado: "Regla: si un candidato aprueba el test técnico, pasa a entrevista. Lucía NO pasó a entrevista. ¿Qué se puede concluir?",
+    opciones: [
+      "Lucía no aprobó el test técnico",
+      "Lucía aprobó, pero rechazó la entrevista",
+      "Lucía no se presentó al test",
+      "No se puede concluir nada"
+    ],
+    correcta: "Lucía no aprobó el test técnico",
+    explicacion: "Si aprobar implica pasar a entrevista, y Lucía no pasó, entonces no puede haber aprobado."
+  },
+  {
+    id: 14, bloque: "Series de figuras",
+    enunciado: "¿Qué grupo de puntos continúa la serie?",
+    figura: "pattern_14",
+    opciones: ["5 puntos azules", "5 puntos amarillos", "6 puntos azules", "4 puntos azules"],
+    correcta: "5 puntos azules",
+    explicacion: "Hay dos patrones: la cantidad sube de 1 en 1 y el color alterna azul/amarillo. Toca 5 puntos azules."
+  },
+  {
+    id: 15, bloque: "Series numéricas",
+    enunciado: "¿Qué número continúa la serie?  2, 6, 7, 21, 22, ?",
+    opciones: ["23", "44", "66", "65"],
+    correcta: "66",
+    explicacion: "Se alternan dos operaciones: ×3 y +1. 2×3=6, 6+1=7, 7×3=21, 21+1=22, 22×3=66."
+  }
+];
+
+const RANGOS = [
+  { min: 0, max: 5, nivel: "Nivel inicial 🌱",
+    consejo: "Vas bien para empezar. Practicá series de a una por vez y anotá la regla de cada una. Repetir el test en unos días te va a mostrar mucha mejora." },
+  { min: 6, max: 10, nivel: "Nivel intermedio 📈",
+    consejo: "Tenés una base sólida. Enfocate en las series que combinan dos reglas (como las que alternan operaciones) y en resolver con tiempo controlado." },
+  { min: 11, max: 15, nivel: "Nivel avanzado 🏆",
+    consejo: "Excelente razonamiento. Ahora entrená la velocidad: en pruebas reales el tiempo suele ser el desafío principal." }
+];
+
+// Messages between blocks
+const INTERSTITIALS = {
+  5: { emoji: "🎯", title: "¡Muy bien!", msg: "Completaste las series numéricas y figuras. Ahora vienen analogías y lógica más avanzada." },
+  10: { emoji: "🔥", title: "¡A mitad del test!", msg: "Llevas la mitad. Las siguientes preguntas combinan patrones y deducciones. ¡Vamos con todo!" }
+};
+
+/* ─── SVG FIGURES ───────────────────────────────────────────────────────── */
+function getSVG(id) {
+  const svgs = {
+    pattern_2: `
+      <svg width="360" height="70" viewBox="0 0 360 70">
+        ${[0,1,2,3,4].map((i,idx) => {
+          const x = 10 + idx * 62;
+          const shapes = [
+            `<circle cx="${x+22}" cy="35" r="16" fill="#2563eb"/>`,
+            `<rect x="${x+8}" y="19" width="30" height="30" fill="#eab308"/>`,
+            `<polygon points="${x+22},14 ${x+6},50 ${x+38},50" fill="#2563eb"/>`,
+            `<circle cx="${x+22}" cy="35" r="16" fill="#2563eb"/>`,
+            `<rect x="${x+8}" y="19" width="30" height="30" fill="#eab308"/>`,
+          ];
+          return shapes[i];
+        }).join('')}
+        <rect x="318" y="10" width="44" height="52" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="340" y="41" text-anchor="middle" font-size="22" fill="#94a3b8" font-weight="bold" font-family="sans-serif">?</text>
+      </svg>`,
+
+    pattern_5: `
+      <svg width="340" height="80" viewBox="0 0 340 80">
+        ${[
+          {x:5,y:5,dot:'12,12'},
+          {x:90,y:5,dot:'108,12'},
+          {x:175,y:5,dot:'233,58'},
+          {x:260,y:5,dot:'?'}
+        ].map((b,i) => {
+          const bx=b.x, by=b.y;
+          let dotEl = '';
+          if(i===0) dotEl=`<circle cx="${bx+8}" cy="${by+8}" r="7" fill="#0f172a"/>`;
+          else if(i===1) dotEl=`<circle cx="${bx+68}" cy="${by+8}" r="7" fill="#0f172a"/>`;
+          else if(i===2) dotEl=`<circle cx="${bx+58}" cy="${by+60}" r="7" fill="#0f172a"/>`;
+          else dotEl=`<text x="${bx+38}" y="${by+42}" text-anchor="middle" font-size="20" fill="#94a3b8" font-weight="bold" font-family="sans-serif">?</text>`;
+          return `<rect x="${bx}" y="${by}" width="74" height="72" rx="8" fill="white" stroke="#e2e8f0" stroke-width="2"/>${dotEl}`;
+        }).join('')}
+        <text x="30" y="96" font-size="10" fill="#94a3b8" font-family="sans-serif">1</text>
+        <text x="115" y="96" font-size="10" fill="#94a3b8" font-family="sans-serif">2</text>
+        <text x="200" y="96" font-size="10" fill="#94a3b8" font-family="sans-serif">3</text>
+        <text x="285" y="96" font-size="10" fill="#94a3b8" font-family="sans-serif">?</text>
+      </svg>`,
+
+    pattern_8: `
+      <svg width="370" height="70" viewBox="0 0 370 70">
+        ${[3,4,5,6].map((sides, i) => {
+          const cx = 28 + i * 72, cy = 35, r = 22;
+          const pts = Array.from({length:sides}, (_,k) => {
+            const angle = (k * 2 * Math.PI / sides) - Math.PI/2;
+            return `${cx + r*Math.cos(angle)},${cy + r*Math.sin(angle)}`;
+          }).join(' ');
+          return `<polygon points="${pts}" fill="none" stroke="#2563eb" stroke-width="2.5"/>`;
+        }).join('')}
+        <rect x="302" y="8" width="60" height="54" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="332" y="40" text-anchor="middle" font-size="22" fill="#94a3b8" font-weight="bold" font-family="sans-serif">?</text>
+      </svg>`,
+
+    pattern_11: `
+      <svg width="370" height="70" viewBox="0 0 370 70">
+        ${[
+          [35,10],   // up
+          [35,32],   // up-right 45°
+          [35,54],   // right 90°
+          [35,76.5], // down-right 135°
+        ].map(([size, angle_deg], i) => {
+          const cx = 28 + i * 72, cy = 35;
+          const angle = (angle_deg * Math.PI) / 180;
+          const r = 18;
+          const tip = [cx + r*Math.sin(angle), cy - r*Math.cos(angle)];
+          const left = [cx + 8*Math.sin(angle - 2.4), cy - 8*Math.cos(angle - 2.4)];
+          const right = [cx + 8*Math.sin(angle + 2.4), cy - 8*Math.cos(angle + 2.4)];
+          return `<polygon points="${tip[0]},${tip[1]} ${left[0]},${left[1]} ${right[0]},${right[1]}" fill="#2563eb"/>
+                  <line x1="${cx}" y1="${cy}" x2="${tip[0]}" y2="${tip[1]}" stroke="#2563eb" stroke-width="2.5"/>`;
+        }).join('')}
+        <rect x="302" y="8" width="60" height="54" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="332" y="40" text-anchor="middle" font-size="22" fill="#94a3b8" font-weight="bold" font-family="sans-serif">?</text>
+      </svg>`,
+
+    pattern_14: `
+      <svg width="370" height="70" viewBox="0 0 370 70">
+        ${[
+          {count:1, color:'#2563eb'},
+          {count:2, color:'#eab308'},
+          {count:3, color:'#2563eb'},
+          {count:4, color:'#eab308'},
+        ].map(({count, color}, i) => {
+          const bx = 8 + i*72;
+          const dots = Array.from({length:count}, (_,di) => {
+            const dx = bx + 8 + di * (count <= 3 ? 16 : 12);
+            return `<circle cx="${dx}" cy="35" r="7" fill="${color}"/>`;
+          }).join('');
+          return `<rect x="${bx}" y="8" width="65" height="54" rx="8" fill="white" stroke="#e2e8f0" stroke-width="2"/>${dots}`;
+        }).join('')}
+        <rect x="300" y="8" width="65" height="54" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="332" y="40" text-anchor="middle" font-size="22" fill="#94a3b8" font-weight="bold" font-family="sans-serif">?</text>
+      </svg>`
+  };
+  return svgs[id] || '';
+}
+
+function getOptionSVG(qId, optionText) {
+  const svgOpts = {
+    2: {
+      "Triángulo azul": `<svg width="44" height="44"><polygon points="22,6 4,40 40,40" fill="#2563eb"/></svg>`,
+      "Círculo azul": `<svg width="44" height="44"><circle cx="22" cy="22" r="18" fill="#2563eb"/></svg>`,
+      "Cuadrado amarillo": `<svg width="44" height="44"><rect x="5" y="5" width="34" height="34" fill="#eab308"/></svg>`,
+      "Estrella amarilla": `<svg width="44" height="44"><polygon points="22,4 26,16 40,16 29,24 33,38 22,30 11,38 15,24 4,16 18,16" fill="#eab308"/></svg>`
+    },
+    5: {
+      "Abajo a la izquierda": `<svg width="54" height="54"><rect x="2" y="2" width="50" height="50" rx="6" fill="none" stroke="#cbd5e1" stroke-width="2"/><circle cx="12" cy="44" r="7" fill="#0f172a"/></svg>`,
+      "Arriba a la izquierda": `<svg width="54" height="54"><rect x="2" y="2" width="50" height="50" rx="6" fill="none" stroke="#cbd5e1" stroke-width="2"/><circle cx="12" cy="10" r="7" fill="#0f172a"/></svg>`,
+      "Arriba a la derecha": `<svg width="54" height="54"><rect x="2" y="2" width="50" height="50" rx="6" fill="none" stroke="#cbd5e1" stroke-width="2"/><circle cx="42" cy="10" r="7" fill="#0f172a"/></svg>`,
+      "Abajo a la derecha": `<svg width="54" height="54"><rect x="2" y="2" width="50" height="50" rx="6" fill="none" stroke="#cbd5e1" stroke-width="2"/><circle cx="42" cy="44" r="7" fill="#0f172a"/></svg>`
+    },
+    8: {
+      "Heptágono (7 lados)": `<svg width="50" height="50">${(() => { const s=7,cx=25,cy=25,r=20; const pts=Array.from({length:s},(_,k)=>{const a=k*2*Math.PI/s-Math.PI/2;return `${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`;}).join(' '); return `<polygon points="${pts}" fill="none" stroke="#2563eb" stroke-width="2.5"/>` })()} </svg>`,
+      "Octógono (8 lados)": `<svg width="50" height="50">${(() => { const s=8,cx=25,cy=25,r=20; const pts=Array.from({length:s},(_,k)=>{const a=k*2*Math.PI/s-Math.PI/2;return `${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`;}).join(' '); return `<polygon points="${pts}" fill="none" stroke="#2563eb" stroke-width="2.5"/>` })()} </svg>`,
+      "Círculo": `<svg width="50" height="50"><circle cx="25" cy="25" r="20" fill="none" stroke="#2563eb" stroke-width="2.5"/></svg>`,
+      "Hexágono (6 lados)": `<svg width="50" height="50">${(() => { const s=6,cx=25,cy=25,r=20; const pts=Array.from({length:s},(_,k)=>{const a=k*2*Math.PI/s-Math.PI/2;return `${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`;}).join(' '); return `<polygon points="${pts}" fill="none" stroke="#2563eb" stroke-width="2.5"/>` })()} </svg>`
+    },
+    11: {
+      "Abajo": `<svg width="50" height="50"><line x1="25" y1="8" x2="25" y2="42" stroke="#2563eb" stroke-width="3"/><polygon points="25,50 14,35 36,35" fill="#2563eb"/></svg>`,
+      "Abajo-izquierda": `<svg width="50" height="50"><line x1="36" y1="14" x2="14" y2="36" stroke="#2563eb" stroke-width="3"/><polygon points="8,43 8,25 26,43" fill="#2563eb"/></svg>`,
+      "Izquierda": `<svg width="50" height="50"><line x1="42" y1="25" x2="8" y2="25" stroke="#2563eb" stroke-width="3"/><polygon points="0,25 15,14 15,36" fill="#2563eb"/></svg>`,
+      "Arriba": `<svg width="50" height="50"><line x1="25" y1="42" x2="25" y2="8" stroke="#2563eb" stroke-width="3"/><polygon points="25,0 14,15 36,15" fill="#2563eb"/></svg>`
+    },
+    14: {
+      "5 puntos azules": `<svg width="100" height="30">${Array.from({length:5},(_,i)=>`<circle cx="${10+i*20}" cy="15" r="8" fill="#2563eb"/>`).join('')}</svg>`,
+      "5 puntos amarillos": `<svg width="100" height="30">${Array.from({length:5},(_,i)=>`<circle cx="${10+i*20}" cy="15" r="8" fill="#eab308"/>`).join('')}</svg>`,
+      "6 puntos azules": `<svg width="120" height="30">${Array.from({length:6},(_,i)=>`<circle cx="${10+i*20}" cy="15" r="8" fill="#2563eb"/>`).join('')}</svg>`,
+      "4 puntos azules": `<svg width="80" height="30">${Array.from({length:4},(_,i)=>`<circle cx="${10+i*20}" cy="15" r="8" fill="#2563eb"/>`).join('')}</svg>`
+    }
+  };
+  return svgOpts[qId] ? (svgOpts[qId][optionText] || '') : '';
+}
+
+/* ─── STATE ─────────────────────────────────────────────────────────────── */
+let current = 0;
+let selected = null;
+let answers = [];
+let showingInterstitial = false;
+
+/* ─── HELPERS ───────────────────────────────────────────────────────────── */
+const LETTERS = ['A','B','C','D','E'];
+
+function shuffleOptions(q) {
+  const opts = [...q.opciones];
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+  return opts;
+}
+
+/* ─── START ─────────────────────────────────────────────────────────────── */
+function startTest() {
+  document.getElementById('screen-welcome').style.display = 'none';
+  document.getElementById('screen-question').style.display = 'block';
+  document.getElementById('bottom-bar').style.display = 'block';
+  document.getElementById('progress-wrap').style.display = 'block';
+  answers = PREGUNTAS.map(q => ({ id: q.id, shuffled: shuffleOptions(q), chosen: null }));
+  renderQuestion();
+}
+
+/* ─── RENDER QUESTION ───────────────────────────────────────────────────── */
+function renderQuestion() {
+  const q = PREGUNTAS[current];
+  const ans = answers[current];
+  selected = ans.chosen;
+
+  // Progress
+  const pct = Math.round((current / PREGUNTAS.length) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `Pregunta ${current + 1} de ${PREGUNTAS.length}`;
+  document.getElementById('prog-bloque').textContent = q.bloque;
+
+  // Build figure HTML
+  let figureHTML = '';
+  if (q.figura) {
+    figureHTML = `<div class="q-figure">${getSVG(q.figura)}</div>`;
+  }
+
+  // Build options
+  const optsHTML = ans.shuffled.map((opt, i) => {
+    const optSvg = getOptionSVG(q.id, opt);
+    const isSelected = ans.chosen === opt;
+    return `
+      <div class="opt-card ${isSelected ? 'selected' : ''}" onclick="selectOpt(this, '${opt.replace(/'/g, "\\'")}')" id="opt-${i}">
+        <div class="opt-letter">${LETTERS[i]}</div>
+        <div style="flex:1;">${opt}</div>
+        ${optSvg ? `<div class="opt-svg">${optSvg}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('q-content').innerHTML = `
+    <div class="screen">
+      <div class="bloque-badge">${getBloqueIcon(q.bloque)} ${q.bloque}</div>
+      <div class="q-card">
+        <div class="q-number">Pregunta ${current + 1} · ${q.bloque}</div>
+        <div class="q-text">${q.enunciado}</div>
+        ${figureHTML}
+        <div class="options-grid">${optsHTML}</div>
+      </div>
+    </div>`;
+
+  updateBtn();
+}
+
+function getBloqueIcon(bloque) {
+  const icons = {
+    "Series numéricas": "🔢",
+    "Series de figuras": "🔷",
+    "Lógica y deducciones": "🧩",
+    "Analogías": "🔗",
+    "Analogías de patrones": "📐"
+  };
+  return icons[bloque] || "📌";
+}
+
+/* ─── SELECT OPTION ─────────────────────────────────────────────────────── */
+function selectOpt(el, value) {
+  document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[current].chosen = value;
+  selected = value;
+  updateBtn();
+}
+
+function updateBtn() {
+  const btn = document.getElementById('btn-next');
+  if (selected !== null) {
+    btn.classList.add('active');
+    btn.textContent = current < PREGUNTAS.length - 1 ? 'Continuar →' : 'Ver Resultado →';
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = 'Seleccioná una opción';
+  }
+}
+
+/* ─── NEXT ──────────────────────────────────────────────────────────────── */
+function nextQuestion() {
+  if (!answers[current].chosen) return;
+
+  // Check interstitial
+  if (INTERSTITIALS[current + 1] && !showingInterstitial) {
+    showInterstitial(current + 1);
+    return;
+  }
+  showingInterstitial = false;
+
+  if (current < PREGUNTAS.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function showInterstitial(afterIdx) {
+  showingInterstitial = true;
+  const info = INTERSTITIALS[afterIdx];
+  document.getElementById('q-content').innerHTML = `
+    <div class="interstitial screen">
+      <span class="interstitial-emoji">${info.emoji}</span>
+      <h2>${info.title}</h2>
+      <p>${info.msg}</p>
+    </div>`;
+  const btn = document.getElementById('btn-next');
+  btn.classList.add('active');
+  btn.textContent = 'Seguir →';
+  // Override onclick to just advance
+  btn.onclick = function() {
+    current++;
+    showingInterstitial = false;
+    btn.onclick = nextQuestion;
+    renderQuestion();
+  };
+}
+
+/* ─── RESULTS ───────────────────────────────────────────────────────────── */
+function showResults() {
+  document.getElementById('screen-question').style.display = 'none';
+  document.getElementById('bottom-bar').style.display = 'none';
+
+  const correct = answers.filter((a, i) => a.chosen === PREGUNTAS[i].correcta).length;
+  const rango = RANGOS.find(r => correct >= r.min && correct <= r.max) || RANGOS[0];
+
+  const reviewHTML = PREGUNTAS.map((q, i) => {
+    const a = answers[i];
+    const isCorrect = a.chosen === q.correcta;
+    return `
+      <div class="review-item ${isCorrect ? 'correct' : 'incorrect'}">
+        <div class="review-q">${i+1}. ${q.enunciado}</div>
+        <span class="review-badge ${isCorrect ? 'correct' : 'incorrect'}">
+          ${isCorrect ? '✓ Correcto' : '✗ Incorrecto'}
+        </span>
+        ${!isCorrect ? `<div class="review-ans">Tu respuesta: <strong>${a.chosen || '—'}</strong> · Correcta: <strong>${q.correcta}</strong></div>` : ''}
+        <div class="review-exp">💡 ${q.explicacion}</div>
+      </div>`;
+  }).join('');
+
+  const el = document.getElementById('screen-result');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="result-hero">
+      <div class="result-score">${correct}/15</div>
+      <div class="result-level">${rango.nivel}</div>
+      <div class="result-consejo">💬 ${rango.consejo}</div>
+    </div>
+
+    <div class="review-section">
+      <div class="review-title">📋 Revisión pregunta por pregunta</div>
+      ${reviewHTML}
+    </div>
+
+    <button class="btn-retry" onclick="restartTest()">🔄 Volver a hacer el test</button>
+    <a href="index.html" class="btn-back">← Volver al inicio</a>
+  `;
+
+  el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function restartTest() {
+  current = 0;
+  selected = null;
+  answers = [];
+  showingInterstitial = false;
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-question').style.display = 'block';
+  document.getElementById('bottom-bar').style.display = 'block';
+  document.getElementById('btn-next').onclick = nextQuestion;
+  answers = PREGUNTAS.map(q => ({ id: q.id, shuffled: shuffleOptions(q), chosen: null }));
+  renderQuestion();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
