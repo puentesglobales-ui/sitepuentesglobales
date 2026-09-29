@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PuentesGlobales - Test de Idiomas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blue: #2563eb;
+            --text: #0f172a;
+            --muted: #64748b;
+            --bg: #f8fafc;
+            --orange: #f97316;
+            --green: #22c55e;
+            --red: #ef4444;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Nav */
+        header {
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header a {
+            text-decoration: none;
+            color: var(--blue);
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            min-height: calc(100vh - 64px);
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 6rem 1.5rem;
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Welcome Screen */
+        .welcome-center {
+            text-align: center;
+            margin: auto 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .welcome-svg {
+            width: 140px;
+            height: 140px;
+            margin-bottom: 2rem;
+        }
+
+        .badge {
+            background-color: #eff6ff;
+            color: var(--blue);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .title span {
+            color: var(--blue);
+        }
+
+        .description {
+            color: var(--muted);
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-pills {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .pill {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border-radius: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Question Screen */
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+
+        .progress-text {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .progress-block {
+            color: var(--blue);
+            background: #eff6ff;
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--blue);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            line-height: 1.3;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-family: inherit;
+            color: var(--text);
+        }
+
+        .option-card:hover {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+
+        .option-card.selected {
+            border-color: var(--blue);
+            background: #eff6ff;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
+        }
+
+        .fixed-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            z-index: 20;
+        }
+        
+        .fixed-bottom .btn {
+            max-width: 600px;
+        }
+
+        /* Interstitial */
+        .interstitial-center {
+            text-align: center;
+            margin: auto 0;
+        }
+        
+        .emoji-huge {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Results Screen */
+        .results-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--blue);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .score-circle .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .score-circle .total {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background: var(--orange);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+
+        .advice-box {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 2.5rem;
+            color: #9a3412;
+            font-weight: 500;
+        }
+
+        .review-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .review-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .review-card.correct {
+            border-left: 4px solid var(--green);
+        }
+
+        .review-card.incorrect {
+            border-left: 4px solid var(--red);
+        }
+
+        .review-q {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+        
+        .review-status {
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .correct .review-status { color: var(--green); }
+        .incorrect .review-status { color: var(--red); }
+
+        .review-ans {
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .review-ans strong {
+            color: var(--text);
+        }
+
+        .review-exp {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 1rem;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            PuentesGlobales
+        </a>
+    </header>
+
+    <!-- Welcome Screen -->
+    <div id="screen-welcome" class="screen active">
+        <div class="welcome-center">
+            <div class="welcome-svg">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="100" fill="#eff6ff"/>
+                    <path d="M50 80 C50 50, 150 50, 150 80 C150 110, 110 130, 90 140 C95 125, 80 120, 50 110 Z" fill="#2563eb"/>
+                    <circle cx="80" cy="85" r="8" fill="white"/>
+                    <circle cx="100" cy="85" r="8" fill="white"/>
+                    <circle cx="120" cy="85" r="8" fill="white"/>
+                    <text x="55" y="155" font-size="40">🇬🇧</text>
+                    <text x="105" y="155" font-size="40">🇩🇪</text>
+                </svg>
+            </div>
+            
+            <div class="badge">🌍 Test 3 de 5 · Idiomas</div>
+            
+            <h1 class="title">¿Listo para trabajar <span>en Europa?</span></h1>
+            
+            <p class="description">Evaluá tu inglés y alemán laboral con 16 preguntas de vocabulario, comprensión y situaciones reales de trabajo.</p>
+            
+            <div class="info-pills">
+                <div class="pill">🕐 ~10 minutos</div>
+                <div class="pill">🌍 16 preguntas</div>
+                <div class="pill">🗣️ Bilingüe</div>
+            </div>
+            
+            <button class="btn" onclick="startTest()">Comenzar Test →</button>
+        </div>
+    </div>
+
+    <!-- Question Screen -->
+    <div id="screen-question" class="screen">
+        <div class="progress-container">
+            <div class="progress-text">
+                <span id="progress-count">Pregunta 1 de 16</span>
+                <span id="progress-block" class="progress-block">Inglés</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <h2 id="question-text" class="question-text"></h2>
+        
+        <div id="options-container" class="options-list">
+            <!-- Options injected here -->
+        </div>
+
+        <div class="fixed-bottom">
+            <button id="btn-next" class="btn" onclick="nextStep()" disabled>Continuar →</button>
+        </div>
+    </div>
+
+    <!-- Interstitial Screen -->
+    <div id="screen-interstitial" class="screen">
+        <div class="interstitial-center">
+            <div class="emoji-huge">🇩🇪</div>
+            <h1 class="title">¡Ahora el Alemán!</h1>
+            <p class="description" style="margin-top: 1rem;">Terminaste la sección en Inglés. Ahora vienen preguntas de vocabulario y situaciones reales en Alemán laboral.</p>
+            <button class="btn" onclick="endInterstitial()" style="margin-top: 2rem;">Continuar con Alemán →</button>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="screen-results" class="screen">
+        <div class="results-header">
+            <div class="score-circle">
+                <span class="number" id="result-score">0</span>
+                <span class="total">de 16</span>
+            </div>
+            <div class="level-badge" id="result-level">Nivel</div>
+            <h2 class="title">Resultados del Test</h2>
+        </div>
+
+        <div class="advice-box" id="result-advice">
+            Consejo
+        </div>
+
+        <div class="review-section">
+            <h3>📝 Revisión de respuestas</h3>
+            <div id="review-container">
+                <!-- Review cards injected here -->
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn" onclick="restartTest()">Volver a hacer el test</button>
+            <a href="index.html" class="btn btn-outline" style="text-align: center; text-decoration: none;">← Inicio</a>
+        </div>
+    </div>
+
+    <script>
+        const PREGUNTAS = [
+            {
+                id: 1, bloque: 'Inglés — Vocabulario laboral',
+                enunciado: 'What does "resume" mean in a job application context?',
+                opciones: ['A reference letter', 'A curriculum vitae (CV)', 'A work contract', 'A job offer'],
+                correcta: 'A curriculum vitae (CV)',
+                explicacion: '"Resume" is the American English word for a CV — a document summarizing your education, experience and skills.'
+            },
+            {
+                id: 2, bloque: 'Inglés — Vocabulario laboral',
+                enunciado: 'Your manager says: "This task is urgent, please prioritize it." What should you do?',
+                opciones: ['Ignore it and finish other tasks first', 'Do it before other pending tasks', 'Delegate it to a colleague', 'Ask for a meeting to discuss it next week'],
+                correcta: 'Do it before other pending tasks',
+                explicacion: '"Prioritize" means to put something first. If a task is urgent and prioritized, you should do it before others.'
+            },
+            {
+                id: 3, bloque: 'Inglés — Comprensión',
+                enunciado: 'Read: "The position requires fluency in English and basic knowledge of German." Which candidate is the best fit?',
+                opciones: ['Ana: speaks only Spanish', 'Bruno: speaks English and German fluently', 'Carla: speaks basic English and no German', 'Diego: speaks English fluently and knows some German'],
+                correcta: 'Diego: speaks English fluently and knows some German',
+                explicacion: 'The job requires English fluency AND basic German. Diego meets both requirements exactly.'
+            },
+            {
+                id: 4, bloque: 'Inglés — Vocabulario laboral',
+                enunciado: 'What is a "notice period" in an employment contract?',
+                opciones: ['The number of vacation days per year', 'The time you must give before leaving a job', 'The trial period at a new job', 'The salary review period'],
+                correcta: 'The time you must give before leaving a job',
+                explicacion: 'A notice period is the time an employee must notify the employer before resigning. In Europe, it is typically 1–3 months.'
+            },
+            {
+                id: 5, bloque: 'Inglés — Situaciones reales',
+                enunciado: 'Your interviewer asks: "What are your salary expectations?" What is the best response?',
+                opciones: ['"I have no preference."', '"Whatever you offer is fine."', '"Based on my experience and market research, I expect between €X and €Y."', '"I need to think about it."'],
+                correcta: '"Based on my experience and market research, I expect between €X and €Y."',
+                explicacion: 'The best response shows you have researched the market and know your value. Always give a range, not a single number.'
+            },
+            {
+                id: 6, bloque: 'Inglés — Vocabulario laboral',
+                enunciado: 'What does "probation period" mean?',
+                opciones: ['A period of punishment at work', 'A trial period at the start of employment', 'The time between interviews', 'The period before receiving benefits'],
+                correcta: 'A trial period at the start of employment',
+                explicacion: 'A probation period (usually 3–6 months) is a trial at the start of employment where both sides can verify the fit.'
+            },
+            {
+                id: 7, bloque: 'Inglés — Comprensión',
+                enunciado: 'Email from HR: "Please confirm your availability for an onboarding session next Monday." What does "onboarding" mean?',
+                opciones: ['A farewell event', 'An employee introduction and integration process', 'A performance review meeting', 'A salary negotiation session'],
+                correcta: 'An employee introduction and integration process',
+                explicacion: '"Onboarding" is the process of integrating a new employee into the company.'
+            },
+            {
+                id: 8, bloque: 'Inglés — Situaciones reales',
+                enunciado: 'Your colleague writes: "I am OOO until Thursday. Please contact Maria for urgent matters." What does OOO mean?',
+                opciones: ['Out of Office', 'Out of Order', 'Out of Options', 'On Official Overtime'],
+                correcta: 'Out of Office',
+                explicacion: 'OOO is a common workplace abbreviation for "Out of Office", meaning the person is unavailable (vacation, sick leave, etc.).'
+            },
+            {
+                id: 9, bloque: 'Alemán — Vocabulario laboral',
+                enunciado: 'Was bedeutet "Bewerbung" auf Español? / ¿Qué significa "Bewerbung" en español?',
+                opciones: ['Contrato de trabajo', 'Postulación / Solicitud de empleo', 'Entrevista de trabajo', 'Carta de referencia'],
+                correcta: 'Postulación / Solicitud de empleo',
+                explicacion: '"Bewerbung" es el término alemán para "solicitud de empleo" o "postulación". Es la primera palabra que necesitás saber al buscar trabajo en Alemania.'
+            },
+            {
+                id: 10, bloque: 'Alemán — Vocabulario laboral',
+                enunciado: '¿Qué significa "Lebenslauf" en alemán?',
+                opciones: ['Carta de motivación', 'Certificado de estudios', 'Currículum Vitae (CV)', 'Contrato a tiempo parcial'],
+                correcta: 'Currículum Vitae (CV)',
+                explicacion: '"Lebenslauf" significa literalmente "transcurso de vida" y equivale al CV. Es el documento más importante en una Bewerbung alemana.'
+            },
+            {
+                id: 11, bloque: 'Alemán — Situaciones reales',
+                enunciado: 'Tu supervisor dice: "Bitte schicken Sie mir den Bericht bis Freitag." ¿Qué te está pidiendo?',
+                opciones: ['Que vayas a una reunión el viernes', 'Que le envíes el informe antes del viernes', 'Que revises el informe del viernes pasado', 'Que publiques el informe el lunes'],
+                correcta: 'Que le envíes el informe antes del viernes',
+                explicacion: '"Bitte schicken Sie mir den Bericht bis Freitag" = "Por favor envíeme el informe antes del viernes." Las palabras clave: schicken (enviar), Bericht (informe), bis Freitag (hasta el viernes).'
+            },
+            {
+                id: 12, bloque: 'Alemán — Vocabulario laboral',
+                enunciado: '¿Qué es una "Ausbildung" en el sistema laboral alemán?',
+                opciones: ['Una licencia médica', 'Una formación profesional dual (apprenticeship)', 'Un contrato por hora', 'Un título universitario de posgrado'],
+                correcta: 'Una formación profesional dual (apprenticeship)',
+                explicacion: 'La "Ausbildung" es la formación profesional dual alemana: se aprende en la empresa y en la escuela al mismo tiempo. Tiene alta demanda y puede ser puerta de entrada a Alemania.'
+            },
+            {
+                id: 13, bloque: 'Alemán — Comprensión',
+                enunciado: 'Oferta de trabajo dice: "Deutsch: B2 erforderlich". ¿Qué nivel de alemán te piden?',
+                opciones: ['Nivel básico (A1-A2)', 'Nivel intermedio alto (B2)', 'Nivel avanzado (C1-C2)', 'No se requiere alemán'],
+                correcta: 'Nivel intermedio alto (B2)',
+                explicacion: 'El Marco Europeo de Referencia tiene niveles A1, A2, B1, B2, C1, C2. B2 es "intermedio alto" — podés mantener conversaciones complejas con hablantes nativos.'
+            },
+            {
+                id: 14, bloque: 'Alemán — Situaciones reales',
+                enunciado: '¿Qué responderías si tu colega alemán te pregunta: "Haben Sie Fragen?"',
+                opciones: ['Ja, ich habe eine Frage. (Sí, tengo una pregunta.)', 'Nein, danke. (No, gracias.)', 'Ambas respuestas son correctas según el contexto.', 'Keine Antwort. (Sin respuesta.)'],
+                correcta: 'Ambas respuestas son correctas según el contexto.',
+                explicacion: '"Haben Sie Fragen?" significa "¿Tiene preguntas?". Podés responder afirmativamente (Ja) o negativamente (Nein) según la situación. Ambas son correctas.'
+            },
+            {
+                id: 15, bloque: 'Alemán — Vocabulario laboral',
+                enunciado: '¿Qué significa "Krankmeldung"?',
+                opciones: ['Solicitud de vacaciones', 'Aviso / certificado de baja por enfermedad', 'Carta de renuncia', 'Contrato temporal'],
+                correcta: 'Aviso / certificado de baja por enfermedad',
+                explicacion: '"Krank" = enfermo, "Meldung" = aviso. La Krankmeldung es el documento o aviso que presentás al empleador cuando estás enfermo. En Alemania, si faltás más de 3 días, debés presentar un certificado médico (Attest).'
+            },
+            {
+                id: 16, bloque: 'Alemán — Comprensión',
+                enunciado: 'Tu jefe escribe: "Gut gemacht! Weiter so." ¿Qué te está diciendo?',
+                opciones: ['Que cometiste un error grave', 'Que debés repetir la tarea', '¡Bien hecho! Seguí así.', 'Que llegaste tarde'],
+                correcta: '¡Bien hecho! Seguí así.',
+                explicacion: '"Gut gemacht" = Bien hecho / Bien realizado. "Weiter so" = Seguí así. Es un elogio de tu supervisor.'
+            }
+        ];
+
+        const RANGOS = [
+            { min: 0, max: 6, nivel: 'Nivel básico 🌱', consejo: 'Tu base de idiomas necesita más trabajo. Empezá con apps como Duolingo para alemán y practicá inglés laboral escuchando podcasts de negocios diariamente.' },
+            { min: 7, max: 11, nivel: 'Nivel intermedio 📈', consejo: 'Tenés vocabulario laboral sólido en inglés. Para el alemán, enfocate en el vocabulario de tu sector específico y situaciones de oficina.' },
+            { min: 12, max: 16, nivel: 'Nivel avanzado 🏆', consejo: '¡Excelente dominio de ambos idiomas! Completá una certificación oficial (B2/C1 para alemán, IELTS para inglés) para destacarte en los procesos de selección europeos.' }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let shuffledQuestions = [];
+        let currentSelectedOption = null;
+
+        // Utility to shuffle array
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function startTest() {
+            // Keep questions in order, but shuffle options per question
+            shuffledQuestions = PREGUNTAS.map(q => ({
+                ...q,
+                opciones: shuffle([...q.opciones])
+            }));
+            
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            
+            renderQuestion();
+            showScreen('screen-question');
+        }
+
+        function renderQuestion() {
+            const q = shuffledQuestions[currentQuestionIndex];
+            
+            // Progress
+            document.getElementById('progress-count').textContent = `Pregunta ${currentQuestionIndex + 1} de ${PREGUNTAS.length}`;
+            document.getElementById('progress-block').textContent = q.bloque;
+            document.getElementById('progress-fill').style.width = `${((currentQuestionIndex) / PREGUNTAS.length) * 100}%`;
+            
+            // Text
+            document.getElementById('question-text').textContent = q.enunciado;
+            
+            // Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            currentSelectedOption = null;
+            document.getElementById('btn-next').disabled = true;
+
+            q.opciones.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-card';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(btn, opt);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectOption(btnElement, optionText) {
+            document.querySelectorAll('.option-card').forEach(b => b.classList.remove('selected'));
+            btnElement.classList.add('selected');
+            currentSelectedOption = optionText;
+            document.getElementById('btn-next').disabled = false;
+        }
+
+        function nextStep() {
+            if (!currentSelectedOption) return;
+
+            const q = shuffledQuestions[currentQuestionIndex];
+            userAnswers.push({
+                qId: q.id,
+                pregunta: q.enunciado,
+                respuesta: currentSelectedOption,
+                correcta: q.correcta,
+                esCorrecta: currentSelectedOption === q.correcta,
+                explicacion: q.explicacion
+            });
+
+            if (q.id === 8) {
+                showScreen('screen-interstitial');
+            } else {
+                advance();
+            }
+        }
+
+        function endInterstitial() {
+            advance();
+        }
+
+        function advance() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < PREGUNTAS.length) {
+                renderQuestion();
+                showScreen('screen-question');
+            } else {
+                finishTest();
+            }
+        }
+
+        function finishTest() {
+            const correctCount = userAnswers.filter(a => a.esCorrecta).length;
+            
+            document.getElementById('result-score').textContent = correctCount;
+            
+            const rango = RANGOS.find(r => correctCount >= r.min && correctCount <= r.max);
+            document.getElementById('result-level').textContent = rango.nivel;
+            document.getElementById('result-advice').textContent = rango.consejo;
+            
+            const reviewContainer = document.getElementById('review-container');
+            reviewContainer.innerHTML = '';
+            
+            userAnswers.forEach((ans, idx) => {
+                const isCorrect = ans.esCorrecta;
+                const card = document.createElement('div');
+                card.className = `review-card ${isCorrect ? 'correct' : 'incorrect'}`;
+                
+                card.innerHTML = `
+                    <div class="review-status">${isCorrect ? '✅ Correcto' : '❌ Incorrecto'}</div>
+                    <div class="review-q">${idx + 1}. ${ans.pregunta}</div>
+                    <div class="review-ans">
+                        <span style="color: var(--muted)">Tu respuesta:</span> <strong>${ans.respuesta}</strong>
+                    </div>
+                    ${!isCorrect ? `
+                    <div class="review-ans">
+                        <span style="color: var(--muted)">Respuesta correcta:</span> <strong>${ans.correcta}</strong>
+                    </div>
+                    ` : ''}
+                    <div class="review-exp">
+                        ${ans.explicacion}
+                    </div>
+                `;
+                reviewContainer.appendChild(card);
+            });
+            
+            showScreen('screen-results');
+        }
+
+        function restartTest() {
+            startTest();
+        }
+
+    </script>
+</body>
+</html>

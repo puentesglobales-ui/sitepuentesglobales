@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PuentesGlobales - Test Numérico</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --text: #0f172a;
+      --muted: #64748b;
+      --bg: #f8fafc;
+      --orange: #f97316;
+      --green: #22c55e;
+      --red: #ef4444;
+      --border: #e2e8f0;
+      --card-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    nav {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    nav a {
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Welcome Screen */
+    .welcome-screen {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-grow: 1;
+      gap: 1.5rem;
+    }
+
+    .welcome-svg {
+      width: 140px;
+      height: 140px;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      background-color: #dbeafe;
+      color: var(--blue);
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    h1 span {
+      color: var(--blue);
+    }
+
+    .description {
+      color: var(--muted);
+      font-size: 1.125rem;
+      max-width: 450px;
+      margin: 0 auto;
+    }
+
+    .info-pills {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .info-pill {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+
+    .btn {
+      background-color: var(--blue);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      width: 100%;
+      max-width: 300px;
+      margin-top: 1.5rem;
+    }
+
+    .btn:hover {
+      background-color: var(--blue-hover);
+    }
+    
+    .btn:disabled {
+      background-color: var(--muted);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover {
+      background-color: var(--border);
+    }
+
+    /* Question Screen */
+    .question-screen {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      padding-bottom: 5rem;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background-color: var(--border);
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--blue);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .question-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .option-card {
+      background-color: var(--card-bg);
+      border: 2px solid var(--border);
+      padding: 1.25rem;
+      border-radius: 0.75rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .option-card:hover {
+      border-color: var(--blue);
+      background-color: #eff6ff;
+    }
+
+    .option-card.selected {
+      border-color: var(--blue);
+      background-color: #eff6ff;
+    }
+
+    .option-letter {
+      background-color: var(--bg);
+      color: var(--muted);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+    
+    .option-card.selected .option-letter {
+      background-color: var(--blue);
+      color: white;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--card-bg);
+      border-top: 1px solid var(--border);
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      z-index: 40;
+    }
+    
+    .bottom-bar .container {
+      padding: 0;
+      flex-direction: row;
+      justify-content: flex-end;
+    }
+
+    .bottom-bar .btn {
+      margin: 0;
+      width: auto;
+      min-width: 200px;
+    }
+
+    /* Interstitial */
+    .interstitial-screen {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-grow: 1;
+      gap: 1.5rem;
+    }
+
+    .interstitial-emoji {
+      font-size: 5rem;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    /* Results */
+    .results-screen {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .score-card {
+      background-color: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    
+    .score-value {
+      font-size: 4rem;
+      font-weight: 800;
+      color: var(--blue);
+      line-height: 1;
+      margin: 1rem 0;
+    }
+    
+    .score-total {
+      font-size: 1.5rem;
+      color: var(--muted);
+    }
+
+    .review-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .review-item {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .review-status {
+      font-weight: 700;
+      font-size: 0.875rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+    }
+
+    .status-correct {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .status-incorrect {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .review-explanation {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: var(--bg);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    
+    .actions-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      PuentesGlobales
+    </a>
+  </nav>
+
+  <div id="app" class="container"></div>
+
+  <script>
+    const PREGUNTAS = [
+      {
+        id: 1, bloque: 'Series numéricas',
+        enunciado: '¿Qué número continúa? 10, 20, 30, 40, ?',
+        opciones: ['45', '50', '55', '60'],
+        correcta: '50',
+        explicacion: 'La serie suma 10 en cada paso. 40 + 10 = 50.'
+      },
+      {
+        id: 2, bloque: 'Operaciones básicas',
+        enunciado: '¿Cuánto es 15% de 200?',
+        opciones: ['25', '30', '35', '20'],
+        correcta: '30',
+        explicacion: '200 × 0.15 = 30.'
+      },
+      {
+        id: 3, bloque: 'Problemas aplicados',
+        enunciado: 'Un trabajador gana €1.800/mes. Si recibe un aumento del 10%, ¿cuánto ganará?',
+        opciones: ['€1.900', '€1.960', '€1.980', '€2.000'],
+        correcta: '€1.980',
+        explicacion: '1800 × 1.10 = 1980.'
+      },
+      {
+        id: 4, bloque: 'Series numéricas',
+        enunciado: '¿Qué número falta? 1, 2, 4, 8, ?, 32',
+        opciones: ['12', '14', '16', '20'],
+        correcta: '16',
+        explicacion: 'La serie multiplica por 2. 8 × 2 = 16.'
+      },
+      {
+        id: 5, bloque: 'Operaciones básicas',
+        enunciado: '¿Cuánto es 3/4 de 120?',
+        opciones: ['80', '85', '90', '95'],
+        correcta: '90',
+        explicacion: '120 × 0.75 = 90.'
+      },
+      {
+        id: 6, bloque: 'Problemas aplicados',
+        enunciado: 'Un vuelo dura 12 horas y 45 minutos. Sale a las 08:30. ¿A qué hora llega?',
+        opciones: ['20:45', '21:00', '21:15', '21:30'],
+        correcta: '21:15',
+        explicacion: '08:30 + 12h = 20:30, + 45min = 21:15.'
+      },
+      {
+        id: 7, bloque: 'Series numéricas',
+        enunciado: '¿Qué número continúa? 100, 91, 82, 73, ?',
+        opciones: ['60', '62', '64', '66'],
+        correcta: '64',
+        explicacion: 'La serie resta 9 en cada paso. 73 − 9 = 64.'
+      },
+      {
+        id: 8, bloque: 'Operaciones básicas',
+        enunciado: 'Un producto cuesta €240 con 20% de descuento aplicado. ¿Cuál era el precio original?',
+        opciones: ['€280', '€290', '€300', '€310'],
+        correcta: '€300',
+        explicacion: 'Si €240 es el 80% del precio, el 100% es 240 / 0.80 = 300.'
+      },
+      {
+        id: 9, bloque: 'Proporciones',
+        enunciado: 'Si 5 trabajadores hacen una tarea en 8 días, ¿cuántos días necesitarán 10 trabajadores?',
+        opciones: ['2', '3', '4', '5'],
+        correcta: '4',
+        explicacion: 'Al doble de trabajadores, la mitad de días. 8 ÷ 2 = 4.'
+      },
+      {
+        id: 10, bloque: 'Series numéricas',
+        enunciado: '¿Qué número sigue? 3, 6, 11, 18, 27, ?',
+        opciones: ['36', '38', '40', '42'],
+        correcta: '38',
+        explicacion: 'Los saltos son +3, +5, +7, +9, +11. 27 + 11 = 38.'
+      },
+      {
+        id: 11, bloque: 'Problemas aplicados',
+        enunciado: 'En una empresa de 200 empleados, el 35% son mujeres. ¿Cuántas mujeres hay?',
+        opciones: ['60', '65', '70', '75'],
+        correcta: '70',
+        explicacion: '200 × 0.35 = 70.'
+      },
+      {
+        id: 12, bloque: 'Proporciones',
+        enunciado: 'Ana hace 30 km/h en bicicleta. ¿Cuánto tiempo tarda en recorrer 45 km?',
+        opciones: ['1 hora', '1h 15min', '1h 30min', '2 horas'],
+        correcta: '1h 30min',
+        explicacion: '45 ÷ 30 = 1.5 horas = 1h 30min.'
+      },
+      {
+        id: 13, bloque: 'Operaciones básicas',
+        enunciado: '¿Cuánto es (48 ÷ 6) × 7?',
+        opciones: ['52', '54', '56', '58'],
+        correcta: '56',
+        explicacion: '48 ÷ 6 = 8. 8 × 7 = 56.'
+      },
+      {
+        id: 14, bloque: 'Problemas aplicados',
+        enunciado: 'Un candidato obtuvo 12 puntos de 15 posibles. ¿Qué porcentaje es eso?',
+        opciones: ['75%', '78%', '80%', '82%'],
+        correcta: '80%',
+        explicacion: '12 / 15 = 0.80 = 80%.'
+      },
+      {
+        id: 15, bloque: 'Series numéricas',
+        enunciado: '¿Qué número continúa? 1, 1, 2, 3, 5, 8, ?',
+        opciones: ['11', '12', '13', '14'],
+        correcta: '13',
+        explicacion: 'Es la secuencia de Fibonacci: cada número es la suma de los dos anteriores. 5 + 8 = 13.'
+      }
+    ];
+
+    const RANGOS = [
+      { min: 0, max: 5, nivel: 'Nivel inicial 🌱', consejo: 'Practicá cálculo mental a diario: porcentajes, divisiones y series simples. Usá apps como Khan Academy o Brilliant para entrenar.' },
+      { min: 6, max: 10, nivel: 'Nivel intermedio 📈', consejo: 'Tu base numérica es sólida. Enfocate en problemas aplicados: regla de tres, tasas y tiempo/velocidad/distancia.' },
+      { min: 11, max: 15, nivel: 'Nivel avanzado 🏆', consejo: '¡Excelente! Tu razonamiento numérico es muy competitivo. Practicá la velocidad para rendir bien en tests cronometrados.' }
+    ];
+
+    let currentQuestionIndex = 0;
+    let answers = [];
+    let selectedOption = null;
+    let currentShuffledOptions = [];
+
+    const app = document.getElementById('app');
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function renderWelcome() {
+      app.innerHTML = `
+        <div class="welcome-screen fade-in">
+          <svg class="welcome-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="10" width="60" height="80" rx="8" fill="#e0f2fe" stroke="#2563eb" stroke-width="4"/>
+            <rect x="30" y="25" width="40" height="15" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="3"/>
+            <circle cx="35" cy="55" r="5" fill="#2563eb"/>
+            <circle cx="50" cy="55" r="5" fill="#2563eb"/>
+            <circle cx="65" cy="55" r="5" fill="#2563eb"/>
+            <circle cx="35" cy="70" r="5" fill="#2563eb"/>
+            <circle cx="50" cy="70" r="5" fill="#2563eb"/>
+            <circle cx="65" cy="70" r="5" fill="#2563eb"/>
+            <path d="M75 15 L85 5 L80 20 Z" fill="#f97316"/>
+          </svg>
+          <div class="badge">⚡ Test 2 de 5 · Numérico</div>
+          <h1>¿Qué tan rápido <span>calculás?</span></h1>
+          <p class="description">15 preguntas de cálculo, porcentajes, series y problemas numéricos. El tipo de test más usado en procesos de selección europeos.</p>
+          <div class="info-pills">
+            <div class="info-pill">🕐 ~10 minutos</div>
+            <div class="info-pill">📊 15 preguntas</div>
+            <div class="info-pill">🔢 Numérico</div>
+          </div>
+          <button class="btn" onclick="startTest()">Comenzar Test</button>
+        </div>
+      `;
+    }
+
+    function startTest() {
+      currentQuestionIndex = 0;
+      answers = [];
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = PREGUNTAS[currentQuestionIndex];
+      selectedOption = null;
+      currentShuffledOptions = shuffle(q.opciones);
+
+      const progressPercent = ((currentQuestionIndex) / PREGUNTAS.length) * 100;
+      const letters = ['A', 'B', 'C', 'D'];
+
+      let optionsHtml = currentShuffledOptions.map((opt, idx) => `
+        <div class="option-card" onclick="selectOption('${opt.replace(/'/g, "\\'")}')" id="opt-${idx}">
+          <div class="option-letter">${letters[idx]}</div>
+          <div>${opt}</div>
+        </div>
+      `).join('');
+
+      app.innerHTML = `
+        <div class="question-screen fade-in">
+          <div class="progress-text">Pregunta ${currentQuestionIndex + 1} de ${PREGUNTAS.length}</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${progressPercent}%"></div>
+          </div>
+          
+          <h2 class="question-title">${q.enunciado}</h2>
+          
+          <div class="options-grid">
+            ${optionsHtml}
+          </div>
+        </div>
+        
+        <div class="bottom-bar">
+          <div class="container">
+            <button id="btn-continue" class="btn" disabled onclick="handleContinue()">Continuar &rarr;</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function selectOption(opt) {
+      selectedOption = opt;
+      const cards = document.querySelectorAll('.option-card');
+      cards.forEach(card => card.classList.remove('selected'));
+      
+      const index = currentShuffledOptions.indexOf(opt);
+      if (index !== -1) {
+        document.getElementById(`opt-${index}`).classList.add('selected');
+      }
+      
+      document.getElementById('btn-continue').disabled = false;
+    }
+
+    function handleContinue() {
+      if (selectedOption === null) return;
+      
+      const q = PREGUNTAS[currentQuestionIndex];
+      const isCorrect = selectedOption === q.correcta;
+      
+      answers.push({
+        pregunta: q,
+        selectedOption,
+        isCorrect
+      });
+
+      currentQuestionIndex++;
+
+      if (currentQuestionIndex === 5) {
+        renderInterstitial('🔥', '¡Excelente ritmo!', 'Superaste la primera parte. Ahora vienen porcentajes y problemas más complejos.');
+      } else if (currentQuestionIndex === 10) {
+        renderInterstitial('🎯', '¡Casi terminas!', 'Últimas 5 preguntas. Mantenete concentrado, estás muy cerca del resultado.');
+      } else if (currentQuestionIndex >= PREGUNTAS.length) {
+        renderResults();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function renderInterstitial(emoji, title, msg) {
+      app.innerHTML = `
+        <div class="interstitial-screen fade-in">
+          <div class="interstitial-emoji">${emoji}</div>
+          <h1>${title}</h1>
+          <p class="description">${msg}</p>
+          <button class="btn" onclick="renderQuestion()">Continuar</button>
+        </div>
+      `;
+    }
+
+    function renderResults() {
+      const correctas = answers.filter(a => a.isCorrect).length;
+      let rango = RANGOS.find(r => correctas >= r.min && correctas <= r.max);
+      if (!rango) rango = RANGOS[0];
+
+      let reviewsHtml = answers.map((a, idx) => `
+        <div class="review-item">
+          <div class="review-header">
+            <strong>Pregunta ${idx + 1}</strong>
+            <span class="review-status ${a.isCorrect ? 'status-correct' : 'status-incorrect'}">
+              ${a.isCorrect ? '✓ Correcto' : '✗ Incorrecto'}
+            </span>
+          </div>
+          <p>${a.pregunta.enunciado}</p>
+          <div class="review-explanation">
+            <strong>Explicación:</strong> ${a.pregunta.explicacion}<br/>
+            ${!a.isCorrect ? `<em>Tu respuesta: ${a.selectedOption} | Correcta: ${a.pregunta.correcta}</em>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      app.innerHTML = `
+        <div class="results-screen fade-in" style="padding-bottom: 2rem;">
+          <div class="score-card">
+            <div class="badge">${rango.nivel}</div>
+            <div class="score-value">${correctas}<span class="score-total">/${PREGUNTAS.length}</span></div>
+            <p class="description">${rango.consejo}</p>
+          </div>
+          
+          <h3>Revisión de respuestas</h3>
+          <div class="review-list">
+            ${reviewsHtml}
+          </div>
+          
+          <div class="actions-row">
+            <button class="btn btn-outline" onclick="window.location.href='index.html'">&larr; Inicio</button>
+            <button class="btn" onclick="startTest()">Volver a hacer el test</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Initialize
+    renderWelcome();
+  </script>
+</body>
+</html>
