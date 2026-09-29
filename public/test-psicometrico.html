@@ -3,147 +3,873 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Psicométrico de Idoneidad | PuentesGlobales</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <script src="config.js"></script>
+    <title>Test Psicométrico - PuentesGlobales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        body { background: var(--bg); color: var(--primary); padding-bottom: 4rem; }
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; border-bottom: 1px solid #e2e8f0; }
-        .logo { font-weight: 800; font-size: 1.5rem; }
-        .container { max-width: 800px; margin: 3rem auto; padding: 0 1.5rem; }
-        .card { background: var(--card); border-radius: 24px; padding: 2.5rem; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
-        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.75rem; }
-        p.subtitle { color: #64748b; font-size: 1.05rem; margin-bottom: 2rem; }
-        .q-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem; }
-        .q-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; }
-        .option-lbl { display: flex; align-items: center; gap: 0.75rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 0.75rem; cursor: pointer; transition: border 0.2s; }
-        .option-lbl:hover { border-color: var(--accent); }
-        .option-lbl input { width: auto; margin: 0; }
-        .btn-submit { background: var(--accent); color: white; border: none; padding: 1rem 2.5rem; border-radius: 100px; font-weight: 700; font-size: 1.1rem; cursor: pointer; width: 100%; margin-top: 1rem; }
-        .result-box { display: none; text-align: center; }
-        .dim-bar { background: #e2e8f0; border-radius: 100px; height: 12px; overflow: hidden; margin-top: 0.4rem; }
-        .dim-fill { background: var(--accent); height: 100%; width: 0%; transition: width 0.6s ease; }
+        :root {
+            --blue: #2563eb;
+            --blue-hover: #1d4ed8;
+            --text: #0f172a;
+            --muted: #64748b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --primary-bg: #eff6ff;
+            --accent: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: white;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--blue);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .logo span {
+            color: var(--text);
+        }
+
+        .nav-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Welcome Screen */
+        .welcome-card {
+            background: var(--card-bg);
+            border-radius: 1.5rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            background: var(--primary-bg);
+            color: var(--blue);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-card h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            color: var(--text);
+        }
+
+        .welcome-card h1 span {
+            color: var(--blue);
+        }
+
+        .welcome-card p {
+            color: var(--muted);
+            font-size: 1.125rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .info-pills {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            border-radius: 3rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn:disabled {
+            background: var(--muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.5;
+        }
+
+        .svg-container {
+            margin: 0 auto 2rem;
+            width: 140px;
+            height: 140px;
+            background: var(--primary-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Question Screen */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .question-text {
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option-card {
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: white;
+            position: relative;
+        }
+
+        .option-card:hover {
+            border-color: #cbd5e1;
+            background: var(--bg);
+        }
+
+        .option-card.selected {
+            border-color: var(--blue);
+            background: var(--primary-bg);
+        }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--muted);
+        }
+
+        .option-card.selected .option-letter {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+
+        .option-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            z-index: 20;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.02);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bottom-actions.show {
+            transform: translateY(0);
+        }
+
+        /* Results Screen */
+        .results-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: conic-gradient(var(--blue) 0%, var(--border) 0%);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 0 0 15px var(--bg);
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .score-value {
+            position: relative;
+            z-index: 1;
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .dimension-bar-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .dim-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .dim-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .dim-fill {
+            height: 100%;
+            background: var(--blue);
+            border-radius: 4px;
+            transition: width 1s ease-out;
+        }
+
+        /* Interstitial Screen */
+        .interstitial {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .interstitial-emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .interstitial-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .welcome-card { padding: 2rem 1.5rem; }
+            .question-card { padding: 1.5rem; }
+            .option-card { padding: 1rem; }
+            .bottom-actions { padding: 1rem; }
+            nav { padding: 1rem; }
+            .logo span { display: none; }
+        }
     </style>
 </head>
 <body>
     <nav>
-        <div class="logo">PuentesGlobales.</div>
-        <a href="index.html" style="text-decoration:none; color:inherit; font-weight:600">← Volver al Inicio</a>
+        <a href="index.html" class="logo">Puentes<span>Globales.</span></a>
+        <a href="index.html" class="nav-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Volver al inicio
+        </a>
     </nav>
 
-    <div class="container">
-        <div class="card">
-            <h1>🧠 Test Psicométrico de Idoneidad Laboral</h1>
-            <p class="subtitle">Evalúa tu nivel de adaptabilidad, autonomía y resiliencia para trabajar en Europa.</p>
-
-            <form id="quiz-form" onsubmit="submitQuiz(event)">
-                <div id="questions-container">Cargando evaluación...</div>
-                <button type="submit" class="btn-submit" id="btn-quiz">📊 Obtener Diagnóstico Psicométrico</button>
-            </form>
-
-            <div id="quiz-results" class="result-box">
-                <h2 style="font-size: 2rem; color: var(--accent); margin-bottom: 0.5rem" id="res-score">0%</h2>
-                <h3 id="res-diag" style="margin-bottom: 2rem">Diagnóstico</h3>
-
-                <div style="text-align: left; background: #f8fafc; padding: 1.5rem; border-radius: 16px; margin-bottom: 1.5rem">
-                    <div style="margin-bottom: 1rem">
-                        <span>Adaptabilidad Cultural: <b id="d-adapt">0%</b></span>
-                        <div class="dim-bar"><div class="dim-fill" id="fill-adapt"></div></div>
-                    </div>
-                    <div style="margin-bottom: 1rem">
-                        <span>Comunicación Multicultural: <b id="d-com">0%</b></span>
-                        <div class="dim-bar"><div class="dim-fill" id="fill-com"></div></div>
-                    </div>
-                    <div style="margin-bottom: 1rem">
-                        <span>Autonomía y Resiliencia: <b id="d-auto">0%</b></span>
-                        <div class="dim-bar"><div class="dim-fill" id="fill-auto"></div></div>
-                    </div>
-                    <div>
-                        <span>Motivación al Logro: <b id="d-mot">0%</b></span>
-                        <div class="dim-bar"><div class="dim-fill" id="fill-mot"></div></div>
-                    </div>
+    <main>
+        <!-- Pantalla 1: Bienvenida -->
+        <div id="screen-welcome" class="screen active">
+            <div class="welcome-card">
+                <div class="badge">🧠 Test 5 de 5 · Psicométrico</div>
+                <div class="svg-container">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-dasharray="2 4"/>
+                        <path d="M12 2a10 10 0 0 0-10 10" stroke="var(--blue)"/>
+                    </svg>
+                </div>
+                <h1>Test Psicométrico de <span>Idoneidad</span></h1>
+                <p>Evalúa tu adaptabilidad cultural, resiliencia y habilidades comunicativas frente a escenarios laborales reales en Europa mediante un formato de juicio situacional (SJT).</p>
+                
+                <div class="info-pills">
+                    <div class="pill"><span>🕐</span> ~8 minutos</div>
+                    <div class="pill"><span>📊</span> 12 situaciones</div>
+                    <div class="pill"><span>🇪🇺</span> Estándar Europeo</div>
                 </div>
 
-                <a href="search-results.html" class="btn-submit" style="display:inline-block; text-decoration:none">🔍 Buscar Empleos Recomendados</a>
+                <button class="btn" onclick="startTest()">
+                    Empezar Test
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
             </div>
         </div>
+
+        <!-- Pantalla 2: Pregunta -->
+        <div id="screen-question" class="screen">
+            <div class="progress-text" id="progress-text">Situación 1 de 12</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            
+            <div class="badge" id="block-badge" style="background: var(--bg); border: 1px solid var(--border); color: var(--muted); margin-bottom: 1rem;">
+                Adaptabilidad Cultural
+            </div>
+
+            <div class="question-card">
+                <h2 class="question-text" id="question-text">...</h2>
+                <div class="options-grid" id="options-container">
+                    <!-- Opciones inyectadas por JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla Intersticial -->
+        <div id="screen-interstitial" class="screen">
+            <div class="interstitial">
+                <div class="interstitial-emoji" id="inter-emoji">🔥</div>
+                <h2 class="interstitial-title" id="inter-title">¡Gran progreso!</h2>
+                <p id="inter-msg" style="color: var(--muted); font-size: 1.25rem;">Vamos a la siguiente sección.</p>
+                <button class="btn" style="margin-top: 2rem;" onclick="nextQuestion()">Continuar</button>
+            </div>
+        </div>
+
+        <!-- Pantalla 3: Resultados -->
+        <div id="screen-results" class="screen">
+            <div class="question-card" style="padding: 3rem 2rem;">
+                <div class="results-header">
+                    <div class="badge">Resultados del Test Psicométrico</div>
+                    <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem;">Tu Nivel de Idoneidad</h2>
+                    <p style="color: var(--muted); margin-bottom: 2rem;">Basado en tus respuestas a las situaciones laborales.</p>
+                </div>
+
+                <div class="score-circle" id="score-circle">
+                    <div class="score-value" id="score-value">0%</div>
+                </div>
+
+                <h3 style="text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem;" id="result-level">Nivel</h3>
+                <p style="text-align: center; color: var(--muted); margin-bottom: 3rem; max-width: 500px; margin-left: auto; margin-right: auto;" id="result-desc">Descripción...</p>
+
+                <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Desglose por Competencias</h3>
+
+                <div class="dimension-bar-container">
+                    <div class="dim-header">
+                        <span>Adaptabilidad Cultural</span>
+                        <span id="score-adapt">0%</span>
+                    </div>
+                    <div class="dim-bar"><div class="dim-fill" id="bar-adapt" style="width: 0%"></div></div>
+                </div>
+                
+                <div class="dimension-bar-container">
+                    <div class="dim-header">
+                        <span>Comunicación Multicultural</span>
+                        <span id="score-com">0%</span>
+                    </div>
+                    <div class="dim-bar"><div class="dim-fill" id="bar-com" style="width: 0%"></div></div>
+                </div>
+                
+                <div class="dimension-bar-container">
+                    <div class="dim-header">
+                        <span>Autonomía y Resiliencia</span>
+                        <span id="score-auto">0%</span>
+                    </div>
+                    <div class="dim-bar"><div class="dim-fill" id="bar-auto" style="width: 0%"></div></div>
+                </div>
+
+                <div class="dimension-bar-container" style="margin-bottom: 3rem;">
+                    <div class="dim-header">
+                        <span>Motivación al Logro</span>
+                        <span id="score-mot">0%</span>
+                    </div>
+                    <div class="dim-bar"><div class="dim-fill" id="bar-mot" style="width: 0%"></div></div>
+                </div>
+
+                <div style="text-align: center;">
+                    <a href="index.html" class="btn" style="background: white; color: var(--text); border: 2px solid var(--border);">
+                        Volver al inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Barra inferior fija para botón Continuar -->
+    <div class="bottom-actions" id="bottom-bar">
+        <button class="btn" id="btn-next" onclick="handleNextClick()" style="width: 100%; max-width: 400px; justify-content: center;">
+            Confirmar y Continuar
+        </button>
     </div>
 
     <script>
-        let loadedQuestions = [];
+        const PREGUNTAS = [
+            // ADAPTABILIDAD CULTURAL
+            {
+                id: 1,
+                bloque: 'Adaptabilidad Cultural',
+                enunciado: 'En tu primera semana en Alemania, notas que tus compañeros son muy directos y corrigen tu trabajo frente a otros sin rodeos. ¿Cómo reaccionas?',
+                opciones: [
+                    { texto: 'Me ofendo en silencio y trato de evitarlos.', puntos: 0 },
+                    { texto: 'Entiendo que es un estilo cultural diferente y tomo el feedback constructivamente.', puntos: 3 },
+                    { texto: 'Les pido que por favor me hagan las correcciones en privado.', puntos: 2 },
+                    { texto: 'Empiezo a corregirlos yo también de la misma manera agresiva.', puntos: 1 }
+                ]
+            },
+            {
+                id: 2,
+                bloque: 'Adaptabilidad Cultural',
+                enunciado: 'La empresa en Europa tiene horarios muy estrictos: se almuerza a las 12:00 en punto y la oficina cierra a las 17:00. En tu país solías almorzar a las 14:00 y trabajar hasta tarde.',
+                opciones: [
+                    { texto: 'Intento mantener mi horario habitual almorzando solo a las 14:00.', puntos: 0 },
+                    { texto: 'Me adapto al nuevo horario gradualmente y almuerzo con el equipo a las 12:00.', puntos: 3 },
+                    { texto: 'Solicito a RRHH una excepción para mantener mi rutina.', puntos: 1 },
+                    { texto: 'Me quejo con mis compañeros sobre lo temprano que almuerzan.', puntos: 0 }
+                ]
+            },
+            {
+                id: 3,
+                bloque: 'Adaptabilidad Cultural',
+                enunciado: 'Te invitan a un "After Work" (evento después del trabajo) donde solo se habla el idioma local, el cual aún estás aprendiendo. ¿Qué haces?',
+                opciones: [
+                    { texto: 'No asisto para evitar momentos incómodos.', puntos: 0 },
+                    { texto: 'Voy pero me quedo callado toda la noche.', puntos: 1 },
+                    { texto: 'Asisto, intento hablar lo básico y pido amablemente si alguien puede traducir cuando me pierdo.', puntos: 3 },
+                    { texto: 'Asisto y exijo que todos hablen inglés para que yo pueda entender.', puntos: 0 }
+                ]
+            },
+            
+            // COMUNICACIÓN MULTICULTURAL
+            {
+                id: 4,
+                bloque: 'Comunicación Multicultural',
+                enunciado: 'Envías un email urgente a un cliente en Holanda, pero su respuesta es extremadamente breve (solo un "Sí, procedemos").',
+                opciones: [
+                    { texto: 'Asumo que el cliente está molesto conmigo.', puntos: 0 },
+                    { texto: 'Comprendo que la comunicación escrita en ciertas culturas prioriza la eficiencia sobre la formalidad.', puntos: 3 },
+                    { texto: 'Le envío otro email pidiendo más detalles para asegurarme de que no esté enojado.', puntos: 1 },
+                    { texto: 'Respondo con un mensaje igual de cortante.', puntos: 0 }
+                ]
+            },
+            {
+                id: 5,
+                bloque: 'Comunicación Multicultural',
+                enunciado: 'Estás en una videollamada con un equipo del norte de Europa. Hay largos silencios después de que alguien habla.',
+                opciones: [
+                    { texto: 'Me pongo nervioso y empiezo a hablar para llenar el silencio.', puntos: 0 },
+                    { texto: 'Asumo que la conexión a internet falló y cuelgo.', puntos: 0 },
+                    { texto: 'Respeto las pausas, entendiendo que se toman tiempo para procesar la información antes de responder.', puntos: 3 },
+                    { texto: 'Les pregunto constantemente si me escuchan bien.', puntos: 1 }
+                ]
+            },
+            {
+                id: 6,
+                bloque: 'Comunicación Multicultural',
+                enunciado: 'Un manager británico te dice: "Sería interesante que consideres otra perspectiva" respecto a tu propuesta.',
+                opciones: [
+                    { texto: 'Creo que le gustó mi propuesta pero solo quiere que investigue más.', puntos: 1 },
+                    { texto: 'Entiendo que es una forma educada de rechazar o criticar mi idea y pido feedback para mejorarla.', puntos: 3 },
+                    { texto: 'Ignoro el comentario y sigo adelante con mi propuesta.', puntos: 0 },
+                    { texto: 'Me rindo y no presento más propuestas.', puntos: 0 }
+                ]
+            },
 
-        async function loadQuestions() {
-            try {
-                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
-                const res = await fetch(`${apiBase}/psychometric/questions`);
-                const data = await res.json();
+            // AUTONOMÍA Y RESILIENCIA
+            {
+                id: 7,
+                bloque: 'Autonomía y Resiliencia',
+                enunciado: 'Es tu primer mes y te asignan un proyecto con instrucciones muy generales. Tu manager está de vacaciones.',
+                opciones: [
+                    { texto: 'Espero a que vuelva el manager para empezar a trabajar.', puntos: 0 },
+                    { texto: 'Hago lo mínimo posible para no equivocarme.', puntos: 1 },
+                    { texto: 'Investigo por mi cuenta, tomo decisiones preliminares e informo el progreso por email.', puntos: 3 },
+                    { texto: 'Le escribo a su WhatsApp personal durante sus vacaciones exigiéndole claridad.', puntos: 0 }
+                ]
+            },
+            {
+                id: 8,
+                bloque: 'Autonomía y Resiliencia',
+                enunciado: 'Cometes un error técnico importante que retrasa la entrega de tu equipo.',
+                opciones: [
+                    { texto: 'Trato de ocultar el error para que nadie se dé cuenta.', puntos: 0 },
+                    { texto: 'Culpo a la falta de inducción y capacitación de la empresa.', puntos: 0 },
+                    { texto: 'Aviso inmediatamente a mi equipo, propongo una solución y trabajo extra para arreglarlo.', puntos: 3 },
+                    { texto: 'Pido disculpas pero espero que otra persona lo solucione.', puntos: 1 }
+                ]
+            },
+            {
+                id: 9,
+                bloque: 'Autonomía y Resiliencia',
+                enunciado: 'Los meses de invierno en tu nuevo país tienen muy pocas horas de luz, lo cual está afectando tu estado de ánimo y energía.',
+                opciones: [
+                    { texto: 'Empiezo a faltar al trabajo argumentando enfermedad.', puntos: 0 },
+                    { texto: 'Busco actividades indoor, tomo vitaminas y trato de mantener una rutina activa para compensar.', puntos: 3 },
+                    { texto: 'Me quejo constantemente en la oficina sobre el clima.', puntos: 0 },
+                    { texto: 'Considero renunciar y volver a mi país inmediatamente.', puntos: 1 }
+                ]
+            },
 
-                if (data.success) {
-                    loadedQuestions = data.questions;
-                    const container = document.getElementById('questions-container');
-                    container.innerHTML = loadedQuestions.map((q, qIdx) => `
-                        <div class="q-card">
-                            <div class="q-title">${qIdx + 1}. ${q.question}</div>
-                            ${q.options.map((opt, oIdx) => `
-                                <label class="option-lbl">
-                                    <input type="radio" name="q_${q.id}" value="${opt.index}" required>
-                                    <span>${opt.text}</span>
-                                </label>
-                            `).join('')}
-                        </div>
-                    `).join('');
-                }
-            } catch (err) {
-                document.getElementById('questions-container').innerText = 'Error al cargar preguntas psicométricas.';
+            // MOTIVACIÓN AL LOGRO
+            {
+                id: 10,
+                bloque: 'Motivación al Logro',
+                enunciado: 'La empresa ofrece un curso gratuito de certificación después del horario laboral, pero requiere dedicar 4 horas a la semana.',
+                opciones: [
+                    { texto: 'No lo tomo porque mi tiempo libre es sagrado.', puntos: 0 },
+                    { texto: 'Me inscribo porque sé que me ayudará a ascender a mediano plazo, organizando mi tiempo.', puntos: 3 },
+                    { texto: 'Me inscribo pero falto a la mitad de las clases por cansancio.', puntos: 1 },
+                    { texto: 'Exijo que me paguen horas extra por hacer el curso.', puntos: 0 }
+                ]
+            },
+            {
+                id: 11,
+                bloque: 'Motivación al Logro',
+                enunciado: 'Terminas tus tareas del día a las 15:00. Tu jornada termina a las 17:00.',
+                opciones: [
+                    { texto: 'Navego por internet y hago tiempo hasta las 17:00.', puntos: 0 },
+                    { texto: 'Me voy a casa temprano sin avisar a nadie.', puntos: 0 },
+                    { texto: 'Aviso a mi manager que terminé y le pregunto si puedo ayudar en otro proyecto o adelantar trabajo.', puntos: 3 },
+                    { texto: 'Ayudo a un compañero pero luego le exijo que haga mi trabajo al día siguiente.', puntos: 1 }
+                ]
+            },
+            {
+                id: 12,
+                bloque: 'Motivación al Logro',
+                enunciado: 'En la evaluación de desempeño anual, te indican que tus habilidades técnicas son excelentes pero te falta liderazgo.',
+                opciones: [
+                    { texto: 'Me enojo porque creo que el liderazgo no es importante para mi puesto técnico.', puntos: 0 },
+                    { texto: 'Pido ejemplos concretos y me comprometo a tomar un curso o mentoría sobre liderazgo.', puntos: 3 },
+                    { texto: 'Acepto la crítica pero no hago nada al respecto.', puntos: 1 },
+                    { texto: 'Amenazo con buscar otro empleo donde valoren solo la parte técnica.', puntos: 0 }
+                ]
+            }
+        ];
+
+        let currentIndex = 0;
+        let selectedOption = null;
+        let answers = [];
+        
+        const ui = {
+            screenWelcome: document.getElementById('screen-welcome'),
+            screenQuestion: document.getElementById('screen-question'),
+            screenInterstitial: document.getElementById('screen-interstitial'),
+            screenResults: document.getElementById('screen-results'),
+            progressText: document.getElementById('progress-text'),
+            progressFill: document.getElementById('progress-fill'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            bottomBar: document.getElementById('bottom-bar'),
+            blockBadge: document.getElementById('block-badge'),
+            btnNext: document.getElementById('btn-next')
+        };
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if(screenId !== 'screen-question') ui.bottomBar.classList.remove('show');
+        }
+
+        function startTest() {
+            currentIndex = 0;
+            answers = [];
+            showScreen('screen-question');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = PREGUNTAS[currentIndex];
+            selectedOption = null;
+            ui.bottomBar.classList.remove('show');
+            
+            ui.progressText.innerText = `Situación ${currentIndex + 1} de ${PREGUNTAS.length}`;
+            ui.progressFill.style.width = `${((currentIndex) / PREGUNTAS.length) * 100}%`;
+            
+            ui.blockBadge.innerText = `Dimensión: ${q.bloque}`;
+            ui.questionText.innerText = q.enunciado;
+            
+            ui.optionsContainer.innerHTML = '';
+            
+            // Randomize options visually
+            let ops = [...q.opciones];
+            ops.sort(() => Math.random() - 0.5);
+
+            const letters = ['A', 'B', 'C', 'D'];
+
+            ops.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = 'option-card';
+                div.innerHTML = `
+                    <div class="option-letter">${letters[idx]}</div>
+                    <div class="option-text">${opt.texto}</div>
+                `;
+                div.onclick = () => selectOption(div, opt.puntos);
+                ui.optionsContainer.appendChild(div);
+            });
+        }
+
+        function selectOption(el, puntos) {
+            document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedOption = { puntos: puntos, category: PREGUNTAS[currentIndex].bloque };
+            ui.bottomBar.classList.add('show');
+        }
+
+        function handleNextClick() {
+            if (selectedOption === null) return;
+            
+            answers.push(selectedOption);
+
+            if (currentIndex === 5) {
+                showInterstitial('🔥', '¡Excelente ritmo!', 'Superaste la primera mitad. Analicemos cómo enfrentas desafíos y autonomía.');
+            } else if (currentIndex < PREGUNTAS.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                finishTest();
             }
         }
 
-        async function submitQuiz(e) {
-            e.preventDefault();
-            const answers = loadedQuestions.map(q => {
-                const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
-                return { questionId: q.id, optionIndex: selected ? parseInt(selected.value) : 0 };
+        function showInterstitial(emoji, title, msg) {
+            showScreen('screen-interstitial');
+            document.getElementById('inter-emoji').innerText = emoji;
+            document.getElementById('inter-title').innerText = title;
+            document.getElementById('inter-msg').innerText = msg;
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            showScreen('screen-question');
+            renderQuestion();
+        }
+
+        function finishTest() {
+            ui.progressFill.style.width = '100%';
+            setTimeout(() => {
+                showScreen('screen-results');
+                calculateResults();
+            }, 400);
+        }
+
+        function calculateResults() {
+            // max score per category is 3 * 3 = 9. Total max is 36.
+            let scores = {
+                'Adaptabilidad Cultural': 0,
+                'Comunicación Multicultural': 0,
+                'Autonomía y Resiliencia': 0,
+                'Motivación al Logro': 0
+            };
+
+            answers.forEach(a => {
+                scores[a.category] += a.puntos;
             });
 
-            try {
-                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
-                const res = await fetch(`${apiBase}/psychometric/submit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ answers })
-                });
+            // Convert to percentages (each category max is 9)
+            const percAdapt = Math.round((scores['Adaptabilidad Cultural'] / 9) * 100);
+            const percCom = Math.round((scores['Comunicación Multicultural'] / 9) * 100);
+            const percAuto = Math.round((scores['Autonomía y Resiliencia'] / 9) * 100);
+            const percMot = Math.round((scores['Motivación al Logro'] / 9) * 100);
 
-                const data = await res.json();
-                if (data.success) {
-                    const ev = data.evaluation;
-                    document.getElementById('quiz-form').style.display = 'none';
-                    document.getElementById('quiz-results').style.display = 'block';
+            const totalScore = Math.round(((percAdapt + percCom + percAuto + percMot) / 400) * 100);
 
-                    document.getElementById('res-score').innerText = `Idoneidad: ${ev.overallScore}%`;
-                    document.getElementById('res-diag').innerText = ev.diagnostic;
+            animateValue('score-value', 0, totalScore, 1000);
+            
+            const circle = document.getElementById('score-circle');
+            let angle = 0;
+            const interval = setInterval(() => {
+                angle += (totalScore / 100) * 3.6;
+                circle.style.background = `conic-gradient(var(--blue) ${angle}deg, var(--border) ${angle}deg)`;
+                if(angle >= (totalScore * 3.6)) clearInterval(interval);
+            }, 10);
 
-                    document.getElementById('d-adapt').innerText = `${ev.dimensions.adaptabilidad}%`;
-                    document.getElementById('fill-adapt').style.width = `${ev.dimensions.adaptabilidad}%`;
+            setTimeout(() => {
+                document.getElementById('bar-adapt').style.width = `${percAdapt}%`;
+                document.getElementById('score-adapt').innerText = `${percAdapt}%`;
+                
+                document.getElementById('bar-com').style.width = `${percCom}%`;
+                document.getElementById('score-com').innerText = `${percCom}%`;
+                
+                document.getElementById('bar-auto').style.width = `${percAuto}%`;
+                document.getElementById('score-auto').innerText = `${percAuto}%`;
+                
+                document.getElementById('bar-mot').style.width = `${percMot}%`;
+                document.getElementById('score-mot').innerText = `${percMot}%`;
+            }, 500);
 
-                    document.getElementById('d-com').innerText = `${ev.dimensions.comunicacion}%`;
-                    document.getElementById('fill-com').style.width = `${ev.dimensions.comunicacion}%`;
-
-                    document.getElementById('d-auto').innerText = `${ev.dimensions.autonomia}%`;
-                    document.getElementById('fill-auto').style.width = `${ev.dimensions.autonomia}%`;
-
-                    document.getElementById('d-mot').innerText = `${ev.dimensions.motivacion}%`;
-                    document.getElementById('fill-mot').style.width = `${ev.dimensions.motivacion}%`;
-                }
-            } catch (err) {
-                alert('No se pudo enviar la evaluación.');
+            let nivel, desc;
+            if (totalScore >= 85) {
+                nivel = "Perfil Altamente Competitivo 🏆";
+                desc = "Tienes una excelente madurez profesional, resiliencia y comprensión cultural. Estás completamente preparado/a para integrarte a un entorno de trabajo europeo exigente.";
+            } else if (totalScore >= 60) {
+                nivel = "Perfil Promedio / Adaptable 📈";
+                desc = "Tienes buenas bases para adaptarte a un nuevo país, pero deberás ser consciente de las diferencias culturales en comunicación y autonomía para evitar choques.";
+            } else {
+                nivel = "Perfil en Desarrollo 🌱";
+                desc = "Te recomendamos investigar más sobre la cultura laboral europea. Es fundamental trabajar tu resiliencia e independencia antes de dar un salto internacional.";
             }
+
+            document.getElementById('result-level').innerText = nivel;
+            document.getElementById('result-desc').innerText = desc;
         }
 
-        loadQuestions();
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start) + '%';
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
     </script>
-    <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->
-    <script src="alex-widget.js"></script>
 </body>
 </html>
