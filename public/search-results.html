@@ -23,6 +23,8 @@
             .btn-apply { width: 100%; text-align: center; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
 </head>
 <body>
 
@@ -85,7 +87,7 @@
             }
         }
 
-        fetchJobs();
+        PG_AUTH.requireAuth().then(fetchJobs);
     </script>
 
     <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->

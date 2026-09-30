@@ -532,6 +532,8 @@
         }
 
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
 </head>
 <body>
 
@@ -543,7 +545,7 @@
         <!-- Pantalla de Inicio -->
         <div class="screen active" id="screen-welcome">
             <div class="welcome-card">
-                <div class="badge">🧬 Test 4 de 5 · Personalidad Big 5</div>
+                <div class="badge">🧬 Test 4 de 6 · Personalidad Big 5</div>
                 <h1>¿Cómo sos <span>en el trabajo?</span></h1>
                 
                 <div class="welcome-svg">
@@ -670,12 +672,21 @@
             { id:13, dim:'E', enunciado:'Me siento con energía después de pasar tiempo con otras personas.' },
             { id:14, dim:'A', enunciado:'Confío en que la mayoría de las personas tienen buenas intenciones.' },
             { id:15, dim:'N', enunciado:'Raramente me siento nervioso o ansioso antes de una presentación o reunión importante.' },
-            { id:16, dim:'O', enunciado:'Me gustaría trabajar en un puesto que cambie y evolucione constantemente.' },
-            { id:17, dim:'C', enunciado:'Cuando tomo un compromiso, lo cumplo incluso si me cuesta esfuerzo.' },
-            { id:18, dim:'E', enunciado:'En reuniones de equipo, suelo ser de los primeros en dar una opinión o propuesta.' },
-            { id:19, dim:'A', enunciado:'Me importa que todo el equipo esté bien, no solo que yo tenga éxito individual.' },
-            { id:20, dim:'N', enunciado:'Generalmente, las críticas o contratiempos no me afectan por mucho tiempo.' }
+            // Ítems inversos (inv:true): controlan la tendencia a responder "de acuerdo" a todo.
+            { id:16, dim:'O', inv:true, enunciado:'Prefiero las tareas rutinarias y conocidas antes que probar formas nuevas de trabajar.' },
+            { id:17, dim:'C', inv:true, enunciado:'A veces dejo tareas a medias o las entrego sin revisarlas.' },
+            { id:18, dim:'E', inv:true, enunciado:'En reuniones de equipo prefiero escuchar y rara vez tomo la palabra.' },
+            { id:19, dim:'A', inv:true, enunciado:'Cuando alguien me contradice, suelo ponerme a la defensiva.' },
+            { id:20, dim:'N', inv:true, enunciado:'Me cuesta dejar de pensar en una crítica o un contratiempo durante días.' }
         ];
+
+        const INTERPRETACION = {
+            O: ['Preferís lo conocido y práctico; rendís bien en roles estables y con procesos claros.', 'Combinás apertura a lo nuevo con sentido práctico.', 'Muy curioso/a y creativo/a; te motivan los entornos cambiantes y los desafíos nuevos.'],
+            C: ['Más espontáneo/a y flexible; conviene reforzar la planificación y los plazos.', 'Organizado/a en lo importante, sin rigidez.', 'Muy organizado/a y confiable; muy valorado en culturas laborales como la alemana o la suiza.'],
+            E: ['Más reservado/a; rendís mejor en trabajo concentrado e individual.', 'Te movés bien tanto en equipo como en tareas individuales.', 'Muy sociable y enérgico/a; destacás en roles de contacto, ventas o liderazgo.'],
+            A: ['Directo/a y competitivo/a; cuidá el tono en equipos multiculturales.', 'Cooperativo/a sin dejar de defender tu postura.', 'Muy empático/a y colaborativo/a; facilitás el trabajo en equipo.'],
+            N: ['El estrés te afecta bastante; trabajar la gestión emocional te ayudará en la adaptación a otro país.', 'Manejás el estrés razonablemente bien.', 'Muy estable emocionalmente; clave para atravesar un proceso migratorio.']
+        };
 
         let currentQuestionIndex = 0;
         let scores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
@@ -704,8 +715,8 @@
             
             // Actualizar textos y progreso
             document.getElementById('question-text').innerText = q.enunciado;
-            document.getElementById('progress-text').innerText = \`Pregunta \${currentQuestionIndex + 1} de \${PREGUNTAS.length}\`;
-            document.getElementById('progress-fill').style.width = \`\${((currentQuestionIndex + 1) / PREGUNTAS.length) * 100}%\`;
+            document.getElementById('progress-text').innerText = `Pregunta ${currentQuestionIndex + 1} de ${PREGUNTAS.length}`;
+            document.getElementById('progress-fill').style.width = `${((currentQuestionIndex + 1) / PREGUNTAS.length) * 100}%`;
             
             // Reset opciones
             document.querySelectorAll('.likert-option').forEach(opt => {
@@ -730,8 +741,11 @@
             if (!selectedValue) return;
 
             // Guardar puntaje
-            const dim = PREGUNTAS[currentQuestionIndex].dim;
-            scores[dim] += selectedValue;
+            const q = PREGUNTAS[currentQuestionIndex];
+            scores[q.dim] += q.inv ? 6 - selectedValue : selectedValue;
+            // Evita que un doble clic durante la animación cuente la respuesta dos veces.
+            selectedValue = null;
+            document.getElementById('btn-next').disabled = true;
 
             currentQuestionIndex++;
             
@@ -752,10 +766,10 @@
             }
         }
 
-        function getInterpretation(percentage) {
-            if (percentage <= 40) return 'Perfil más reservado / estructurado';
-            if (percentage <= 70) return 'Perfil equilibrado';
-            return 'Perfil muy marcado en esta dimensión';
+        function getInterpretation(dim, percentage) {
+            if (percentage < 40) return INTERPRETACION[dim][0];
+            if (percentage <= 70) return INTERPRETACION[dim][1];
+            return INTERPRETACION[dim][2];
         }
 
         function showResults() {
@@ -763,32 +777,34 @@
             container.innerHTML = '';
 
             const keys = ['O', 'C', 'E', 'A', 'N'];
+            const total = keys.reduce((s, k) => s + scores[k], 0);
+            PG_AUTH.saveResult('personalidad', total, 100, { dimensiones: { ...scores } });
             
             keys.forEach(k => {
                 const dim = DIMENSIONES[k];
                 const score = scores[k];
-                const maxScore = 20; // 4 preguntas * 5 pts
-                const percent = Math.round((score / maxScore) * 100);
-                const interpretacion = getInterpretation(percent);
+                // 4 preguntas × escala 1–5 → rango real 4–20 (antes se dividía por 20 y el mínimo daba 20%)
+                const percent = Math.round(((score - 4) / 16) * 100);
+                const interpretacion = getInterpretation(k, percent);
 
                 const item = document.createElement('div');
                 item.className = 'dim-item';
-                item.innerHTML = \`
+                item.innerHTML = `
                     <div class="dim-header">
                         <div class="dim-title">
-                            <span class="dim-emoji">\${dim.emoji}</span>
-                            <span>\${dim.nombre}</span>
+                            <span class="dim-emoji">${dim.emoji}</span>
+                            <span>${dim.nombre}</span>
                         </div>
-                        <div class="dim-score">\${score}/20</div>
+                        <div class="dim-score">${score}/20</div>
                     </div>
-                    <p class="dim-desc">\${dim.desc}</p>
+                    <p class="dim-desc">${dim.desc}</p>
                     <div class="dim-bar-bg">
-                        <div class="dim-bar-fill" style="background-color: \${dim.color}; width: 0%" data-width="\${percent}%"></div>
+                        <div class="dim-bar-fill" style="background-color: ${dim.color}; width: 0%" data-width="${percent}%"></div>
                     </div>
-                    <div class="dim-interp" style="border-left-color: \${dim.color}">
-                        \${interpretacion}
+                    <div class="dim-interp" style="border-left-color: ${dim.color}">
+                        ${interpretacion}
                     </div>
-                \`;
+                `;
                 container.appendChild(item);
             });
 
@@ -802,5 +818,6 @@
             }, 100);
         }
     </script>
+<script>PG_AUTH.requireAuth();</script>
 </body>
 </html>

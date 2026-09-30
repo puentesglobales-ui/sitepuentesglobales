@@ -60,6 +60,17 @@ export class PsychometricEngine {
     }));
   }
 
+  // Puntaje máximo alcanzable por dimensión: la mejor opción de cada pregunta para esa dimensión.
+  static maxPerCategory() {
+    const max = { adaptabilidad: 0, comunicacion: 0, autonomia: 0, motivacion: 0 };
+    for (const q of PSYCHOMETRIC_QUESTIONS) {
+      for (const key of Object.keys(max)) {
+        max[key] += Math.max(...q.options.map(o => o.points[key] || 0));
+      }
+    }
+    return max;
+  }
+
   static evaluateTest(answers = []) {
     let scores = {
       adaptabilidad: 0,
@@ -78,12 +89,13 @@ export class PsychometricEngine {
       }
     });
 
-    const maxPerCategory = 6;
+    const max = PsychometricEngine.maxPerCategory();
+    const pct = key => Math.min(100, Math.round((scores[key] / max[key]) * 100));
     const percentages = {
-      adaptabilidad: Math.min(100, Math.round((scores.adaptabilidad / maxPerCategory) * 100)),
-      comunicacion: Math.min(100, Math.round((scores.comunicacion / maxPerCategory) * 100)),
-      autonomia: Math.min(100, Math.round((scores.autonomia / maxPerCategory) * 100)),
-      motivacion: Math.min(100, Math.round((scores.motivacion / maxPerCategory) * 100))
+      adaptabilidad: pct('adaptabilidad'),
+      comunicacion: pct('comunicacion'),
+      autonomia: pct('autonomia'),
+      motivacion: pct('motivacion')
     };
 
     const overallScore = Math.round(

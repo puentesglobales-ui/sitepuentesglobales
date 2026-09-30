@@ -396,6 +396,8 @@
             padding-bottom: 2rem;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
 </head>
 <body>
 
@@ -425,7 +427,7 @@
                 </svg>
             </div>
             
-            <div class="badge">🌍 Test 3 de 5 · Idiomas</div>
+            <div class="badge">🌍 Test 3 de 6 · Idiomas</div>
             
             <h1 class="title">¿Listo para trabajar <span>en Europa?</span></h1>
             
@@ -521,7 +523,7 @@
             {
                 id: 3, bloque: 'Inglés — Comprensión',
                 enunciado: 'Read: "The position requires fluency in English and basic knowledge of German." Which candidate is the best fit?',
-                opciones: ['Ana: speaks only Spanish', 'Bruno: speaks English and German fluently', 'Carla: speaks basic English and no German', 'Diego: speaks English fluently and knows some German'],
+                opciones: ['Ana: speaks only Spanish', 'Bruno: speaks German fluently and basic English', 'Carla: speaks basic English and no German', 'Diego: speaks English fluently and knows some German'],
                 correcta: 'Diego: speaks English fluently and knows some German',
                 explicacion: 'The job requires English fluency AND basic German. Diego meets both requirements exactly.'
             },
@@ -562,7 +564,7 @@
             },
             {
                 id: 9, bloque: 'Alemán — Vocabulario laboral',
-                enunciado: 'Was bedeutet "Bewerbung" auf Español? / ¿Qué significa "Bewerbung" en español?',
+                enunciado: 'Was bedeutet "Bewerbung" auf Spanisch? / ¿Qué significa "Bewerbung" en español?',
                 opciones: ['Contrato de trabajo', 'Postulación / Solicitud de empleo', 'Entrevista de trabajo', 'Carta de referencia'],
                 correcta: 'Postulación / Solicitud de empleo',
                 explicacion: '"Bewerbung" es el término alemán para "solicitud de empleo" o "postulación". Es la primera palabra que necesitás saber al buscar trabajo en Alemania.'
@@ -597,10 +599,10 @@
             },
             {
                 id: 14, bloque: 'Alemán — Situaciones reales',
-                enunciado: '¿Qué responderías si tu colega alemán te pregunta: "Haben Sie Fragen?"',
-                opciones: ['Ja, ich habe eine Frage. (Sí, tengo una pregunta.)', 'Nein, danke. (No, gracias.)', 'Ambas respuestas son correctas según el contexto.', 'Keine Antwort. (Sin respuesta.)'],
-                correcta: 'Ambas respuestas son correctas según el contexto.',
-                explicacion: '"Haben Sie Fragen?" significa "¿Tiene preguntas?". Podés responder afirmativamente (Ja) o negativamente (Nein) según la situación. Ambas son correctas.'
+                enunciado: 'Al final de una entrevista te preguntan: "Haben Sie noch Fragen an uns?" ¿Qué te están preguntando?',
+                opciones: ['Si tenés alguna pregunta para ellos', 'Si podés empezar mañana', 'Cuáles son tus expectativas salariales', 'Si tenés preguntas sobre el test técnico'],
+                correcta: 'Si tenés alguna pregunta para ellos',
+                explicacion: '"Haben Sie noch Fragen an uns?" = "¿Tiene alguna pregunta más para nosotros?". Conviene llevar 2–3 preguntas preparadas sobre el puesto o el equipo.'
             },
             {
                 id: 15, bloque: 'Alemán — Vocabulario laboral',
@@ -734,6 +736,7 @@
             
             const rango = RANGOS.find(r => correctCount >= r.min && correctCount <= r.max);
             document.getElementById('result-level').textContent = rango.nivel;
+            PG_AUTH.saveResult('idiomas', correctCount, PREGUNTAS.length, { nivel: rango.nivel, respuestas: userAnswers.map(a => a.respuesta) });
             document.getElementById('result-advice').textContent = rango.consejo;
             
             const reviewContainer = document.getElementById('review-container');
@@ -770,5 +773,6 @@
         }
 
     </script>
+<script>PG_AUTH.requireAuth();</script>
 </body>
 </html>

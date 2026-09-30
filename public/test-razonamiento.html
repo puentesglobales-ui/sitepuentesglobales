@@ -282,6 +282,8 @@
       .result-score { font-size: 4rem; }
     }
   </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
 </head>
 <body>
 
@@ -308,7 +310,7 @@
         <circle cx="57" cy="41" r="3" fill="#f97316"/>
       </svg>
 
-      <div class="welcome-badge">⚡ Test 1 de 5 · Razonamiento Lógico</div>
+      <div class="welcome-badge">⚡ Test 1 de 6 · Razonamiento Lógico</div>
       <h1 class="welcome-title">¿Cómo funciona<br>tu <span>lógica?</span></h1>
       <p class="welcome-desc">15 preguntas que evalúan series numéricas, figuras, analogías y deducciones. El mismo tipo de test que usan las empresas europeas en sus procesos de selección.</p>
 
@@ -482,7 +484,7 @@ const RANGOS = [
 
 // Messages between blocks
 const INTERSTITIALS = {
-  5: { emoji: "🎯", title: "¡Muy bien!", msg: "Completaste las series numéricas y figuras. Ahora vienen analogías y lógica más avanzada." },
+  5: { emoji: "🎯", title: "¡Muy bien!", msg: "Completaste el primer bloque. Siguen más series, figuras, analogías y deducciones." },
   10: { emoji: "🔥", title: "¡A mitad del test!", msg: "Llevas la mitad. Las siguientes preguntas combinan patrones y deducciones. ¡Vamos con todo!" }
 };
 
@@ -490,7 +492,7 @@ const INTERSTITIALS = {
 function getSVG(id) {
   const svgs = {
     pattern_2: `
-      <svg width="360" height="70" viewBox="0 0 360 70">
+      <svg width="370" height="70" viewBox="0 0 370 70">
         ${[0,1,2,3,4].map((i,idx) => {
           const x = 10 + idx * 62;
           const shapes = [
@@ -507,7 +509,7 @@ function getSVG(id) {
       </svg>`,
 
     pattern_5: `
-      <svg width="340" height="80" viewBox="0 0 340 80">
+      <svg width="340" height="100" viewBox="0 0 340 100">
         ${[
           {x:5,y:5,dot:'12,12'},
           {x:90,y:5,dot:'108,12'},
@@ -545,19 +547,17 @@ function getSVG(id) {
     pattern_11: `
       <svg width="370" height="70" viewBox="0 0 370 70">
         ${[
-          [35,10],   // up
-          [35,32],   // up-right 45°
-          [35,54],   // right 90°
-          [35,76.5], // down-right 135°
-        ].map(([size, angle_deg], i) => {
+          0,   // arriba
+          45,  // arriba-derecha
+          90,  // derecha
+          135, // abajo-derecha
+        ].map((angle_deg, i) => {
           const cx = 28 + i * 72, cy = 35;
-          const angle = (angle_deg * Math.PI) / 180;
-          const r = 18;
-          const tip = [cx + r*Math.sin(angle), cy - r*Math.cos(angle)];
-          const left = [cx + 8*Math.sin(angle - 2.4), cy - 8*Math.cos(angle - 2.4)];
-          const right = [cx + 8*Math.sin(angle + 2.4), cy - 8*Math.cos(angle + 2.4)];
-          return `<polygon points="${tip[0]},${tip[1]} ${left[0]},${left[1]} ${right[0]},${right[1]}" fill="#2563eb"/>
-                  <line x1="${cx}" y1="${cy}" x2="${tip[0]}" y2="${tip[1]}" stroke="#2563eb" stroke-width="2.5"/>`;
+          // Flecha vertical (apuntando arriba) rotada alrededor de su centro.
+          return `<g transform="rotate(${angle_deg} ${cx} ${cy})">
+                    <line x1="${cx}" y1="${cy + 18}" x2="${cx}" y2="${cy - 6}" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round"/>
+                    <polygon points="${cx},${cy - 20} ${cx - 9},${cy - 5} ${cx + 9},${cy - 5}" fill="#2563eb"/>
+                  </g>`;
         }).join('')}
         <rect x="302" y="8" width="60" height="54" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,3"/>
         <text x="332" y="40" text-anchor="middle" font-size="22" fill="#94a3b8" font-weight="bold" font-family="sans-serif">?</text>
@@ -573,8 +573,8 @@ function getSVG(id) {
         ].map(({count, color}, i) => {
           const bx = 8 + i*72;
           const dots = Array.from({length:count}, (_,di) => {
-            const dx = bx + 8 + di * (count <= 3 ? 16 : 12);
-            return `<circle cx="${dx}" cy="35" r="7" fill="${color}"/>`;
+            const dx = bx + 9 + di * (count <= 3 ? 16 : 13);
+            return `<circle cx="${dx}" cy="35" r="6" fill="${color}"/>`;
           }).join('');
           return `<rect x="${bx}" y="8" width="65" height="54" rx="8" fill="white" stroke="#e2e8f0" stroke-width="2"/>${dots}`;
         }).join('')}
@@ -771,6 +771,7 @@ function showResults() {
 
   const correct = answers.filter((a, i) => a.chosen === PREGUNTAS[i].correcta).length;
   const rango = RANGOS.find(r => correct >= r.min && correct <= r.max) || RANGOS[0];
+  PG_AUTH.saveResult('razonamiento', correct, PREGUNTAS.length, { nivel: rango.nivel, respuestas: answers.map(a => a.chosen) });
 
   const reviewHTML = PREGUNTAS.map((q, i) => {
     const a = answers[i];
@@ -822,5 +823,6 @@ function restartTest() {
 }
 </script>
 
+<script>PG_AUTH.requireAuth();</script>
 </body>
 </html>

@@ -384,6 +384,8 @@
       margin-top: 2rem;
     }
   </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
 </head>
 <body>
 
@@ -545,7 +547,7 @@
             <circle cx="65" cy="70" r="5" fill="#2563eb"/>
             <path d="M75 15 L85 5 L80 20 Z" fill="#f97316"/>
           </svg>
-          <div class="badge">⚡ Test 2 de 5 · Numérico</div>
+          <div class="badge">⚡ Test 2 de 6 · Numérico</div>
           <h1>¿Qué tan rápido <span>calculás?</span></h1>
           <p class="description">15 preguntas de cálculo, porcentajes, series y problemas numéricos. El tipo de test más usado en procesos de selección europeos.</p>
           <div class="info-pills">
@@ -654,6 +656,7 @@
       const correctas = answers.filter(a => a.isCorrect).length;
       let rango = RANGOS.find(r => correctas >= r.min && correctas <= r.max);
       if (!rango) rango = RANGOS[0];
+      PG_AUTH.saveResult('numerico', correctas, PREGUNTAS.length, { nivel: rango.nivel, respuestas: answers.map(a => a.selectedOption) });
 
       let reviewsHtml = answers.map((a, idx) => `
         <div class="review-item">
@@ -695,5 +698,6 @@
     // Initialize
     renderWelcome();
   </script>
+<script>PG_AUTH.requireAuth();</script>
 </body>
 </html>

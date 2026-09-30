@@ -415,6 +415,8 @@
             .logo span { display: none; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
 </head>
 <body>
     <nav>
@@ -429,7 +431,7 @@
         <!-- Pantalla 1: Bienvenida -->
         <div id="screen-welcome" class="screen active">
             <div class="welcome-card">
-                <div class="badge">🧠 Test 5 de 5 · Psicométrico</div>
+                <div class="badge">🧠 Test 5 de 6 · Psicométrico</div>
                 <div class="svg-container">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
@@ -816,6 +818,7 @@
             const percMot = Math.round((scores['Motivación al Logro'] / 9) * 100);
 
             const totalScore = Math.round(((percAdapt + percCom + percAuto + percMot) / 400) * 100);
+            PG_AUTH.saveResult('psicometrico', totalScore, 100, { dimensiones: scores });
 
             animateValue('score-value', 0, totalScore, 1000);
             
@@ -871,5 +874,6 @@
             window.requestAnimationFrame(step);
         }
     </script>
+<script>PG_AUTH.requireAuth();</script>
 </body>
 </html>
