@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { getApiStatus } from '../controllers/adminController.js';
+import { getApiStatus, requireAdmin } from '../controllers/adminController.js';
 
 const router = Router();
-router.get('/status', getApiStatus);
+router.get('/status', requireAdmin, getApiStatus);
 
 export default router;

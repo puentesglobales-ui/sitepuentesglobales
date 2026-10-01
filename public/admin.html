@@ -528,6 +528,9 @@
             <a class="nav-item active" data-target="dashboard">
                 <i data-lucide="layout-dashboard"></i> Dashboard
             </a>
+            <a class="nav-item" data-target="estado">
+                <i data-lucide="activity"></i> Estado de fuentes
+            </a>
             <a class="nav-item" data-target="ofertas">
                 <i data-lucide="briefcase"></i> Ofertas
             </a>
@@ -605,6 +608,25 @@
                     <tbody>
                         <!-- Populated by JS -->
                     </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Estado de fuentes (lo que usa el buscador real del sitio) -->
+        <section id="estado" class="section-content">
+            <div class="header">
+                <h1>Estado de fuentes</h1>
+                <button class="btn btn-primary" onclick="checkSourcesStatus()" id="btn-check-status">
+                    <i data-lucide="activity"></i> Probar todas
+                </button>
+            </div>
+            <p class="text-muted" style="margin-bottom:1rem;">Prueba desde el servidor cada API y feed RSS que alimenta el buscador público. Las claves nunca se muestran.</p>
+            <div class="table-container">
+                <table id="status-table">
+                    <thead>
+                        <tr><th>Fuente</th><th>Tipo</th><th>Estado</th><th>Ofertas</th><th>Tiempo</th><th>Detalle</th></tr>
+                    </thead>
+                    <tbody><tr><td colspan="6" class="text-muted">Tocá "Probar todas".</td></tr></tbody>
                 </table>
             </div>
         </section>
@@ -1073,6 +1095,56 @@
             };
             reader.readAsText(file);
             event.target.value = '';
+        }
+
+        // --- Estado de fuentes (servidor) ---
+        const ESTADOS = {
+            ok: ['badge-success', 'Funciona'],
+            vacio: ['badge-warning', 'Responde sin ofertas'],
+            sin_clave: ['badge-warning', 'Sin clave'],
+            error: ['badge-danger', 'Error']
+        };
+
+        async function checkSourcesStatus() {
+            let token = sessionStorage.getItem('pg_admin_token');
+            if (!token) {
+                token = prompt('Clave de administrador (ADMIN_TOKEN de Render):');
+                if (!token) return;
+            }
+            const btn = document.getElementById('btn-check-status');
+            const tbody = document.querySelector('#status-table tbody');
+            btn.disabled = true;
+            tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Probando fuentes… (hasta 10 s)</td></tr>';
+            try {
+                const res = await fetch('/api/v1/admin/status', { headers: { 'x-admin-token': token } });
+                const data = await res.json();
+                if (res.status === 401) sessionStorage.removeItem('pg_admin_token');
+                if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
+                sessionStorage.setItem('pg_admin_token', token);
+
+                tbody.innerHTML = '';
+                data.fuentes.forEach(f => {
+                    const [cls, label] = ESTADOS[f.estado] || ['badge-warning', f.estado];
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td><strong></strong></td><td></td><td><span class="badge ${cls}">${label}</span></td><td></td><td></td><td class="text-muted" style="word-break: break-word; max-width: 260px;"></td>`;
+                    tr.children[0].firstChild.textContent = f.name;
+                    tr.children[1].textContent = f.tipo.toUpperCase();
+                    tr.children[3].textContent = f.ofertas != null ? f.ofertas : '—';
+                    tr.children[4].textContent = f.ms != null ? `${(f.ms / 1000).toFixed(1)} s` : '—';
+                    tr.children[5].textContent = f.detalle || '';
+                    tbody.appendChild(tr);
+                });
+                const ok = data.fuentes.filter(f => f.estado === 'ok').length;
+                showToast('Estado de fuentes', `${ok} de ${data.fuentes.length} fuentes funcionando.`);
+            } catch (err) {
+                tbody.innerHTML = '';
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="6" style="color: var(--danger);"></td>';
+                tr.firstChild.textContent = 'No se pudo consultar: ' + err.message;
+                tbody.appendChild(tr);
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         // --- APIs Section ---

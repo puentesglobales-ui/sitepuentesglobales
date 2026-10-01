@@ -16,7 +16,7 @@ export class AdzunaAdapter {
       const url = `${cfg.url}/${countryCode}/search/1?app_id=${cfg.appId}&app_key=${cfg.appKey}&what=${searchWhat}&results_per_page=20`;
 
       const res = await fetch(url);
-      if (!res.ok) return [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       return (data.results || []).map(j => ({
@@ -32,7 +32,7 @@ export class AdzunaAdapter {
       }));
     } catch (err) {
       console.error('Error Adzuna API:', err.message);
-      return [];
+      throw err;
     }
   }
 }
@@ -50,7 +50,7 @@ export class ReedAdapter {
       const res = await fetch(url, {
         headers: { 'Authorization': authHeader }
       });
-      if (!res.ok) return [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       return (data.results || []).map(j => ({
@@ -66,7 +66,7 @@ export class ReedAdapter {
       }));
     } catch (err) {
       console.error('Error Reed API:', err.message);
-      return [];
+      throw err;
     }
   }
 }
@@ -84,7 +84,7 @@ export class FindWorkAdapter {
       const res = await fetch(searchUrl, {
         headers: { 'Authorization': `Token ${cfg.bearerToken}` }
       });
-      if (!res.ok) return [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       return (data.results || []).map(j => ({
@@ -100,7 +100,7 @@ export class FindWorkAdapter {
       }));
     } catch (err) {
       console.error('Error FindWork API:', err.message);
-      return [];
+      throw err;
     }
   }
 }
@@ -112,7 +112,7 @@ export class HimalayasAdapter {
       if (!cfg || !cfg.enabled) return [];
 
       const res = await fetch(cfg.url);
-      if (!res.ok) return [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
       const jobs = data.jobs || [];
@@ -132,7 +132,7 @@ export class HimalayasAdapter {
         }));
     } catch (err) {
       console.error('Error Himalayas API:', err.message);
-      return [];
+      throw err;
     }
   }
 }
@@ -141,7 +141,7 @@ export class ArbeitnowAdapter {
   static async fetchJobs(query = '', location = '') {
     try {
       const res = await fetch('https://www.arbeitnow.com/api/job-board-api');
-      if (!res.ok) return [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       
       const items = data.data || [];
@@ -165,7 +165,7 @@ export class ArbeitnowAdapter {
         }));
     } catch (err) {
       console.error('Error Arbeitnow:', err.message);
-      return [];
+      throw err;
     }
   }
 }
@@ -176,7 +176,7 @@ export class RemoteOKAdapter {
       const res = await fetch('https://remoteok.com/api', {
         headers: { 'User-Agent': 'PuentesGlobalesBot/2.0' }
       });
-      if (!res.ok) return [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       
       const jobs = Array.isArray(data) ? data.slice(1) : [];
@@ -201,7 +201,7 @@ export class RemoteOKAdapter {
         }));
     } catch (err) {
       console.error('Error RemoteOK:', err.message);
-      return [];
+      throw err;
     }
   }
 }
@@ -214,7 +214,7 @@ export class RemotiveAdapter {
         : 'https://remotive.com/api/remote-jobs?limit=30';
       
       const res = await fetch(searchUrl);
-      if (!res.ok) return [];
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       
       const jobs = data.jobs || [];
@@ -237,22 +237,38 @@ export class RemotiveAdapter {
         }));
     } catch (err) {
       console.error('Error Remotive:', err.message);
-      return [];
+      throw err;
     }
   }
 }
 
+// Fuente id (config/apis.js) → adaptador.
+export const ADAPTERS = {
+  adzuna: AdzunaAdapter,
+  reed: ReedAdapter,
+  findwork: FindWorkAdapter,
+  himalayas: HimalayasAdapter,
+  arbeitnow: ArbeitnowAdapter,
+  remoteok: RemoteOKAdapter,
+  remotive: RemotiveAdapter
+};
+
+const TIMEOUT_MS = 10000;
+
+// Una fuente lenta no debe colgar toda la búsqueda.
+export function withTimeout(promise, ms = TIMEOUT_MS) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Sin respuesta en ${ms / 1000}s`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 export class AdapterManager {
   static async searchAllSources(query = '', location = '') {
-    const results = await Promise.allSettled([
-      AdzunaAdapter.fetchJobs(query, location),
-      ReedAdapter.fetchJobs(query, location),
-      FindWorkAdapter.fetchJobs(query, location),
-      HimalayasAdapter.fetchJobs(query, location),
-      ArbeitnowAdapter.fetchJobs(query, location),
-      RemoteOKAdapter.fetchJobs(query, location),
-      RemotiveAdapter.fetchJobs(query, location)
-    ]);
+    const results = await Promise.allSettled(
+      Object.values(ADAPTERS).map(adapter => withTimeout(adapter.fetchJobs(query, location)))
+    );
 
     let allJobs = [];
     results.forEach(res => {
