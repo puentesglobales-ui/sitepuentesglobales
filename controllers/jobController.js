@@ -5,13 +5,14 @@ export const searchJobs = async (req, res) => {
     const query = req.query.q || req.query.profession || '';
     const location = req.query.location || req.query.country || '';
 
-    const jobs = await AdapterManager.searchAllSources(query, location);
+    const { jobs, interpretacion } = await AdapterManager.buscar(query, location);
 
     res.json({
       success: true,
       total: jobs.length,
       query,
       location,
+      interpretacion,
       items: jobs
     });
   } catch (err) {

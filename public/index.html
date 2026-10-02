@@ -232,32 +232,26 @@
             <p><strong>Empleo en Europa para profesionales de Latinoamérica.</strong> Prepárate con tests de selección y postulate a empleos internacionales con patrocinio de visado.</p>
             
             <form action="#" method="GET" class="search-container" style="display:flex; flex-direction:column; gap:1rem;">
-                <div style="display:flex; gap:1rem; width:100%;">
-                    <select name="country" class="search-select" style="flex:1;">
-                        <option value="">🌍 Todos los países</option>
-                        <option value="Alemania">🇩🇪 Alemania</option>
-                        <option value="España">🇪🇸 España</option>
-                        <option value="Reino Unido">🇬🇧 Reino Unido</option>
-                        <option value="Holanda">🇳🇱 Holanda</option>
-                        <option value="Francia">🇫🇷 Francia</option>
-                        <option value="Remoto">🌐 100% Remoto</option>
-                    </select>
-
-                    <select name="profession" class="search-select" style="flex:1;">
-                        <option value="">💼 Todas las profesiones</option>
-                        <option value="IT">💻 Tecnología / IT</option>
-                        <option value="Salud">🏥 Salud / Medicina</option>
-                        <option value="Ingeniería">⚙️ Ingeniería</option>
-                        <option value="Construcción">🏗️ Oficios Técnicos</option>
-                        <option value="Logística">🚚 Transporte / Logística</option>
-                        <option value="Finanzas">📊 Gestión y Admin</option>
+                <div style="display:flex; gap:1rem; width:100%; flex-wrap:wrap;">
+                    <input type="text" name="q" class="search-input" placeholder="¿De qué querés trabajar? Escribilo en español: niñera, enfermera, chofer…" style="flex:2 1 260px; min-width:0;">
+                    <select name="country" class="search-select" style="flex:1 1 180px;">
+                        <option value="">🌍 Todos los destinos</option>
+                        <option value="es">🇪🇸 España</option>
+                        <option value="de">🇩🇪 Alemania</option>
+                        <option value="at">🇦🇹 Austria</option>
+                        <option value="ch">🇨🇭 Suiza</option>
+                        <option value="gb">🇬🇧 Reino Unido</option>
+                        <option value="ie">🇮🇪 Irlanda</option>
+                        <option value="nl">🇳🇱 Países Bajos</option>
+                        <option value="be">🇧🇪 Bélgica</option>
+                        <option value="fr">🇫🇷 Francia</option>
+                        <option value="it">🇮🇹 Italia</option>
+                        <option value="pl">🇵🇱 Polonia</option>
+                        <option value="remoto">🌐 100% Remoto</option>
                     </select>
                 </div>
-
-                <div style="display:flex; gap:1rem; width:100%;">
-                    <input type="text" name="q" class="search-input" placeholder="Busca por puesto, empresa o tecnología..." style="flex:1;">
-                    <button type="submit" class="btn-search">Buscar Oportunidades</button>
-                </div>
+                <p style="font-size:0.85rem; color:#64748b; margin:-0.25rem 0 0;">Buscamos tu profesión en el idioma de cada país: "niñera" también como <em>nanny</em> o <em>Kinderbetreuer</em>.</p>
+                <button type="submit" class="btn-search" style="width:100%;">Buscar Oportunidades</button>
             </form>
         </div>
     </section>

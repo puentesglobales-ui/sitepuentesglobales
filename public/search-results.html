@@ -18,6 +18,13 @@
         .job-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; }
         .job-meta { display: flex; gap: 1.25rem; color: #64748b; font-size: 0.9rem; margin-top: 0.5rem; }
         .btn-apply { padding: 0.75rem 1.5rem; background: var(--accent); color: white; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 0.95rem; }
+        .search-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 2rem; }
+        .search-bar input, .search-bar select { padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: 100px; font-family: inherit; font-size: 0.95rem; background: white; }
+        .search-bar input { flex: 1 1 260px; min-width: 0; }
+        .search-bar button { border: none; cursor: pointer; font-family: inherit; }
+        .interp { background: #eff6ff; color: #1e3a8a; border-radius: 12px; padding: 0.6rem 0.9rem; font-size: 0.92rem; margin-bottom: 0.5rem; }
+        .job-desc { color: #475569; font-size: 0.95rem; margin-top: 0.4rem; }
+        .job-source { color: var(--accent); }
         @media (max-width: 768px) {
             .job-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
             .btn-apply { width: 100%; text-align: center; }
@@ -34,7 +41,28 @@
     </nav>
 
     <div class="container">
+        <form id="search-form" class="search-bar">
+            <input type="text" id="f-q" name="q" placeholder="Profesión o puesto, en español: niñera, enfermera, chofer…" aria-label="Profesión o puesto">
+            <select id="f-country" name="country" aria-label="Destino">
+                <option value="">🌍 Todos los destinos</option>
+                <option value="es">🇪🇸 España</option>
+                <option value="de">🇩🇪 Alemania</option>
+                <option value="at">🇦🇹 Austria</option>
+                <option value="ch">🇨🇭 Suiza</option>
+                <option value="gb">🇬🇧 Reino Unido</option>
+                <option value="ie">🇮🇪 Irlanda</option>
+                <option value="nl">🇳🇱 Países Bajos</option>
+                <option value="be">🇧🇪 Bélgica</option>
+                <option value="fr">🇫🇷 Francia</option>
+                <option value="it">🇮🇹 Italia</option>
+                <option value="pl">🇵🇱 Polonia</option>
+                <option value="remoto">🌐 100% Remoto</option>
+            </select>
+            <button type="submit" class="btn-apply">Buscar</button>
+        </form>
+
         <h1 id="search-title" style="font-weight: 800; margin-bottom: 0.5rem">Buscando empleos...</h1>
+        <p id="search-interp" class="interp" hidden></p>
         <p id="search-count" style="color: #64748b; margin-bottom: 2rem"></p>
 
         <div id="jobs-list">
@@ -43,13 +71,42 @@
     </div>
 
     <script>
+        function el(tag, attrs = {}, text) {
+            const n = document.createElement(tag);
+            for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+            if (text !== undefined) n.textContent = text;
+            return n;
+        }
+
+        // Solo enlaces http(s): un "javascript:" que venga de una fuente externa no se abre.
+        function urlSegura(u) {
+            try { const x = new URL(u); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : null; } catch { return null; }
+        }
+
+        function tarjeta(j) {
+            const card = el('div', { class: 'job-card' });
+            const info = el('div');
+            info.append(el('div', { class: 'job-title' }, j.title || 'Oferta de empleo'));
+            if (j.description) info.append(el('p', { class: 'job-desc' }, j.description));
+            const meta = el('div', { class: 'job-meta' });
+            meta.append(el('span', {}, `🏢 ${j.company || '—'}`), el('span', {}, `📍 ${j.location || '—'}`), el('span', { class: 'job-source' }, `🔗 ${j.source || ''}`));
+            info.append(meta);
+            card.append(info);
+            const url = urlSegura(j.url);
+            if (url) card.append(el('a', { href: url, target: '_blank', rel: 'noopener', class: 'btn-apply' }, 'Ver Oferta'));
+            return card;
+        }
+
         async function fetchJobs() {
             const urlParams = new URLSearchParams(window.location.search);
             const q = urlParams.get('q') || urlParams.get('profession') || '';
             const location = urlParams.get('country') || urlParams.get('location') || '';
+            document.getElementById('f-q').value = q;
+            const sel = document.getElementById('f-country');
+            if ([...sel.options].some(o => o.value === location)) sel.value = location;
 
-            document.getElementById('search-title').innerText = q 
-                ? `Resultados para "${q}" ${location ? 'en ' + location : ''}`
+            document.getElementById('search-title').textContent = q
+                ? `Resultados para "${q}"`
                 : 'Oportunidades de Empleo en Europa';
 
             try {
@@ -57,23 +114,20 @@
                 const response = await fetch(`${apiBase}/jobs/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(location)}`);
                 const data = await response.json();
 
+                const interp = data.interpretacion;
+                const interpEl = document.getElementById('search-interp');
+                if (interp && interp.terminos && interp.terminos.length) {
+                    interpEl.textContent = `Buscamos "${interp.profesion}" en ${interp.destino}, también como: ${interp.terminos.join(', ')}.`;
+                    interpEl.hidden = false;
+                } else if (interp) {
+                    interpEl.textContent = `Destino: ${interp.destino}.`;
+                    interpEl.hidden = false;
+                }
+
                 const list = document.getElementById('jobs-list');
                 if (data.success && data.items && data.items.length > 0) {
-                    document.getElementById('search-count').innerText = `Se encontraron ${data.total} empleos disponibles.`;
-                    list.innerHTML = data.items.map(j => `
-                        <div class="job-card">
-                            <div>
-                                <div class="job-title">${j.title}</div>
-                                <p style="color:#475569; font-size:0.95rem; margin-top:0.4rem">${j.description}</p>
-                                <div class="job-meta">
-                                    <span>🏢 ${j.company}</span>
-                                    <span>📍 ${j.location}</span>
-                                    <span style="color:var(--accent)">🔗 ${j.source}</span>
-                                </div>
-                            </div>
-                            <a href="${j.url}" target="_blank" class="btn-apply">Ver Oferta</a>
-                        </div>
-                    `).join('');
+                    document.getElementById('search-count').textContent = `Se encontraron ${data.total} empleos disponibles.`;
+                    list.replaceChildren(...data.items.map(tarjeta));
                 } else {
                     document.getElementById('search-count').innerText = 'No se encontraron ofertas.';
                     list.innerHTML = '<p style="text-align:center; padding:3rem; color:#64748b">No encontramos resultados para tu búsqueda. Intenta con otros términos.</p>';
@@ -86,6 +140,12 @@
                 `;
             }
         }
+
+        document.getElementById('search-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const params = new URLSearchParams({ q: document.getElementById('f-q').value.trim(), country: document.getElementById('f-country').value });
+            window.location.href = `search-results.html?${params}`;
+        });
 
         PG_AUTH.requireAuth().then(fetchJobs);
     </script>

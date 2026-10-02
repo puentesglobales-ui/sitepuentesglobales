@@ -64,15 +64,6 @@ export const API_SOURCES = {
     type: 'free',
     url: 'https://remoteok.com/api',
     countries: ['remote']
-  },
-  remotive: {
-    id: 'remotive',
-    name: 'Remotive',
-    enabled: true,
-    requiresKey: [],
-    type: 'free',
-    url: 'https://remotive.com/api/remote-jobs',
-    countries: ['remote']
   }
 };
 
