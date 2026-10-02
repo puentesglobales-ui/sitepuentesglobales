@@ -1,8 +1,8 @@
 /**
  * Registro obligatorio de postulantes (Supabase Auth).
  *
- * Usa el mismo proyecto Supabase que el Tutor IA (/home), así una sola cuenta
- * sirve para tests, búsqueda de empleo y tutor.
+ * Proyecto Supabase de Puentes Globales (mceiutonddbgddrrrajv), donde están las
+ * tablas pg_candidatos y pg_resultados_test.
  *
  * Requiere cargar antes:
  *   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
@@ -16,9 +16,9 @@
  *   onChange(cb)              → cb(user|null) cada vez que cambia la sesión.
  */
 (function () {
-    const SUPABASE_URL = 'https://flsguqlmcqxyulkqmriu.supabase.co';
+    const SUPABASE_URL = 'https://mceiutonddbgddrrrajv.supabase.co';
     // Clave "publishable": pensada para el navegador. La seguridad la dan las políticas RLS.
-    const SUPABASE_KEY = 'sb_publishable_F2h4qlMjmDY0sb8D-t5adw_5l31usVM';
+    const SUPABASE_KEY = 'sb_publishable_n95hBZKrS8tOxICy8xd4HA_G_xebnDi';
 
     const PROFESIONES = [
         'Tecnología / IT',

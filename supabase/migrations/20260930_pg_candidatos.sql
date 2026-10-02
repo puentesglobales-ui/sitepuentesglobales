@@ -1,5 +1,5 @@
 -- Registro de postulantes y resultados de tests de Puentes Globales.
--- Ejecutar una vez en Supabase → SQL Editor (proyecto flsguqlmcqxyulkqmriu).
+-- Ejecutar una vez en Supabase → SQL Editor (proyecto mceiutonddbgddrrrajv).
 -- Los datos se consultan desde el panel de Supabase (Table Editor), que ignora RLS.
 
 create table if not exists public.pg_candidatos (
