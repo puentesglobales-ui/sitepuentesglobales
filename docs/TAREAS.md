@@ -15,6 +15,7 @@ Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "D
 - [x] Registro conectado al proyecto de Supabase de Puentes Globales.
 - [x] Tutor IA (`/home`) quitado del sitio.
 - [x] Búsqueda de empleo gratis e ilimitada en todos los planes.
+- [x] Tareas 6, 7 y 29 (parte): Remotive fuera; destinos corregidos y ampliados; búsqueda en español traducida al idioma de cada país (diccionario propio + ESCO); resultados seguros con textContent.
 
 ## Fase 0 — Antes de juntar CVs
 
@@ -25,8 +26,6 @@ Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "D
 | 3 | Vincular el grupo de variables "puentes globales" al servicio `sitepuentesglobales` en Render y verificar las 11 fuentes en "Estado de fuentes" | Usuario | — |
 | 4 | Supabase → Authentication → URL Configuration: Site URL y Redirect URLs con `https://sitepuentesglobales.onrender.com` | Usuario | — |
 | 5 | Pedir a GitHub Support que elimine el commit `963d1fa` y sus vistas en caché | Usuario | — |
-| 6 | Quitar Remotive del buscador (sus términos prohíben mostrar ofertas a cambio de registro) | Código | — |
-| 7 | Corregir el mapa de países de Adzuna ("España" cae en Reino Unido) y pasar la ubicación a Reed | Código | — |
 | 8 | Inicio de sesión de administrador en `admin.html` y registro de quién ve o descarga cada CV | Código | — |
 | 9 | Permisos separados en el registro, sin casillas marcadas, con tabla de historial (tipo, texto, versión, fecha) | Código | 10 |
 | 10 | Redactar política de privacidad y términos (borrador en el informe legal) | Usuario + Abogado | — |
@@ -58,7 +57,7 @@ Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "D
 | # | Tarea | Responsable | Depende de |
 |---|---|---|---|
 | 28 | Base de ofertas aparte con actualización programada, respetando los límites de cada fuente y borrando ofertas vencidas | Código | 13 |
-| 29 | Búsqueda con "qué" y "dónde" libres, traducción de la profesión al idioma del país (ESCO) y ruteo por país | Código | 21, 28 |
+| 29 | Búsqueda en la base de ofertas propia (la traducción y el ruteo por país ya funcionan sobre las fuentes en vivo) | Código | 28 |
 | 30 | Filtros: contrato, jornada, salario, antigüedad, remoto, patrocinio de visa, idioma requerido | Código | 28 |
 | 31 | Ofertas recomendadas según el perfil y alertas por email o WhatsApp (solo con permiso) | Código | 9, 19, 28 |
 | 32 | Recordatorio a quien dejó el CV a medias (solo con permiso) | Código | 20 |
