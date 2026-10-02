@@ -1,11 +1,14 @@
 /**
  * Motor SaaS Enterprise: Suscripciones, Cuotas y Multi-tenancy
+ *
+ * Los planes pagos de candidatos cubren solo servicios de preparación
+ * (escáner ATS, tests, simulador). Buscar ofertas y postularse es gratis
+ * e ilimitado en todos los planes: no se cobra por acceder al empleo.
  */
 
 export const SAAS_PLANS = {
   FREE: {
     name: 'Plan Gratuito',
-    maxSearchesPerDay: 5,
     atsScansPerDay: 2,
     psychometricTests: 1,
     interviewSimulator: false,
@@ -13,7 +16,6 @@ export const SAAS_PLANS = {
   },
   PRO: {
     name: 'Plan Profesional',
-    maxSearchesPerDay: 100,
     atsScansPerDay: 50,
     psychometricTests: 10,
     interviewSimulator: true,
@@ -21,7 +23,6 @@ export const SAAS_PLANS = {
   },
   ENTERPRISE: {
     name: 'Plan Enterprise Multi-Tenant',
-    maxSearchesPerDay: 10000,
     atsScansPerDay: 1000,
     psychometricTests: 500,
     interviewSimulator: true,
@@ -41,7 +42,10 @@ export class SaasCore {
     return SAAS_PLANS.FREE;
   }
 
-  static checkUsageLimit(userId = 'guest', feature = 'searches', userRole = 'candidate') {
+  static checkUsageLimit(userId = 'guest', feature = 'ats', userRole = 'candidate') {
+    // La búsqueda de empleo nunca tiene límite por plan.
+    if (feature === 'searches') return { allowed: true, unlimited: true };
+
     const plan = this.getUserPlan(userRole);
     const today = new Date().toISOString().split('T')[0];
     const key = `${userId}_${today}_${feature}`;
@@ -49,7 +53,6 @@ export class SaasCore {
     const currentCount = userUsageStore.get(key) || 0;
     let limit = 5;
 
-    if (feature === 'searches') limit = plan.maxSearchesPerDay;
     if (feature === 'ats') limit = plan.atsScansPerDay;
 
     if (currentCount >= limit) {
