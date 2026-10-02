@@ -6,6 +6,7 @@ import { seleccionar } from './supabaseAdmin.js';
 import { requireUser } from './usage.js';
 
 export const PLATAFORMA = {
+  id: null,
   slug: null,
   nombre: 'Puentes Globales',
   logo_url: 'assets/img/logo_official.png',
@@ -142,7 +143,7 @@ export async function configPublica(org) {
   ]);
 
   const marca = org
-    ? { slug: org.slug, nombre: org.nombre, logo_url: org.logo_url || PLATAFORMA.logo_url, color_primario: org.color_primario, color_acento: org.color_acento, email_contacto: org.email_contacto }
+    ? { id: org.id, slug: org.slug, nombre: org.nombre, logo_url: org.logo_url || PLATAFORMA.logo_url, color_primario: org.color_primario, color_acento: org.color_acento, email_contacto: org.email_contacto }
     : PLATAFORMA;
   const combos = (combosOrg.length ? combosOrg : combosPlat).map(c => ({
     id: c.id, nombre: c.nombre, descripcion: c.descripcion, precio: Number(c.precio), moneda: c.moneda, periodo: c.periodo, items: c.items || []

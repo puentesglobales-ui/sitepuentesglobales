@@ -190,7 +190,7 @@
     // no bloquea al usuario: el dato queda igual en user_metadata de Supabase Auth.
     async function syncProfile(user) {
         const m = user.user_metadata || {};
-        const { error } = await client.from('pg_candidatos').upsert({
+        const fila = {
             user_id: user.id,
             email: user.email,
             nombre: m.full_name || m.name || '',
@@ -198,7 +198,10 @@
             profesion: m.profession || null,
             acepta_contacto: m.accepts_contact === true,
             updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+        };
+        // Empresa por la que se registró (marca blanca). Si no se conoce, no se toca la que tenga.
+        if (m.org_id) fila.org_id = m.org_id;
+        const { error } = await client.from('pg_candidatos').upsert(fila, { onConflict: 'user_id' });
         if (error) console.warn('[PG_AUTH] No se pudo guardar pg_candidatos:', error.message);
     }
 
@@ -393,7 +396,8 @@
                                 phone: f.telefono.trim(),
                                 profession: f.profesion,
                                 accepts_contact: permisos.some(p => p.tipo === 'mensajes' && p.aceptado),
-                                pending_consents: permisos
+                                pending_consents: permisos,
+                                org_id: (window.PG_MARCA && window.PG_MARCA.orgId()) || null
                             }
                         }
                     });
@@ -431,7 +435,9 @@
                     const { data, error } = await client.auth.updateUser({
                         data: {
                             full_name: f.nombre.trim(), phone: f.telefono.trim(), profession: f.profesion,
-                            accepts_contact: permisos.some(p => p.tipo === 'mensajes' && p.aceptado)
+                            accepts_contact: permisos.some(p => p.tipo === 'mensajes' && p.aceptado),
+                            ...(!(currentUser && currentUser.user_metadata && currentUser.user_metadata.org_id) && window.PG_MARCA && window.PG_MARCA.orgId()
+                                ? { org_id: window.PG_MARCA.orgId() } : {})
                         }
                     });
                     if (error) throw error;

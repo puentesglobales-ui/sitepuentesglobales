@@ -30,6 +30,10 @@ services/usage.js         sesión Supabase en el servidor y contador de usos
 services/supabaseAdmin.js acceso con clave secreta (solo rutas protegidas) y auditoría
 public/mis-datos.html     perfil, permisos, resultados, descarga y borrado de la cuenta
 public/privacidad.html    política de privacidad y términos (BORRADOR hasta revisión legal)
+services/marcaBlanca*.js  marca blanca: empresa por ?org/subdominio/dominio, config pública, precios, combos, pagos
+services/cifrado.js       AES-256-GCM para claves de pago (PAYMENTS_ENC_KEY)
+public/marca.js           aplica marca y colores de la empresa; PG_MARCA.config con productos, combos y pagos
+public/empresa.html       panel de cada empresa (?empresa=slug); public/superadmin.html panel del superadmin
 controllers/, routes/     API: jobs, ats, psychometric, talkme, saas, admin
 public/auth-gate.js       registro/login obligatorio (Supabase), guarda resultados de tests
 public/test-*.html        6 tests (razonamiento, numérico, idiomas, personalidad, psicométrico, CI)
@@ -44,6 +48,9 @@ docs/TAREAS.md            plan de trabajo numerado
 - `RSS_FEEDS` = `"Nombre|https://url;Otro|https://url"`.
 - `ADMIN_EMAILS` = emails del equipo separados por coma (acceso al panel admin, con email confirmado).
 - `SUPABASE_SECRET_KEY` = clave secreta de Supabase (sb_secret_…): solo servidor; lista de candidatos del admin y borrado de cuentas.
+- `SUPER_ADMIN_EMAILS` = emails del superadmin de Puentes Globales (empresas, comisiones, catálogo).
+- `PAYMENTS_ENC_KEY` = 32 bytes en base64 para cifrar las claves de pago de cada empresa. Si se pierde, hay que recargar todas.
+- `BASE_DOMAIN` = dominio propio (p. ej. puentesglobales.com) para reconocer empresas por subdominio. Sin él, se usa ?org=slug.
 - Opcionales: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (si no, usa el proyecto actual), `GEMINI_API_KEY` u `OPENAI_API_KEY` (simulador de entrevistas; sin clave responde con textos fijos).
 - Una fuente sin su variable queda desactivada; no rompe el sitio.
 - Para probar local: archivo `.env` (está en `.gitignore`).
@@ -55,7 +62,8 @@ docs/TAREAS.md            plan de trabajo numerado
 4. **Términos de las fuentes**: mostrar la fuente y enlazar a la oferta original. Remotive se quitó: prohíbe mostrar sus ofertas a cambio de registro.
 5. **La IA no inventa** en los CVs: solo reordena y reformula lo que la persona cargó.
 6. **Sin recursos de terceros en las páginas**: nada de Google Fonts ni CDNs (envían la IP del visitante). `tests/recursos-externos.test.js` lo controla. La única excepción es el widget de Alex IO.
-7. **La base de etiquetadores no se vende**: Puentes Globales vende horas de trabajo de su propio equipo, nunca la lista de personas.
+7. **Marca blanca**: lo que una empresa no define (precios, combos, medios de pago) se toma de la plataforma. Las empresas no pueden cambiar su comisión ni su dominio; las claves de pago nunca vuelven por la API.
+8. **La base de etiquetadores no se vende**: Puentes Globales vende horas de trabajo de su propio equipo, nunca la lista de personas.
 
 ## Convenciones
 - Textos del sitio en español rioplatense (vos: "tenés", "podés").

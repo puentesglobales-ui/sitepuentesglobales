@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superadmin | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <script src="config.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="marca.js"></script>
+  <script src="auth-gate.js"></script>
+  <script src="panel-comun.js"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Puentes<span>Globales</span> · Superadmin</a>
+  <div class="tabs" id="tabs">
+    <button type="button" data-tab="s-empresas">Empresas</button>
+    <button type="button" data-tab="s-catalogo">Comisión y catálogo</button>
+    <button type="button" data-tab="s-combos">Combos de la plataforma</button>
+    <button type="button" data-tab="s-pagos">Medios de pago de la plataforma</button>
+  </div>
+</nav>
+
+<main>
+  <section id="s-empresas" aria-labelledby="t-empresas">
+    <h2 id="t-empresas">Empresas</h2>
+    <div class="scroll"><table id="t-orgs"></table></div>
+    <form id="f-org" class="grid3" style="border-top:1px dashed var(--border);padding-top:1rem">
+      <h3 class="field wide">Nueva empresa</h3>
+      <label class="field" for="o-slug">Identificador (va en el enlace)<input id="o-slug" required pattern="[a-z0-9][a-z0-9-]{1,40}" placeholder="agencia-madrid"></label>
+      <label class="field" for="o-nombre">Nombre<input id="o-nombre" required maxlength="80"></label>
+      <label class="field" for="o-comision">Comisión % (vacío = la de la plataforma)<input id="o-comision" type="number" min="0" max="100" step="0.5"></label>
+      <label class="field" for="o-admin">Email del administrador (ya registrado en el sitio)<input id="o-admin" type="email"></label>
+      <label class="field" for="o-email">Email de contacto<input id="o-email" type="email"></label>
+      <button class="btn" type="submit">Crear empresa</button>
+    </form>
+    <div id="miembros"></div>
+  </section>
+
+  <section id="s-catalogo" aria-labelledby="t-catalogo">
+    <h2 id="t-catalogo">Comisión y catálogo</h2>
+    <form id="f-comision" class="grid3">
+      <label class="field" for="c-pct">Comisión por defecto de la plataforma (%)<input id="c-pct" type="number" min="0" max="100" step="0.5" required></label>
+      <button class="btn" type="submit" style="align-self:end">Guardar comisión</button>
+    </form>
+    <p class="hint">Precio base de cada producto: lo usan todas las empresas que no pusieron precio propio. Buscar ofertas y postularse no es un producto: es gratis siempre.</p>
+    <div class="scroll"><table id="t-catalogo"></table></div>
+  </section>
+
+  <section id="s-combos" aria-labelledby="t-combos">
+    <h2 id="t-combos">Combos de la plataforma</h2>
+    <p class="hint">Se muestran en Puentes Globales y en las empresas que no armaron combos propios.</p>
+    <div id="combos"></div>
+  </section>
+
+  <section id="s-pagos" aria-labelledby="t-pagos">
+    <h2 id="t-pagos">Medios de pago de la plataforma</h2>
+    <div id="pagos"></div>
+  </section>
+</main>
+
+<script>
+const { $, el, api, aviso, precioTxt } = PANEL;
+let datos = null;
+PANEL.pestañas($('#tabs'), [...document.querySelectorAll('main > section')]);
+
+async function cargar() {
+  datos = await api('/superadmin/resumen');
+  pintarOrgs();
+  $('#c-pct').value = datos.comision_pct;
+  pintarCatalogo();
+  PANEL.combos($('#combos'), { base: '/superadmin', productos: datos.productos, combos: datos.combos, recargar: cargar });
+  PANEL.pagos($('#pagos'), { base: '/superadmin', pagos: datos.pagos, recargar: cargar,
+    textoRespaldo: 'Son el respaldo: los usan las empresas que no cargaron medios de pago propios. En esos cobros Puentes Globales retiene su comisión.' });
+}
+
+function pintarOrgs() {
+  const tabla = $('#t-orgs');
+  tabla.replaceChildren(el('thead', {}, el('tr', {}, ['Empresa', 'Enlace', 'Dominio propio', 'Comisión %', 'Estado', ''].map(t => el('th', { text: t })))));
+  const tbody = el('tbody');
+  if (!datos.orgs.length) tbody.append(el('tr', {}, el('td', { colspan: '6', class: 'hint', text: 'Todavía no hay empresas.' })));
+  for (const o of datos.orgs) {
+    const comision = el('input', { type: 'number', min: '0', max: '100', step: '0.5', value: o.comision_pct ?? '', placeholder: `${datos.comision_pct} (plataforma)`, 'aria-label': `Comisión de ${o.nombre}`, style: 'width:120px' });
+    const dominio = el('input', { value: o.dominio || '', placeholder: 'empleo.empresa.com', 'aria-label': `Dominio de ${o.nombre}` });
+    tbody.append(el('tr', {},
+      el('td', {}, el('strong', { text: o.nombre }), el('div', { class: 'hint', text: o.slug })),
+      el('td', {}, el('a', { href: `/?org=${o.slug}`, target: '_blank', rel: 'noopener', text: 'Ver sitio' }), ' · ', el('a', { href: `empresa.html?empresa=${o.slug}`, target: '_blank', rel: 'noopener', text: 'Panel' })),
+      el('td', {}, dominio),
+      el('td', {}, comision),
+      el('td', {}, el('span', { class: `pill ${o.activa ? 'ok' : 'off'}`, text: o.activa ? 'Activa' : 'Pausada' })),
+      el('td', {}, el('div', { class: 'acciones' },
+        el('button', { class: 'btn small', text: 'Guardar', onclick: async () => {
+          try {
+            await api(`/superadmin/orgs/${o.id}`, { method: 'PATCH', body: { comision_pct: comision.value === '' ? null : Number(comision.value), dominio: dominio.value.trim().toLowerCase() || null } });
+            aviso(`${o.nombre}: guardado.`); cargar();
+          } catch (e) { aviso(e.message, 'err'); }
+        } }),
+        el('button', { class: 'btn ghost small', text: o.activa ? 'Pausar' : 'Activar', onclick: async () => {
+          try { await api(`/superadmin/orgs/${o.id}`, { method: 'PATCH', body: { activa: !o.activa } }); cargar(); }
+          catch (e) { aviso(e.message, 'err'); }
+        } }),
+        el('button', { class: 'btn ghost small', text: 'Admins', onclick: () => verMiembros(o) })
+      ))
+    ));
+  }
+  tabla.append(tbody);
+}
+
+async function verMiembros(o) {
+  const cont = $('#miembros');
+  cont.replaceChildren(el('p', { class: 'hint', text: 'Cargando administradores…' }));
+  try {
+    const { miembros } = await api(`/superadmin/orgs/${o.id}/miembros`);
+    const email = el('input', { type: 'email', placeholder: 'email@empresa.com', 'aria-label': 'Email del nuevo administrador' });
+    cont.replaceChildren(
+      el('h3', { text: `Administradores de ${o.nombre}` }),
+      ...miembros.map(m => el('div', { class: 'item' },
+        el('span', { text: `${m.nombre || '—'} · ${m.email || m.user_id} · ${m.rol}` }),
+        el('button', { class: 'btn ghost small', text: 'Quitar', onclick: async () => {
+          try { await api(`/superadmin/orgs/${o.id}/miembros/${m.user_id}`, { method: 'DELETE' }); verMiembros(o); }
+          catch (e) { aviso(e.message, 'err'); }
+        } }))),
+      el('div', { class: 'acciones', style: 'margin-top:.5rem' }, email, el('button', { class: 'btn small', text: 'Agregar', onclick: async () => {
+        try { await api(`/superadmin/orgs/${o.id}/miembros`, { method: 'POST', body: { email: email.value } }); aviso('Administrador agregado.'); verMiembros(o); }
+        catch (e) { aviso(e.message, 'err'); }
+      } }))
+    );
+  } catch (e) { cont.replaceChildren(el('p', { class: 'hint', text: e.message })); }
+}
+
+function pintarCatalogo() {
+  const tabla = $('#t-catalogo');
+  tabla.replaceChildren(el('thead', {}, el('tr', {}, ['Producto', 'Precio base', 'Moneda', 'Período', 'Activo', ''].map(t => el('th', { text: t })))));
+  const tbody = el('tbody');
+  for (const p of datos.productos) {
+    const precio = el('input', { type: 'number', min: '0', step: '0.01', value: p.precio_base, 'aria-label': `Precio base de ${p.nombre}` });
+    const moneda = el('input', { value: p.moneda, maxlength: '3', style: 'width:70px', 'aria-label': 'Moneda' });
+    const periodo = el('select', { 'aria-label': 'Período' }, el('option', { value: 'unico', text: 'Único', selected: p.periodo === 'unico' }), el('option', { value: 'mes', text: 'Mensual', selected: p.periodo === 'mes' }));
+    const activo = el('input', { type: 'checkbox', checked: p.activo, 'aria-label': `${p.nombre} activo` });
+    tbody.append(el('tr', {},
+      el('td', {}, el('strong', { text: p.nombre }), el('div', { class: 'hint', text: p.codigo })),
+      el('td', {}, precio), el('td', {}, moneda), el('td', {}, periodo), el('td', {}, activo),
+      el('td', {}, el('button', { class: 'btn small', text: 'Guardar', onclick: async () => {
+        try {
+          await api(`/superadmin/productos/${p.codigo}`, { method: 'PUT', body: { precio_base: Number(precio.value), moneda: moneda.value.toUpperCase(), periodo: periodo.value, activo: activo.checked } });
+          aviso(`${p.nombre}: guardado.`); cargar();
+        } catch (e) { aviso(e.message, 'err'); }
+      } }))
+    ));
+  }
+  tabla.append(tbody);
+}
+
+$('#f-org').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    const r = await api('/superadmin/orgs', { method: 'POST', body: {
+      slug: $('#o-slug').value.trim().toLowerCase(), nombre: $('#o-nombre').value,
+      comision_pct: $('#o-comision').value === '' ? undefined : Number($('#o-comision').value),
+      admin_email: $('#o-admin').value || undefined, email_contacto: $('#o-email').value || undefined
+    } });
+    aviso(r.aviso || 'Empresa creada.', r.aviso ? 'err' : 'ok');
+    e.target.reset();
+    cargar();
+  } catch (err) { aviso(err.message, 'err'); }
+});
+
+$('#f-comision').addEventListener('submit', async e => {
+  e.preventDefault();
+  try { await api('/superadmin/plataforma', { method: 'PUT', body: { comision_pct: Number($('#c-pct').value) } }); aviso('Comisión guardada.'); cargar(); }
+  catch (err) { aviso(err.message, 'err'); }
+});
+
+(async () => {
+  await PG_AUTH.requireAuth();
+  try { await cargar(); }
+  catch (e) { PANEL.bloquear('Acceso solo para el superadmin', e.message); }
+})();
+</script>
+</body>
+</html>

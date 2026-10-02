@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de empresa | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <script src="config.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="marca.js"></script>
+  <script src="auth-gate.js"></script>
+  <script src="panel-comun.js"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo" id="titulo-empresa">Puentes<span>Globales</span></a>
+  <div class="tabs" id="tabs">
+    <button type="button" data-tab="s-marca">Marca</button>
+    <button type="button" data-tab="s-precios">Precios</button>
+    <button type="button" data-tab="s-combos">Combos</button>
+    <button type="button" data-tab="s-pagos">Medios de pago</button>
+    <button type="button" data-tab="s-candidatos">Candidatos</button>
+  </div>
+</nav>
+
+<main>
+  <div>
+    <h1 id="h-nombre">Panel de empresa</h1>
+    <p class="hint" id="h-sub">Cargando…</p>
+  </div>
+
+  <section id="s-marca" aria-labelledby="t-marca">
+    <h2 id="t-marca">Marca</h2>
+    <p class="hint">Así ven el sitio tus candidatos cuando entran por tu enlace o tu dominio.</p>
+    <form id="f-marca" class="grid2">
+      <label class="field" for="m-nombre">Nombre de la empresa<input id="m-nombre" name="nombre" required maxlength="80"></label>
+      <label class="field" for="m-email">Email de contacto<input id="m-email" name="email_contacto" type="email"></label>
+      <label class="field wide" for="m-logo">Logo (dirección https de la imagen)<input id="m-logo" name="logo_url" type="url" placeholder="https://…/logo.png"></label>
+      <label class="field" for="m-primario">Color principal<input id="m-primario" name="color_primario" type="color"></label>
+      <label class="field" for="m-acento">Color secundario<input id="m-acento" name="color_acento" type="color"></label>
+      <button class="btn" type="submit">Guardar marca</button>
+    </form>
+    <p class="hint" id="m-enlace"></p>
+  </section>
+
+  <section id="s-precios" aria-labelledby="t-precios">
+    <h2 id="t-precios">Precios de cada producto</h2>
+    <p class="hint">Si no ponés un precio, se usa el de Puentes Globales. Podés ocultar los productos que no querés vender. Buscar ofertas y postularse es siempre gratis para tus candidatos.</p>
+    <div class="scroll"><table id="t-productos"></table></div>
+  </section>
+
+  <section id="s-combos" aria-labelledby="t-combos">
+    <h2 id="t-combos">Combos</h2>
+    <p class="hint">Juntá varios productos con un precio propio. Si no creás ninguno, tus candidatos ven los combos de Puentes Globales.</p>
+    <div id="combos"></div>
+  </section>
+
+  <section id="s-pagos" aria-labelledby="t-pagos">
+    <h2 id="t-pagos">Medios de pago</h2>
+    <div id="pagos"></div>
+  </section>
+
+  <section id="s-candidatos" aria-labelledby="t-cands">
+    <h2 id="t-cands">Candidatos de tu empresa</h2>
+    <p class="hint">Personas que se registraron por tu enlace o tu dominio. Cada consulta queda registrada.</p>
+    <div class="scroll"><table id="t-candidatos"></table></div>
+  </section>
+</main>
+
+<script>
+const { $, el, api, aviso, precioTxt } = PANEL;
+const slug = (new URLSearchParams(location.search).get('empresa') || '').toLowerCase();
+const base = `/empresa/${encodeURIComponent(slug)}`;
+let datos = null;
+
+PANEL.pestañas($('#tabs'), [...document.querySelectorAll('main > section')]);
+
+async function cargar() {
+  datos = await api(base);
+  const o = datos.org;
+  document.title = `Panel de ${o.nombre}`;
+  $('#h-nombre').textContent = o.nombre;
+  $('#h-sub').textContent = `Comisión de Puentes Globales: ${o.comision_pct}% por venta.`;
+  $('#titulo-empresa').textContent = o.nombre;
+  $('#m-nombre').value = o.nombre;
+  $('#m-email').value = o.email_contacto || '';
+  $('#m-logo').value = o.logo_url || '';
+  $('#m-primario').value = o.color_primario;
+  $('#m-acento').value = o.color_acento;
+  const enlace = `${location.origin}/?org=${o.slug}`;
+  $('#m-enlace').textContent = `Enlace para tus candidatos: ${enlace}${o.dominio ? ` · Dominio propio: https://${o.dominio}` : ''}`;
+  pintarPrecios();
+  PANEL.combos($('#combos'), { base, productos: datos.productos, combos: datos.combos, recargar: cargar });
+  const propios = datos.pagos.some(p => p.configurado && p.activo);
+  PANEL.pagos($('#pagos'), {
+    base, pagos: datos.pagos, recargar: cargar,
+    textoRespaldo: propios
+      ? 'Tus candidatos pagan con tus medios de pago. Puentes Globales te factura la comisión según las ventas registradas.'
+      : 'Todavía no cargaste medios de pago propios: tus candidatos pagan con los de Puentes Globales, que descuenta su comisión y te transfiere el resto.'
+  });
+}
+
+function pintarPrecios() {
+  const tabla = $('#t-productos');
+  tabla.replaceChildren(el('thead', {}, el('tr', {}, ['Producto', 'Precio de Puentes Globales', 'Tu precio', 'Moneda', 'Visible', ''].map(t => el('th', { text: t })))));
+  const tbody = el('tbody');
+  for (const p of datos.productos.filter(p => p.activo !== false)) {
+    const propio = datos.precios.find(x => x.producto === p.codigo);
+    const precio = el('input', { type: 'number', min: '0', step: '0.01', value: propio ? propio.precio : '', placeholder: String(p.precio_base), 'aria-label': `Tu precio para ${p.nombre}` });
+    const moneda = el('input', { value: propio ? propio.moneda : p.moneda, maxlength: '3', style: 'width:70px', 'aria-label': 'Moneda' });
+    const visible = el('input', { type: 'checkbox', checked: propio ? propio.visible !== false : true, 'aria-label': `Mostrar ${p.nombre}` });
+    const guardar = el('button', { class: 'btn small', text: 'Guardar', onclick: async () => {
+      try {
+        const valor = precio.value === '' ? Number(p.precio_base) : Number(precio.value);
+        await api(`${base}/precios/${p.codigo}`, { method: 'PUT', body: { precio: valor, moneda: moneda.value.toUpperCase(), visible: visible.checked } });
+        aviso(`${p.nombre}: guardado.`);
+        cargar();
+      } catch (e) { aviso(e.message, 'err'); }
+    } });
+    const restablecer = propio ? el('button', { class: 'btn ghost small', text: 'Usar el de PG', onclick: async () => {
+      try { await api(`${base}/precios/${p.codigo}`, { method: 'DELETE' }); aviso(`${p.nombre}: vuelve al precio de Puentes Globales.`); cargar(); }
+      catch (e) { aviso(e.message, 'err'); }
+    } }) : null;
+    tbody.append(el('tr', {},
+      el('td', {}, el('strong', { text: p.nombre }), el('div', { class: 'hint', text: p.descripcion || '' })),
+      el('td', { text: precioTxt(p.precio_base, p.moneda, p.periodo) }),
+      el('td', {}, precio), el('td', {}, moneda), el('td', {}, visible),
+      el('td', {}, el('div', { class: 'acciones' }, guardar, restablecer))
+    ));
+  }
+  tabla.append(tbody);
+}
+
+$('#f-marca').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    await api(base, { method: 'PATCH', body: {
+      nombre: $('#m-nombre').value, email_contacto: $('#m-email').value, logo_url: $('#m-logo').value,
+      color_primario: $('#m-primario').value, color_acento: $('#m-acento').value
+    } });
+    aviso('Marca guardada.');
+    cargar();
+  } catch (err) { aviso(err.message, 'err'); }
+});
+
+async function cargarCandidatos() {
+  const tabla = $('#t-candidatos');
+  try {
+    const { items } = await api(`${base}/candidatos`);
+    tabla.replaceChildren(el('thead', {}, el('tr', {}, ['Fecha', 'Nombre', 'Email', 'Teléfono', 'Profesión'].map(t => el('th', { text: t })))));
+    const tbody = el('tbody');
+    if (!items.length) tbody.append(el('tr', {}, el('td', { colspan: '5', class: 'hint', text: 'Todavía no hay candidatos registrados por tu enlace.' })));
+    for (const c of items) {
+      tbody.append(el('tr', {}, [new Date(c.created_at).toLocaleDateString('es-AR'), c.nombre || '—', c.email || '—', c.telefono || '—', c.profesion || '—'].map(t => el('td', { text: t }))));
+    }
+    tabla.append(tbody);
+  } catch (e) { tabla.replaceChildren(el('tr', {}, el('td', { text: e.message }))); }
+}
+document.querySelector('[data-tab="s-candidatos"]').addEventListener('click', cargarCandidatos);
+
+(async () => {
+  if (!/^[a-z0-9][a-z0-9-]{1,40}$/.test(slug)) return PANEL.bloquear('Empresa no indicada', 'Entrá con el enlace que te dio Puentes Globales, por ejemplo empresa.html?empresa=tu-empresa.');
+  await PG_AUTH.requireAuth();
+  try { await cargar(); }
+  catch (e) { PANEL.bloquear('Sin acceso', e.message); }
+})();
+</script>
+</body>
+</html>

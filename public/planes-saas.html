@@ -3,88 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planes Enterprise | PuentesGlobales</title>
+    <title>Planes | PuentesGlobales</title>
     <link rel="stylesheet" href="fonts.css">
     <style>
-        :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; }
+        :root { --primary: #1e293b; --accent: #2563eb; --brand: #FF6A00; --bg: #f8fafc; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background: var(--bg); color: var(--primary); padding-bottom: 4rem; }
         nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 5%; background: white; border-bottom: 1px solid #e2e8f0; }
         .logo { font-weight: 800; font-size: 1.5rem; }
         .container { max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; text-align: left; }
-        .plan-card { background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; }
-        .plan-card.popular { border: 2px solid var(--accent); position: relative; }
-        .badge { position: absolute; top: -12px; right: 20px; background: var(--accent); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
-        .price { font-size: 2.2rem; font-weight: 800; color: var(--accent); margin: 1rem 0; }
-        .features-list { list-style: none; margin-bottom: 2rem; }
-        .features-list li { margin-bottom: 0.75rem; font-size: 0.95rem; color: #475569; }
-        .btn-plan { display: block; text-align: center; background: var(--accent); color: white; padding: 1rem; border-radius: 100px; text-decoration: none; font-weight: 700; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        h2 { font-size: 1.6rem; font-weight: 800; margin: 3rem 0 0.5rem; }
+        .sub { color: #64748b; font-size: 1rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; text-align: left; }
+        .plan-card { background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; position: relative; }
+        .plan-card.popular { border: 2px solid var(--brand); }
+        .badge { position: absolute; top: -12px; right: 20px; background: var(--brand); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .price { font-size: 2rem; font-weight: 800; color: var(--brand); margin: 0.75rem 0; }
+        .price small { font-size: 1rem; font-weight: 400; color: #64748b; }
+        .features-list { list-style: none; }
+        .features-list li { margin-bottom: 0.6rem; font-size: 0.95rem; color: #475569; }
+        .desc { color: #64748b; font-size: 0.92rem; }
+        .btn-plan { display: block; text-align: center; background: var(--brand); color: white; padding: 0.9rem; border-radius: 100px; text-decoration: none; font-weight: 700; border: none; font-size: 1rem; width: 100%; cursor: pointer; }
+        .btn-plan[disabled] { background: #e2e8f0; color: #64748b; cursor: default; }
+        .pagos { font-size: 0.82rem; color: #64748b; text-align: center; }
     </style>
+    <script src="marca.js"></script>
 </head>
 <body>
     <nav>
-        <div class="logo">PuentesGlobales.</div>
+        <div class="logo" data-marca="nombre">PuentesGlobales.</div>
         <a href="index.html" style="text-decoration:none; color:inherit; font-weight:600">← Volver al Inicio</a>
     </nav>
 
     <div class="container">
-        <h1 style="font-size: 2.8rem; font-weight: 800">Planes & Soluciones Enterprise</h1>
-        <p style="color: #64748b; font-size: 1.1rem">Plataforma unificada de empleo, evaluación ATS y reclutamiento con IA.</p>
-        <p style="color: #0f172a; font-size: 1rem; font-weight: 600; margin-top: 0.5rem">Buscar ofertas y postularte es gratis en todos los planes. Los planes pagos suman herramientas para prepararte.</p>
+        <h1 style="font-size: 2.6rem; font-weight: 800">Prepárate para trabajar en Europa</h1>
+        <p class="sub" style="margin-top:0.5rem; color:#0f172a; font-weight:600">Buscar ofertas y postularte es gratis en todos los planes. Lo que se paga son las herramientas para prepararte.</p>
 
         <div class="grid">
             <div class="plan-card">
                 <div>
-                    <h3>Candidate Free</h3>
-                    <p style="color:#64748b; font-size:0.9rem">Para postulantes individuales</p>
-                    <div class="price">$0 <span style="font-size:1rem; font-weight:400; color:#64748b">/ mes</span></div>
+                    <h3>Cuenta gratis</h3>
+                    <div class="price">0 <small>para siempre</small></div>
                     <ul class="features-list">
                         <li>✓ Búsqueda de empleo ilimitada</li>
                         <li>✓ Postulación a ofertas sin costo</li>
                         <li>✓ 6 tests de selección (incluye CI)</li>
                         <li>✓ 1 escaneo ATS de prueba</li>
                         <li>✓ 1 entrevista simulada de prueba</li>
-                        <li>✓ Widget Asistente Alex IO</li>
                     </ul>
                 </div>
-                <a href="index.html" class="btn-plan" style="background:#e2e8f0; color:#1e293b">Comenzar Gratis</a>
+                <a href="index.html" class="btn-plan" style="background:#e2e8f0; color:#1e293b">Comenzar gratis</a>
             </div>
+        </div>
 
-            <div class="plan-card popular">
-                <div class="badge">RECOMENDADO</div>
-                <div>
-                    <h3>Pro Candidate</h3>
-                    <p style="color:#64748b; font-size:0.9rem">Para prepararte a fondo para Europa</p>
-                    <div class="price">$19 <span style="font-size:1rem; font-weight:400; color:#64748b">/ mes</span></div>
-                    <ul class="features-list">
-                        <li>✓ Curso de búsqueda de empleo en Skool</li>
-                        <li>✓ Escaneos ATS ilimitados</li>
-                        <li>✓ Simulador de entrevistas IA ilimitado</li>
-                        <li>✓ Asesoría de Visados con Alex IO</li>
-                    </ul>
-                </div>
-                <a href="#" class="btn-plan">Suscribirme Pro</a>
-            </div>
+        <h2>Combos</h2>
+        <p class="sub">Varias herramientas juntas, a mejor precio.</p>
+        <div class="grid" id="combos"><p class="sub">Cargando…</p></div>
 
+        <h2>Herramientas sueltas</h2>
+        <div class="grid" id="productos"><p class="sub">Cargando…</p></div>
+
+        <h2>¿Tenés una agencia, escuela o empresa?</h2>
+        <div class="grid">
             <div class="plan-card">
                 <div>
-                    <h3>Enterprise Whitelabel</h3>
-                    <p style="color:#64748b; font-size:0.9rem">Para empresas, agencias y escuelas</p>
-                    <div class="price">$99 <span style="font-size:1rem; font-weight:400; color:#64748b">/ mes</span></div>
-                    <ul class="features-list">
-                        <li>✓ Marca blanca y dominio propio</li>
-                        <li>✓ Multi-tenancy con Organizaciones</li>
-                        <li>✓ Bot Alex IO en WhatsApp API</li>
-                        <li>✓ Escáner ATS masivo para CVs</li>
-                        <li>✓ Soporte dedicado 24/7</li>
-                    </ul>
+                    <h3>Marca blanca</h3>
+                    <p class="desc">La plataforma con tu nombre, tus colores y tu dominio, tus propios precios y combos, y tus medios de pago (o los nuestros).</p>
+                    <div class="price">Sin costo fijo <small>· comisión por venta</small></div>
                 </div>
-                <a href="#" class="btn-plan" style="background:#0f172a">Contactar Ventas</a>
+                <a href="#" class="btn-plan" style="background:#0f172a">Contactar ventas</a>
             </div>
         </div>
     </div>
+
+    <script>
+        const PERIODO = { mes: '/ mes', unico: 'pago único' };
+        const precio = (p, m) => `${Number(p).toLocaleString('es-AR', { maximumFractionDigits: 2 })} ${m}`;
+
+        function tarjeta({ titulo, descripcion, monto, moneda, periodo, items, destacada, pagos }) {
+            const card = document.createElement('div');
+            card.className = 'plan-card' + (destacada ? ' popular' : '');
+            if (destacada) { const b = document.createElement('div'); b.className = 'badge'; b.textContent = 'RECOMENDADO'; card.append(b); }
+            const cuerpo = document.createElement('div');
+            const h = document.createElement('h3'); h.textContent = titulo;
+            const pr = document.createElement('div'); pr.className = 'price'; pr.textContent = precio(monto, moneda) + ' ';
+            const sm = document.createElement('small'); sm.textContent = PERIODO[periodo] || ''; pr.append(sm);
+            cuerpo.append(h, pr);
+            if (descripcion) { const d = document.createElement('p'); d.className = 'desc'; d.textContent = descripcion; cuerpo.append(d); }
+            if (items && items.length) {
+                const ul = document.createElement('ul'); ul.className = 'features-list'; ul.style.marginTop = '0.75rem';
+                for (const t of items) { const li = document.createElement('li'); li.textContent = '✓ ' + t; ul.append(li); }
+                cuerpo.append(ul);
+            }
+            const btn = document.createElement('button');
+            btn.className = 'btn-plan';
+            btn.disabled = true;
+            btn.textContent = 'Pago online muy pronto';
+            const nota = document.createElement('p');
+            nota.className = 'pagos';
+            nota.textContent = pagos.length ? `Pagás con ${pagos.map(p => p.nombre).join(', ')}` : '';
+            card.append(cuerpo, btn, nota);
+            return card;
+        }
+
+        PG_MARCA.listo.then(cfg => {
+            const nombre = c => (cfg.productos.find(p => p.codigo === c.producto) || {}).nombre || c.producto;
+            const combos = document.getElementById('combos');
+            combos.replaceChildren(...cfg.combos.map((c, i) => tarjeta({
+                titulo: c.nombre, descripcion: c.descripcion, monto: c.precio, moneda: c.moneda, periodo: c.periodo,
+                items: c.items.map(it => `${nombre(it)}${it.cantidad > 1 ? ` ×${it.cantidad}` : ''}`), destacada: i === 0, pagos: cfg.pagos
+            })));
+            if (!cfg.combos.length) combos.innerHTML = '<p class="sub">Por ahora no hay combos.</p>';
+
+            const productos = document.getElementById('productos');
+            const pagos = cfg.productos.filter(p => Number(p.precio) > 0);
+            productos.replaceChildren(...pagos.map(p => tarjeta({
+                titulo: p.nombre, descripcion: p.descripcion, monto: p.precio, moneda: p.moneda, periodo: p.periodo, pagos: cfg.pagos
+            })));
+            if (!pagos.length) productos.innerHTML = '<p class="sub">Por ahora no hay herramientas a la venta.</p>';
+        });
+    </script>
     <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->
     <script src="alex-widget.js"></script>
 </body>
