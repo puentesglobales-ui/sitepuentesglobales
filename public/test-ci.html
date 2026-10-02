@@ -114,6 +114,23 @@
     .review-a svg { width: 44px; height: 44px; }
     .review-e { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
 
+    .share-box, .ia-box { background: var(--white); border: 1px solid var(--border); border-radius: 18px; padding: 1.1rem 1.2rem; margin-bottom: 1rem; display: grid; gap: 0.8rem; }
+    .ia-box { border: 2px solid var(--brand); background: var(--brand-light); }
+    .box-title { font-weight: 800; font-size: 1.05rem; line-height: 1.35; }
+    .box-sub { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+    .share-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .share-head img { border-radius: 12px; flex-shrink: 0; background: #0f172a; }
+    .share-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; }
+    .share-actions .btn { margin: 0; padding: 0.8rem 1rem; font-size: 0.95rem; box-shadow: none; }
+    .btn-wa { background: #16a34a; }
+    .btn-wa:hover { background: #15803d; }
+    .btn-sm { margin-top: 0; }
+    .ia-check { display: flex; gap: 0.65rem; align-items: flex-start; font-size: 0.88rem; line-height: 1.5; color: #334155; cursor: pointer; }
+    .ia-check input { margin-top: 0.2rem; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--brand); }
+    .ia-ok { font-size: 0.92rem; line-height: 1.5; color: #166534; font-weight: 600; }
+    .ia-msg { font-size: 0.85rem; color: var(--muted); min-height: 1em; }
+    .link-btn { background: none; border: none; color: var(--muted); text-decoration: underline; font-size: 0.85rem; cursor: pointer; padding: 0; justify-self: start; font-family: inherit; }
+
     @media (max-width: 480px) {
       .card { padding: 2rem 1.25rem; }
       .welcome h1 { font-size: 1.6rem; }
@@ -492,6 +509,27 @@ function finish(porTiempo) {
         ${bellSVG(ci)}
       </div>
 
+      <div class="share-box">
+        <div class="share-head">
+          <div>
+            <div class="box-title">Compartí tu resultado</div>
+            <div class="box-sub">Desafiá a tus amigos a superar tu CI.</div>
+          </div>
+          <img id="share-preview" alt="Tarjeta con tu CI estimado" width="96" height="96">
+        </div>
+        <div class="share-actions">
+          <button type="button" class="btn btn-share" id="btn-share">Compartir</button>
+          <a class="btn btn-wa" id="btn-wa" target="_blank" rel="noopener">WhatsApp</a>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-download">Descargar imagen</button>
+        </div>
+      </div>
+
+      <div class="ia-box" id="ia-box">
+        <div class="box-title">¿Te interesan trabajos remotos entrenando inteligencia artificial?</div>
+        <p class="box-sub">Las empresas de IA buscan personas que revisen y corrijan respuestas de IA en español y otros idiomas. Es trabajo remoto, con horarios flexibles y pago según cada proyecto.</p>
+        <div id="ia-body"><p class="box-sub">Cargando…</p></div>
+      </div>
+
       <div class="section-title">Resultado por bloque</div>
       <div class="blocks">
         ${porBloque.map(b => `
@@ -510,6 +548,144 @@ function finish(porTiempo) {
       <a href="index.html" class="btn btn-ghost">← Volver al inicio</a>
     </div>`;
   window.scrollTo(0, 0);
+  initShare(ci, cat);
+  initTrabajosIA();
+}
+
+/* ═══ COMPARTIR ═════════════════════════════════════════════════════════════ */
+const TEST_URL = `${location.origin}/test-ci.html`;
+
+async function shareCard(ci, cat) {
+  try { await document.fonts.ready; } catch (e) { /* sin fuentes: usa las del sistema */ }
+  const S = 1080, c = document.createElement('canvas');
+  c.width = S; c.height = S;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, S, S);
+  g.addColorStop(0, '#0f172a'); g.addColorStop(1, '#1e293b');
+  x.fillStyle = g; x.fillRect(0, 0, S, S);
+  x.textAlign = 'center';
+  const font = (w, px) => `${w} ${px}px 'Plus Jakarta Sans', system-ui, sans-serif`;
+  x.fillStyle = '#ffffff'; x.font = font(800, 54); x.fillText('Puentes', S / 2 - 120, 140);
+  x.fillStyle = '#FF6A00'; x.fillText('Globales', S / 2 + 115, 140);
+  x.fillStyle = 'rgba(255,255,255,0.7)'; x.font = font(700, 40); x.fillText('MI CI ESTIMADO', S / 2, 330);
+  x.fillStyle = '#fb923c'; x.font = font(900, 300); x.fillText(String(ci), S / 2, 610);
+  x.fillStyle = 'rgba(255,255,255,0.14)';
+  x.font = font(700, 50);
+  const pillW = Math.min(S - 160, x.measureText(cat).width + 90);
+  x.beginPath();
+  if (x.roundRect) x.roundRect((S - pillW) / 2, 670, pillW, 90, 45); else x.rect((S - pillW) / 2, 670, pillW, 90);
+  x.fill();
+  x.fillStyle = '#ffffff'; x.fillText(cat, S / 2, 732);
+  x.font = font(800, 58); x.fillText('¿Cuánto sacás vos?', S / 2, 880);
+  x.fillStyle = 'rgba(255,255,255,0.6)'; x.font = font(600, 34);
+  x.fillText(TEST_URL.replace(/^https?:\/\//, ''), S / 2, 960);
+  return c;
+}
+
+async function initShare(ci, cat) {
+  const text = `Saqué ${ci} en el test de CI gratis de Puentes Globales (${cat}). ¿Cuánto sacás vos?`;
+  const wa = document.getElementById('btn-wa');
+  wa.href = `https://wa.me/?text=${encodeURIComponent(`${text} ${TEST_URL}`)}`;
+
+  const canvas = await shareCard(ci, cat);
+  document.getElementById('share-preview').src = canvas.toDataURL('image/png');
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+  const file = new File([blob], `mi-ci-${ci}.png`, { type: 'image/png' });
+
+  document.getElementById('btn-download').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = file.name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  document.getElementById('btn-share').addEventListener('click', async () => {
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text, url: TEST_URL });
+      } else if (navigator.share) {
+        await navigator.share({ text, url: TEST_URL });
+      } else {
+        await navigator.clipboard.writeText(`${text} ${TEST_URL}`);
+        document.getElementById('btn-share').textContent = 'Texto copiado ✓';
+      }
+    } catch (e) { /* la persona canceló el menú de compartir */ }
+  });
+}
+
+/* ═══ TRABAJOS DE IA (permiso con historial en pg_consentimientos) ═══════════ */
+const PERMISO_IA = {
+  tipo: 'trabajos_ia',
+  version: 'trabajos_ia_v1',
+  texto: 'Quiero que Puentes Globales me escriba con propuestas de trabajo remoto de entrenamiento de inteligencia artificial y use el resultado de este test para evaluarme para esos trabajos. Una persona del equipo revisa siempre la selección. Mi CV no se usa como datos para entrenar IA. Puedo retirar este permiso cuando quiera.'
+};
+
+async function guardarPermisoIA(aceptado) {
+  const user = await PG_AUTH.getUser();
+  if (!user) throw new Error('sin sesión');
+  const { error } = await PG_AUTH.client.from('pg_consentimientos').insert({
+    user_id: user.id, tipo: PERMISO_IA.tipo, aceptado,
+    version: PERMISO_IA.version, texto: PERMISO_IA.texto, origen: 'test-ci'
+  });
+  if (error) throw error;
+}
+
+async function initTrabajosIA() {
+  const body = document.getElementById('ia-body');
+  let vigente = false;
+  try {
+    const { data, error } = await PG_AUTH.client.from('pg_consentimientos')
+      .select('aceptado').eq('tipo', PERMISO_IA.tipo)
+      .order('created_at', { ascending: false }).limit(1);
+    if (error) throw error;
+    vigente = Boolean(data && data[0] && data[0].aceptado);
+  } catch (e) {
+    console.warn('No se pudo leer el permiso de trabajos de IA:', e.message || e);
+  }
+  vigente ? renderIAAnotado(body) : renderIAFormulario(body);
+}
+
+function renderIAFormulario(body) {
+  body.innerHTML = `
+    <label class="ia-check" for="ia-acepto">
+      <input type="checkbox" id="ia-acepto">
+      <span id="ia-texto"></span>
+    </label>
+    <button type="button" class="btn" id="ia-enviar" disabled>Anotarme</button>
+    <p class="ia-msg" id="ia-msg" role="status"></p>`;
+  document.getElementById('ia-texto').textContent = PERMISO_IA.texto;
+  const check = document.getElementById('ia-acepto');
+  const btn = document.getElementById('ia-enviar');
+  check.addEventListener('change', () => { btn.disabled = !check.checked; });
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+    try {
+      await guardarPermisoIA(true);
+      renderIAAnotado(body, true);
+    } catch (e) {
+      document.getElementById('ia-msg').textContent = 'No pudimos guardar tu respuesta. Probá de nuevo en unos minutos.';
+      btn.disabled = false;
+      btn.textContent = 'Anotarme';
+    }
+  });
+}
+
+function renderIAAnotado(body, recien) {
+  body.innerHTML = `
+    <p class="ia-ok">${recien ? '¡Listo! Te anotamos.' : 'Ya estás anotado/a.'} Si tu perfil encaja con un proyecto, te vamos a escribir por email para preguntarte si querés participar. No compartimos tus datos con nadie hasta que aceptes.</p>
+    <button type="button" class="link-btn" id="ia-retirar">Retirar mi permiso</button>
+    <p class="ia-msg" id="ia-msg" role="status"></p>`;
+  document.getElementById('ia-retirar').addEventListener('click', async () => {
+    try {
+      await guardarPermisoIA(false);
+      renderIAFormulario(body);
+      document.getElementById('ia-msg').textContent = 'Retiramos tu permiso. No te vamos a escribir por estos trabajos.';
+    } catch (e) {
+      document.getElementById('ia-msg').textContent = 'No pudimos retirar el permiso. Probá de nuevo en unos minutos.';
+    }
+  });
 }
 
 renderWelcome();

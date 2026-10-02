@@ -36,6 +36,7 @@ function loadPage(name) {
     const ctx = vm.createContext({
         document: fakeNode(),
         window: { scrollTo() {}, location: {} },
+        location: { origin: 'https://sitio.test' },
         PG_AUTH: { requireAuth: async () => ({}), saveResult: async () => {} },
         setTimeout: () => 0, setInterval: () => 0, clearInterval() {},
         requestAnimationFrame() {}, console, Math, JSON, Date
@@ -138,6 +139,18 @@ test('CI: respuestas de la matriz de rotación y la de XOR', () => {
     // JSON: los objetos vienen de otro contexto vm y no comparten prototipo.
     assert.equal(JSON.stringify(M[2].cell(2, 2)), JSON.stringify({ type: 'arrow', rot: 0 }));
     assert.equal(JSON.stringify(M[7].cell(2, 2).segs), JSON.stringify(['arriba', 'izquierda']));
+});
+
+test('CI: el permiso de trabajos de IA empieza desmarcado y se guarda con versión y texto', () => {
+    const html = fs.readFileSync(path.join(PUBLIC, 'test-ci.html'), 'utf8');
+    assert.match(html, /<input type="checkbox" id="ia-acepto">/, 'la casilla no puede venir marcada');
+    assert.doesNotMatch(html, /id="ia-acepto"[^>]*checked/);
+    const ctx = loadPage('test-ci');
+    const p = get(ctx, 'PERMISO_IA');
+    assert.equal(p.tipo, 'trabajos_ia');
+    assert.match(p.version, /^trabajos_ia_v\d+$/);
+    assert.match(p.texto, /revisa siempre la selección/);
+    assert.match(p.texto, /no se usa como datos para entrenar/);
 });
 
 test('CI: la estimación crece con los aciertos y respeta los límites', () => {
