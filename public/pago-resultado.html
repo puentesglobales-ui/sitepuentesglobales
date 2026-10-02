@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tu compra | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <style>
+    :root { --bg: #F8FAFC; --white: #fff; --brand: #FF6A00; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --ok: #15803d; --err: #b91c1c; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: grid; place-items: center; padding: 1rem; }
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 22px; padding: 2rem; max-width: 460px; width: 100%; text-align: center; display: grid; gap: 0.9rem; box-shadow: 0 20px 50px -20px rgba(0,0,0,0.15); }
+    .emoji { font-size: 2.6rem; }
+    h1 { font-size: 1.4rem; font-weight: 800; }
+    p { color: var(--muted); line-height: 1.55; }
+    ul { list-style: none; display: grid; gap: 0.3rem; color: var(--text); font-weight: 600; }
+    .btn { display: block; background: var(--brand); color: white; font-weight: 800; padding: 0.85rem; border-radius: 12px; text-decoration: none; }
+    .btn.ghost { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+  </style>
+  <script src="config.js"></script>
+  <script src="marca.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="auth-gate.js"></script>
+</head>
+<body>
+  <div class="card" id="card" aria-live="polite">
+    <div class="emoji">⏳</div>
+    <h1>Confirmando tu pago…</h1>
+    <p>Esto puede tardar unos segundos.</p>
+  </div>
+
+<script>
+const NOMBRES = { tests: 'Tests de selección', simulador: 'Simulador de entrevistas', constructor_cv: 'Constructor de CV', ats: 'Escáner ATS', idiomas: 'Aprendizaje de idiomas', curso_skool: 'Curso de búsqueda de empleo' };
+const ENLACES = { simulador: 'simulador-entrevista.html', ats: 'ats-scanner.html', tests: 'index.html#tests' };
+
+function mostrar(emoji, titulo, texto, extra = []) {
+  const card = document.getElementById('card');
+  const e = document.createElement('div'); e.className = 'emoji'; e.textContent = emoji;
+  const h = document.createElement('h1'); h.textContent = titulo;
+  const p = document.createElement('p'); p.textContent = texto;
+  card.replaceChildren(e, h, p, ...extra);
+}
+
+function link(href, texto, ghost) {
+  const a = document.createElement('a'); a.href = href; a.textContent = texto; a.className = 'btn' + (ghost ? ' ghost' : ''); return a;
+}
+
+async function consultar(ventaId, extra) {
+  const res = await fetch(`/api/v1/pagos/venta/${encodeURIComponent(ventaId)}${extra}`, { headers: { Authorization: `Bearer ${await PG_AUTH.getToken()}` } });
+  const data = await res.json();
+  if (!res.ok || !data.success) throw new Error(data.error || 'No encontramos la compra.');
+  return data.venta;
+}
+
+(async () => {
+  const q = new URLSearchParams(location.search);
+  const ventaId = q.get('venta');
+  if (!ventaId) return mostrar('🤔', 'No encontramos la compra', 'Volvé a la página de planes para intentarlo de nuevo.', [link('planes-saas.html', 'Ver planes')]);
+  await PG_AUTH.requireAuth();
+  // Mercado Pago vuelve con el id del pago: se lo pasamos al servidor para que lo confirme.
+  const pagoId = q.get('payment_id') || q.get('collection_id');
+  const extra = pagoId ? `?payment_id=${encodeURIComponent(pagoId)}` : '';
+  for (let intento = 0; intento < 10; intento++) {
+    try {
+      const v = await consultar(ventaId, extra);
+      if (v.estado === 'aprobada') {
+        const lista = document.createElement('ul');
+        const accesos = [];
+        for (const it of v.items || []) {
+          const li = document.createElement('li');
+          li.textContent = `✓ ${NOMBRES[it.producto] || it.producto}${it.periodo === 'mes' ? ' · 30 días' : ''}`;
+          lista.append(li);
+          if (ENLACES[it.producto]) accesos.push(link(ENLACES[it.producto], `Ir a ${NOMBRES[it.producto]}`));
+        }
+        return mostrar('🎉', '¡Listo! Tu compra está confirmada', 'Ya tenés acceso a:', [lista, ...accesos.slice(0, 2), link('index.html', 'Volver al inicio', true)]);
+      }
+      if (v.estado === 'rechazada') return mostrar('⚠️', 'El pago no se pudo confirmar', 'No se te dio acceso. Si se te cobró, escribinos con el número de compra: ' + v.id, [link('planes-saas.html', 'Volver a planes')]);
+    } catch (err) {
+      return mostrar('⚠️', 'No pudimos consultar la compra', err.message, [link('planes-saas.html', 'Volver a planes')]);
+    }
+    await new Promise(r => setTimeout(r, 3000));
+  }
+  mostrar('⏳', 'Tu pago está en proceso', 'El medio de pago todavía no lo confirmó (algunos, como el efectivo, tardan). Cuando se confirme vas a tener acceso automáticamente.', [link('index.html', 'Volver al inicio', true)]);
+})();
+</script>
+</body>
+</html>

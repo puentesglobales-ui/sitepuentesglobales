@@ -33,6 +33,8 @@ public/privacidad.html    política de privacidad y términos (BORRADOR hasta re
 services/marcaBlanca*.js  marca blanca: empresa por ?org/subdominio/dominio, config pública, precios, combos, pagos
 services/cifrado.js       AES-256-GCM para claves de pago (PAYMENTS_ENC_KEY)
 public/marca.js           aplica marca y colores de la empresa; PG_MARCA.config con productos, combos y pagos
+services/pagos/           proveedores.js (Mercado Pago, Stripe, PayPal) y ventas.js (precio del servidor, cuenta, comisión, aprobación idempotente, accesos)
+routes/pagos.js           /checkout, /venta/:id, webhooks de Stripe y Mercado Pago, retorno de PayPal
 public/empresa.html       panel de cada empresa (?empresa=slug); public/superadmin.html panel del superadmin
 controllers/, routes/     API: jobs, ats, psychometric, talkme, saas, admin
 public/auth-gate.js       registro/login obligatorio (Supabase), guarda resultados de tests
@@ -51,6 +53,7 @@ docs/TAREAS.md            plan de trabajo numerado
 - `SUPER_ADMIN_EMAILS` = emails del superadmin de Puentes Globales (empresas, comisiones, catálogo).
 - `PAYMENTS_ENC_KEY` = 32 bytes en base64 para cifrar las claves de pago de cada empresa. Si se pierde, hay que recargar todas.
 - `BASE_DOMAIN` = dominio propio (p. ej. puentesglobales.com) para reconocer empresas por subdominio. Sin él, se usa ?org=slug.
+- `PUBLIC_URL` = dirección pública del sitio (p. ej. https://puentesglobales.com) para las vueltas de los medios de pago. Sin ella se usa la del pedido.
 - Opcionales: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (si no, usa el proyecto actual), `GEMINI_API_KEY` u `OPENAI_API_KEY` (simulador de entrevistas; sin clave responde con textos fijos).
 - Una fuente sin su variable queda desactivada; no rompe el sitio.
 - Para probar local: archivo `.env` (está en `.gitignore`).
@@ -63,7 +66,8 @@ docs/TAREAS.md            plan de trabajo numerado
 5. **La IA no inventa** en los CVs: solo reordena y reformula lo que la persona cargó.
 6. **Sin recursos de terceros en las páginas**: nada de Google Fonts ni CDNs (envían la IP del visitante). `tests/recursos-externos.test.js` lo controla. La única excepción es el widget de Alex IO.
 7. **Marca blanca**: lo que una empresa no define (precios, combos, medios de pago) se toma de la plataforma. Las empresas no pueden cambiar su comisión ni su dominio; las claves de pago nunca vuelven por la API.
-8. **La base de etiquetadores no se vende**: Puentes Globales vende horas de trabajo de su propio equipo, nunca la lista de personas.
+8. **Pagos**: el precio sale siempre del servidor; una venta se aprueba solo con lo que confirma el proveedor (webhook firmado o consulta a su API) y si el monto coincide. Los productos mensuales dan 30 días por pago, sin renovación automática.
+9. **La base de etiquetadores no se vende**: Puentes Globales vende horas de trabajo de su propio equipo, nunca la lista de personas.
 
 ## Convenciones
 - Textos del sitio en español rioplatense (vos: "tenés", "podés").

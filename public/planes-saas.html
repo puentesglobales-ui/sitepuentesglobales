@@ -28,6 +28,8 @@
         .pagos { font-size: 0.82rem; color: #64748b; text-align: center; }
     </style>
     <script src="marca.js"></script>
+    <script src="vendor/supabase.js"></script>
+    <script src="auth-gate.js"></script>
 </head>
 <body>
     <nav>
@@ -80,7 +82,36 @@
         const PERIODO = { mes: '/ mes', unico: 'pago único' };
         const precio = (p, m) => `${Number(p).toLocaleString('es-AR', { maximumFractionDigits: 2 })} ${m}`;
 
-        function tarjeta({ titulo, descripcion, monto, moneda, periodo, items, destacada, pagos }) {
+        // Compra: pide cuenta, crea el pago en el servidor (precio del servidor) y va al proveedor.
+        async function comprar(tipo, id, metodo, boton) {
+            const user = (await PG_AUTH.getUser()) || (await PG_AUTH.openModal());
+            if (!user) return;
+            const texto = boton.textContent;
+            boton.disabled = true;
+            boton.textContent = 'Conectando con el medio de pago…';
+            try {
+                const cfg = PG_MARCA.config || {};
+                const res = await fetch('/api/v1/pagos/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${await PG_AUTH.getToken()}`,
+                        ...(cfg.marca && cfg.marca.slug ? { 'x-org': cfg.marca.slug } : {})
+                    },
+                    body: JSON.stringify({ tipo, id, metodo })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'No pudimos iniciar el pago.');
+                window.location.href = data.url;
+            } catch (err) {
+                boton.disabled = false;
+                boton.textContent = texto;
+                const aviso = boton.parentElement.querySelector('.pagos');
+                if (aviso) aviso.textContent = err.message;
+            }
+        }
+
+        function tarjeta({ titulo, descripcion, monto, moneda, periodo, items, destacada, pagos, tipo, id }) {
             const card = document.createElement('div');
             card.className = 'plan-card' + (destacada ? ' popular' : '');
             if (destacada) { const b = document.createElement('div'); b.className = 'badge'; b.textContent = 'RECOMENDADO'; card.append(b); }
@@ -95,14 +126,27 @@
                 for (const t of items) { const li = document.createElement('li'); li.textContent = '✓ ' + t; ul.append(li); }
                 cuerpo.append(ul);
             }
-            const btn = document.createElement('button');
-            btn.className = 'btn-plan';
-            btn.disabled = true;
-            btn.textContent = 'Pago online muy pronto';
+            const botones = document.createElement('div');
+            botones.style.cssText = 'display:grid; gap:0.5rem;';
             const nota = document.createElement('p');
             nota.className = 'pagos';
-            nota.textContent = pagos.length ? `Pagás con ${pagos.map(p => p.nombre).join(', ')}` : '';
-            card.append(cuerpo, btn, nota);
+            if (!pagos.length) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-plan';
+                btn.disabled = true;
+                btn.textContent = 'Pago online muy pronto';
+                botones.append(btn);
+            }
+            for (const p of pagos) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-plan';
+                btn.textContent = pagos.length > 1 ? `Pagar con ${p.nombre}` : 'Comprar';
+                btn.addEventListener('click', () => comprar(tipo, id, p.metodo, btn));
+                botones.append(btn);
+            }
+            if (pagos.length === 1) nota.textContent = `Pagás con ${pagos[0].nombre}${pagos[0].modo === 'prueba' ? ' (modo de prueba)' : ''}`;
+            else if (pagos.some(p => p.modo === 'prueba')) nota.textContent = 'Modo de prueba: no se cobra dinero real.';
+            card.append(cuerpo, botones, nota);
             return card;
         }
 
@@ -111,15 +155,24 @@
             const combos = document.getElementById('combos');
             combos.replaceChildren(...cfg.combos.map((c, i) => tarjeta({
                 titulo: c.nombre, descripcion: c.descripcion, monto: c.precio, moneda: c.moneda, periodo: c.periodo,
-                items: c.items.map(it => `${nombre(it)}${it.cantidad > 1 ? ` ×${it.cantidad}` : ''}`), destacada: i === 0, pagos: cfg.pagos
+                items: c.items.map(it => `${nombre(it)}${it.cantidad > 1 ? ` ×${it.cantidad}` : ''}`), destacada: i === 0, pagos: cfg.pagos,
+                tipo: 'combo', id: c.id
             })));
             if (!cfg.combos.length) combos.innerHTML = '<p class="sub">Por ahora no hay combos.</p>';
 
             const productos = document.getElementById('productos');
             const pagos = cfg.productos.filter(p => Number(p.precio) > 0);
             productos.replaceChildren(...pagos.map(p => tarjeta({
-                titulo: p.nombre, descripcion: p.descripcion, monto: p.precio, moneda: p.moneda, periodo: p.periodo, pagos: cfg.pagos
+                titulo: p.nombre, descripcion: p.descripcion, monto: p.precio, moneda: p.moneda, periodo: p.periodo, pagos: cfg.pagos,
+                tipo: 'producto', id: p.codigo
             })));
+            if (new URLSearchParams(location.search).get('cancelado')) {
+                const aviso = document.createElement('p');
+                aviso.className = 'sub';
+                aviso.style.cssText = 'background:#fff7ed; color:#9a3412; padding:0.75rem; border-radius:12px; margin-top:1rem;';
+                aviso.textContent = 'El pago se canceló. No se te cobró nada; podés intentarlo de nuevo cuando quieras.';
+                document.querySelector('.container h1').after(aviso);
+            }
             if (!pagos.length) productos.innerHTML = '<p class="sub">Por ahora no hay herramientas a la venta.</p>';
         });
     </script>

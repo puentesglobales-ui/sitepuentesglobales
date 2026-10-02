@@ -77,9 +77,27 @@ export async function registrarUso(user, token, herramienta) {
 }
 
 // Comprueba el límite del plan. Si se puede usar, registra el uso.
+// Producto del catálogo que habilita cada herramienta.
+export const PRODUCTO_DE = { ats: 'ats', entrevista: 'simulador' };
+
+// ¿Compró la herramienta (o un combo que la incluye) y el acceso está vigente?
+// Si la tabla todavía no existe en Supabase, se responde que no (no rompe nada).
+export async function tieneAcceso(user, token, herramienta) {
+  const producto = PRODUCTO_DE[herramienta];
+  if (!producto) return false;
+  const ahora = encodeURIComponent(new Date().toISOString());
+  try {
+    const r = await rest(`pg_accesos?select=id&user_id=eq.${user.id}&producto=eq.${producto}&or=(vence.is.null,vence.gt.${ahora})&limit=1`, token);
+    return (await r.json()).length > 0;
+  } catch (err) {
+    if (!/Supabase 404/.test(err.message)) console.warn('No se pudieron leer los accesos:', err.message);
+    return false;
+  }
+}
+
 export async function consumir(user, token, herramienta) {
-  const [plan, usos] = await Promise.all([getPlan(user, token), contarUsos(user, token, herramienta)]);
-  const decision = SaasCore.canUse(plan, herramienta, usos);
+  const [plan, usos, comprado] = await Promise.all([getPlan(user, token), contarUsos(user, token, herramienta), tieneAcceso(user, token, herramienta)]);
+  const decision = comprado ? { allowed: true, limit: null, used: usos, planName: 'Compra' } : SaasCore.canUse(plan, herramienta, usos);
   if (decision.allowed) await registrarUso(user, token, herramienta);
   return decision;
 }

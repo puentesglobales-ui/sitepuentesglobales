@@ -97,7 +97,8 @@ window.PANEL = (function () {
         secret_key: 'Secret key', webhook_secret: 'Webhook secret (opcional)', client_id: 'Client ID', client_secret: 'Client secret'
     };
 
-    function pagos(cont, { base, pagos, recargar, textoRespaldo }) {
+    // cuentaWebhook: 'plataforma' o el id de la empresa (para la dirección del aviso de Stripe).
+    function pagos(cont, { base, pagos, recargar, textoRespaldo, cuentaWebhook }) {
         cont.replaceChildren();
         if (textoRespaldo) cont.append(el('p', { class: 'hint', text: textoRespaldo }));
         for (const p of pagos) {
@@ -122,7 +123,9 @@ window.PANEL = (function () {
                         }
                     }) : null
                 ),
-                el('p', { class: 'hint', text: 'Las claves secretas se guardan cifradas y nunca se vuelven a mostrar.' })
+                el('p', { class: 'hint', text: 'Las claves secretas se guardan cifradas y nunca se vuelven a mostrar.' }),
+                p.metodo === 'stripe' && cuentaWebhook ? el('p', { class: 'hint', text: `En Stripe → Developers → Webhooks, agregá ${location.origin}/api/v1/pagos/webhook/stripe/${cuentaWebhook} con el evento checkout.session.completed, y pegá acá su "signing secret".` }) : null,
+                p.metodo === 'mercadopago' ? el('p', { class: 'hint', text: 'Mercado Pago avisa cada pago automáticamente. Usá una moneda que acepte tu cuenta (por ejemplo ARS para Argentina).' }) : null
             );
             form.addEventListener('submit', async e => {
                 e.preventDefault();

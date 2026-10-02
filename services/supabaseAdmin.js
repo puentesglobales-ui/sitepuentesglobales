@@ -45,13 +45,14 @@ export async function upsert(tabla, filas, conflicto) {
 }
 
 // filtro en formato PostgREST, p. ej. 'id=eq.123'. Nunca vacío: evita tocar toda la tabla.
-export async function actualizar(tabla, filtro, cambios) {
+export async function actualizar(tabla, filtro, cambios, { devolver = false } = {}) {
   if (!filtro) throw new Error('actualizar sin filtro');
-  await pedir(`/rest/v1/${tabla}?${filtro}`, {
+  const res = await pedir(`/rest/v1/${tabla}?${filtro}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    headers: { 'Content-Type': 'application/json', Prefer: devolver ? 'return=representation' : 'return=minimal' },
     body: JSON.stringify(cambios)
   });
+  return devolver ? res.json() : null;
 }
 
 export async function borrar(tabla, filtro) {

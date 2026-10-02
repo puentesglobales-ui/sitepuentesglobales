@@ -93,7 +93,7 @@ async function cargar() {
   PANEL.combos($('#combos'), { base, productos: datos.productos, combos: datos.combos, recargar: cargar });
   const propios = datos.pagos.some(p => p.configurado && p.activo);
   PANEL.pagos($('#pagos'), {
-    base, pagos: datos.pagos, recargar: cargar,
+    base, pagos: datos.pagos, recargar: cargar, cuentaWebhook: o.id,
     textoRespaldo: propios
       ? 'Tus candidatos pagan con tus medios de pago. Puentes Globales te factura la comisión según las ventas registradas.'
       : 'Todavía no cargaste medios de pago propios: tus candidatos pagan con los de Puentes Globales, que descuenta su comisión y te transfiere el resto.'

@@ -71,7 +71,7 @@ async function cargar() {
   $('#c-pct').value = datos.comision_pct;
   pintarCatalogo();
   PANEL.combos($('#combos'), { base: '/superadmin', productos: datos.productos, combos: datos.combos, recargar: cargar });
-  PANEL.pagos($('#pagos'), { base: '/superadmin', pagos: datos.pagos, recargar: cargar,
+  PANEL.pagos($('#pagos'), { base: '/superadmin', pagos: datos.pagos, recargar: cargar, cuentaWebhook: 'plataforma',
     textoRespaldo: 'Son el respaldo: los usan las empresas que no cargaron medios de pago propios. En esos cobros Puentes Globales retiene su comisión.' });
 }
 

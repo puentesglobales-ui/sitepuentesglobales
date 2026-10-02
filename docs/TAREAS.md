@@ -37,16 +37,18 @@ Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "D
 
 ## Marca blanca
 
+- [x] Tarea 43 (rama, con el SQL `20261005_pagos.sql`): cobro real con Mercado Pago, Stripe y PayPal; ventas con comisión en `pg_ventas`; accesos por producto en `pg_accesos` (mensual = 30 días); el ATS y el simulador sin límite para quien los compró.
 - [x] Empresas con marca, dominio y admins; catálogo de productos (tests, simulador, constructor de CV, ATS, idiomas, curso); precios propios; combos; medios de pago Mercado Pago, Stripe y PayPal con claves cifradas; comisión por empresa; respaldo en la plataforma; panel de empresa y superadmin (rama, se publica con el SQL `20261004_marca_blanca.sql`).
 
 | # | Tarea | Responsable | Depende de |
 |---|---|---|---|
-| 41 | Ejecutar `20261004_marca_blanca.sql`; cargar `SUPER_ADMIN_EMAILS` y `PAYMENTS_ENC_KEY` en Render | Usuario | 1 |
+| 41 | Ejecutar `20261004_marca_blanca.sql` y `20261005_pagos.sql`; cargar `SUPER_ADMIN_EMAILS` y `PAYMENTS_ENC_KEY` en Render | Usuario | 1 |
 | 42 | Comprar dominio propio y configurar `BASE_DOMAIN` y comodín de subdominios (*.dominio) en Render | Usuario | — |
-| 43 | Cobro real: checkout y webhooks de Mercado Pago, Stripe y PayPal; registro en `pg_ventas`; acceso a productos comprados | Código | 41 |
 | 44 | Reparto automático con la comisión cuando la empresa usa los medios de la plataforma (Stripe Connect, Mercado Pago Marketplace, PayPal para socios) | Código + Usuario | 43 |
 | 45 | Liquidación mensual de comisiones de empresas que cobran con sus propios medios | Código | 43 |
 | 46 | Contrato de marca blanca: la empresa responsable de sus candidatos, Puentes Globales encargado; comisión y facturación | Abogado | 11 |
+| 48 | Renovación automática de productos mensuales (suscripciones de Stripe, Mercado Pago y PayPal) | Código | 41 |
+| 49 | Cargar claves de prueba de cada medio de pago y hacer una compra de punta a punta | Usuario | 41 |
 | 47 | Producto "Aprendizaje de idiomas" (hoy solo existe en el catálogo) | Código | — |
 
 ## Fase 1 — Creador de CV

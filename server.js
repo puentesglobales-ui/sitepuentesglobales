@@ -14,6 +14,7 @@ import cuentaRoutes from './routes/cuenta.js';
 import orgRoutes from './routes/org.js';
 import empresaRoutes from './routes/empresa.js';
 import superadminRoutes from './routes/superadmin.js';
+import pagosRoutes from './routes/pagos.js';
 
 dotenv.config();
 
@@ -22,7 +23,10 @@ const PORT = process.env.PORT || 10000; // Puerto default en Render
 
 // Middlewares
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+// Render está detrás de un proxy: así req.protocol y la IP del rate limit son los reales.
+app.set('trust proxy', 1);
+// rawBody: los webhooks de Stripe se verifican con el cuerpo exacto que llegó.
+app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
 
 // Librerías del navegador servidas desde node_modules (antes venían de jsDelivr y unpkg,
 // que recibían la IP de cada visitante). La versión la fija package.json.
@@ -58,6 +62,7 @@ app.use('/api/v1/cuenta', cuentaRoutes);
 app.use('/api/v1/org', orgRoutes);
 app.use('/api/v1/empresa/:slug', empresaRoutes);
 app.use('/api/v1/superadmin', superadminRoutes);
+app.use('/api/v1/pagos', pagosRoutes);
 
 // Ruta fallback para 404
 app.use((req, res) => {
