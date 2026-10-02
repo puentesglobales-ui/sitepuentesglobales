@@ -11,6 +11,7 @@
  *   requireAuth()             → Promise<user>. Bloquea la página hasta que el usuario se registre/ingrese.
  *   openModal()               → Promise<user|null>. Igual pero se puede cerrar (null si cierra).
  *   getUser()                 → Promise<user|null>
+ *   getToken()                → Promise<string|null>. Token para el header Authorization de la API.
  *   saveResult(test, puntaje, maximo, detalle) → guarda el resultado de un test.
  *   signOut()
  *   onChange(cb)              → cb(user|null) cada vez que cambia la sesión.
@@ -36,6 +37,7 @@
             requireAuth: () => { showFatal(); return new Promise(() => {}); },
             openModal: () => { showFatal(); return Promise.resolve(null); },
             getUser: async () => null,
+            getToken: async () => null,
             saveResult: async () => {},
             signOut: async () => {},
             onChange: () => {}
@@ -395,11 +397,18 @@
         if (error) console.warn('[PG_AUTH] No se pudo guardar el resultado:', error.message);
     }
 
+    // Token de sesión para llamar a la API del sitio (header Authorization).
+    async function getToken() {
+        const { data } = await client.auth.getSession();
+        return (data && data.session && data.session.access_token) || null;
+    }
+
     window.PG_AUTH = {
         client,
         requireAuth: () => gate(false),
         openModal: () => gate(true),
         getUser,
+        getToken,
         saveResult,
         signOut: () => client.auth.signOut(),
         onChange: cb => {

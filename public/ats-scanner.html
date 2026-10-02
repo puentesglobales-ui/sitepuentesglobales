@@ -6,6 +6,9 @@
     <title>Filtro ATS Mejorado | PuentesGlobales</title>
     <link rel="stylesheet" href="fonts.css">
     <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
+    <script src="pg-api.js"></script>
     <style>
         :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
@@ -88,14 +91,7 @@
             const jobTitle = document.getElementById('jobTitle').value;
 
             try {
-                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
-                const res = await fetch(`${apiBase}/ats/evaluate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cvText, jobTitle })
-                });
-
-                const data = await res.json();
+                const data = await PG_API.post('/ats/evaluate', { cvText, jobTitle });
                 if (data.success) {
                     const ans = data.analysis;
                     document.getElementById('results').style.display = 'block';
@@ -112,7 +108,7 @@
 
                     document.getElementById('recs-list').innerHTML = ans.recommendations.map(r => `<div class="rec-item">💡 ${r}</div>`).join('');
                     document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-                } else {
+                } else if (!data.code) {
                     alert(data.error || 'Error en el análisis');
                 }
             } catch (err) {
@@ -123,6 +119,7 @@
             }
         }
     </script>
+    <script>PG_AUTH.requireAuth();</script>
     <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->
     <script src="alex-widget.js"></script>
 </body>

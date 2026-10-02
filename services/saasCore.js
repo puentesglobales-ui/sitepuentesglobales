@@ -2,75 +2,60 @@
  * Motor SaaS Enterprise: Suscripciones, Cuotas y Multi-tenancy
  *
  * Los planes pagos de candidatos cubren solo servicios de preparación
- * (escáner ATS, tests, simulador). Buscar ofertas y postularse es gratis
- * e ilimitado en todos los planes: no se cobra por acceder al empleo.
+ * (escáner ATS, simulador de entrevistas, curso). Buscar ofertas y postularse
+ * es gratis e ilimitado en todos los planes: no se cobra por acceder al empleo.
+ *
+ * Límites de herramientas: cantidad TOTAL de usos por cuenta (no por día).
+ * null = ilimitado. Se cuentan en Supabase (tabla pg_uso), ver services/usage.js.
  */
 
 export const SAAS_PLANS = {
   FREE: {
     name: 'Plan Gratuito',
-    atsScansPerDay: 2,
-    psychometricTests: 1,
-    interviewSimulator: false,
+    limits: { ats: 1, entrevista: 1 },
     price: '$0 / mes'
   },
   PRO: {
     name: 'Plan Profesional',
-    atsScansPerDay: 50,
-    psychometricTests: 10,
-    interviewSimulator: true,
+    limits: { ats: null, entrevista: null },
     price: '$19 / mes'
   },
   ENTERPRISE: {
     name: 'Plan Enterprise Multi-Tenant',
-    atsScansPerDay: 1000,
-    psychometricTests: 500,
-    interviewSimulator: true,
+    limits: { ats: null, entrevista: null },
     alexWhatsAppBot: true,
     whitelabelBranding: true,
     price: '$99 / mes'
   }
 };
 
-// Simulador de almacenamiento de uso en memoria / DB
-const userUsageStore = new Map();
+export const HERRAMIENTAS = {
+  ats: 'escaneo ATS',
+  entrevista: 'entrevista simulada'
+};
 
 export class SaasCore {
-  static getUserPlan(userRole = 'candidate') {
-    if (userRole === 'enterprise' || userRole === 'org_admin') return SAAS_PLANS.ENTERPRISE;
-    if (userRole === 'pro') return SAAS_PLANS.PRO;
+  // plan: valor de la columna pg_planes.plan ('pro', 'enterprise') o null para gratis.
+  static getUserPlan(plan) {
+    if (plan === 'enterprise') return SAAS_PLANS.ENTERPRISE;
+    if (plan === 'pro') return SAAS_PLANS.PRO;
     return SAAS_PLANS.FREE;
   }
 
-  static checkUsageLimit(userId = 'guest', feature = 'ats', userRole = 'candidate') {
-    // La búsqueda de empleo nunca tiene límite por plan.
-    if (feature === 'searches') return { allowed: true, unlimited: true };
-
-    const plan = this.getUserPlan(userRole);
-    const today = new Date().toISOString().split('T')[0];
-    const key = `${userId}_${today}_${feature}`;
-
-    const currentCount = userUsageStore.get(key) || 0;
-    let limit = 5;
-
-    if (feature === 'ats') limit = plan.atsScansPerDay;
-
-    if (currentCount >= limit) {
-      return {
-        allowed: false,
-        currentCount,
-        limit,
-        planName: plan.name,
-        upgradeMessage: `Has alcanzado el límite diario de ${limit} ${feature} de tu ${plan.name}. Actualiza a Pro o Enterprise para uso ilimitado.`
-      };
+  // Decide si se puede usar una herramienta dado el plan y los usos ya hechos.
+  static canUse(plan, herramienta, usosPrevios) {
+    const p = this.getUserPlan(plan);
+    const limit = p.limits[herramienta];
+    if (limit === undefined) throw new Error(`Herramienta desconocida: ${herramienta}`);
+    if (limit === null || usosPrevios < limit) {
+      return { allowed: true, limit, used: usosPrevios, planName: p.name };
     }
-
-    userUsageStore.set(key, currentCount + 1);
     return {
-      allowed: true,
-      currentCount: currentCount + 1,
+      allowed: false,
       limit,
-      remaining: limit - (currentCount + 1)
+      used: usosPrevios,
+      planName: p.name,
+      message: `Ya usaste tu ${HERRAMIENTAS[herramienta]} gratis. Con el Plan Profesional lo usás sin límite.`
     };
   }
 

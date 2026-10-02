@@ -6,6 +6,9 @@
     <title>Simulador de Entrevistas IA | PuentesGlobales</title>
     <link rel="stylesheet" href="fonts.css">
     <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="auth-gate.js"></script>
+    <script src="pg-api.js"></script>
     <style>
         :root { --primary: #1e293b; --accent: #2563eb; --bg: #f8fafc; --card: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
@@ -63,16 +66,12 @@
             history.innerHTML = '<div class="msg msg-ai">⏳ Conectando con Reclutador IA TalkMe...</div>';
 
             try {
-                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
-                const res = await fetch(`${apiBase}/talkme/interview`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ jobTitle: role, candidateAnswer: '', step: currentStep })
-                });
-
-                const data = await res.json();
+                const data = await PG_API.post('/talkme/interview', { jobTitle: role, candidateAnswer: '', step: currentStep });
                 if (data.success) {
                     history.innerHTML = `<div class="msg msg-ai">🤖 <b>Reclutador IA (Pregunta ${data.data.step}/${data.data.totalSteps}):</b><br>${data.data.question}</div>`;
+                } else {
+                    history.innerHTML = '<div class="msg msg-ai"></div>';
+                    history.firstChild.textContent = data.error || 'No se pudo iniciar la entrevista.';
                 }
             } catch (err) {
                 history.innerHTML = '<div class="msg msg-ai">Error al conectar con la sala de entrevistas.</div>';
@@ -94,15 +93,13 @@
             currentStep++;
 
             try {
-                const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
-                const res = await fetch(`${apiBase}/talkme/interview`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ jobTitle: role, candidateAnswer: answer, step: currentStep })
-                });
-
-                const data = await res.json();
-                if (data.success) {
+                const data = await PG_API.post('/talkme/interview', { jobTitle: role, candidateAnswer: answer, step: currentStep });
+                if (!data.success) {
+                    const div = document.createElement('div');
+                    div.className = 'msg msg-ai';
+                    div.textContent = data.error || 'Error de comunicación.';
+                    history.appendChild(div);
+                } else {
                     if (data.data.feedback) {
                         history.innerHTML += `<div class="msg msg-ai" style="background:#fef3c7; border-color:#d97706; color:#92400e">${data.data.feedback}</div>`;
                     }
@@ -114,6 +111,7 @@
             }
         }
     </script>
+    <script>PG_AUTH.requireAuth();</script>
     <!-- 🤖 Bot IA en tu Web — powered by ALEX IO -->
     <script src="alex-widget.js"></script>
 </body>

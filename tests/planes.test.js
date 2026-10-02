@@ -6,13 +6,23 @@ import { SaasCore, SAAS_PLANS } from '../services/saasCore.js';
 
 test('ningún plan define un límite de búsquedas de empleo', () => {
     for (const plan of Object.values(SAAS_PLANS)) {
-        assert.equal(Object.keys(plan).some(k => /search/i.test(k)), false, plan.name);
+        assert.equal(JSON.stringify(plan).match(/search|busqueda|búsqueda/i), null, plan.name);
     }
 });
 
-test('el plan gratuito puede buscar sin límite', () => {
-    for (let i = 0; i < 50; i++) {
-        assert.equal(SaasCore.checkUsageLimit('candidato-1', 'searches', 'candidate').allowed, true);
+test('cuenta gratis: 1 escaneo ATS y 1 entrevista en total', () => {
+    for (const h of ['ats', 'entrevista']) {
+        assert.equal(SaasCore.canUse(null, h, 0).allowed, true, h);
+        const segunda = SaasCore.canUse(null, h, 1);
+        assert.equal(segunda.allowed, false, h);
+        assert.match(segunda.message, /Plan Profesional/);
+    }
+});
+
+test('Plan Pro y Enterprise: sin límite', () => {
+    for (const plan of ['pro', 'enterprise']) {
+        assert.equal(SaasCore.canUse(plan, 'ats', 500).allowed, true);
+        assert.equal(SaasCore.canUse(plan, 'entrevista', 500).allowed, true);
     }
 });
 
