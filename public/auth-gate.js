@@ -5,7 +5,7 @@
  * tablas pg_candidatos y pg_resultados_test.
  *
  * Requiere cargar antes:
- *   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+ *   <script src="vendor/supabase.js"></script>
  *
  * API global (window.PG_AUTH):
  *   requireAuth()             → Promise<user>. Bloquea la página hasta que el usuario se registre/ingrese.

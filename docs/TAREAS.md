@@ -16,6 +16,7 @@ Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "D
 - [x] Tutor IA (`/home`) quitado del sitio.
 - [x] Búsqueda de empleo gratis e ilimitada en todos los planes.
 - [x] Tareas 6, 7 y 29 (parte): Remotive fuera; destinos corregidos y ampliados; búsqueda en español traducida al idioma de cada país (diccionario propio + ESCO); resultados seguros con textContent.
+- [x] Tarea 14: fuentes y librerías (Supabase, Lucide) servidas desde el propio sitio; sin Google Fonts, jsDelivr ni unpkg.
 
 ## Fase 0 — Antes de juntar CVs
 
@@ -32,7 +33,6 @@ Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "D
 | 11 | Revisar con abogados el informe legal y los textos de permisos | Abogado | — |
 | 12 | Crear proyecto de Supabase en `eu-central-1` (Frankfurt) y mover el servicio de Render a Frankfurt, antes del primer usuario real | Usuario | — |
 | 13 | Apuntar el sitio al proyecto de la UE (`auth-gate.js`, `SUPABASE_URL`) y correr las migraciones allí | Código | 12 |
-| 14 | Alojar en el servidor las fuentes tipográficas y scripts que hoy vienen de Google Fonts, jsDelivr y unpkg | Código | — |
 | 15 | Pantalla "Mis datos": ver y cambiar permisos, descargar todo, borrar la cuenta | Código | 9 |
 | 16 | Corregir el nombre del servicio en `render.yaml` (`sitepuentesglobales`) y la región | Código | 12 |
 | 17 | Revisar restricciones para reclutar personal de salud para Alemania (lista de la OMS, § 38 BeschV) | Abogado | — |

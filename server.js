@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'node:url';
 
 import jobRoutes from './routes/jobs.js';
 import atsRoutes from './routes/ats.js';
@@ -18,6 +19,13 @@ const PORT = process.env.PORT || 10000; // Puerto default en Render
 // Middlewares
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+// Librerías del navegador servidas desde node_modules (antes venían de jsDelivr y unpkg,
+// que recibían la IP de cada visitante). La versión la fija package.json.
+const nodeModule = p => fileURLToPath(new URL(`./node_modules/${p}`, import.meta.url));
+const vendor = { maxAge: '7d' };
+app.get('/vendor/supabase.js', (req, res) => res.sendFile(nodeModule('@supabase/supabase-js/dist/umd/supabase.js'), vendor));
+app.get('/vendor/lucide.js', (req, res) => res.sendFile(nodeModule('lucide/dist/umd/lucide.min.js'), vendor));
 
 // Servir el Frontend completo de la web desde la carpeta 'public'
 app.use(express.static('public'));
