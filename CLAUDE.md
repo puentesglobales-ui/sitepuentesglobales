@@ -20,7 +20,11 @@ Plan y tareas: `docs/TAREAS.md`.
 ```
 server.js                 rutas /api/v1/*, estáticos de public/, rate limit
 config/apis.js            fuentes de empleo; claves y RSS desde variables de entorno
-services/jobAdapters/     un adaptador por API + RssAdapter (caché 15 min) + timeout 10 s
+services/jobAdapters/     un adaptador por API + RssAdapter (caché 15 min) + timeout 10 s; cada uno declara cubre(destino)
+services/destinos.js      países de destino: nombre/código → código Adzuna e idiomas
+services/profesiones.js   diccionario propio de profesiones frecuentes, por idioma (tiene prioridad)
+services/esco.js          traducción de la profesión con ESCO para lo que no está en el diccionario
+public/fonts.css, fonts/  fuentes alojadas en el sitio; /vendor/supabase.js y /vendor/lucide.js salen de node_modules
 services/saasCore.js      planes de candidatos
 services/usage.js         sesión Supabase en el servidor y contador de usos (rama limites-ats)
 controllers/, routes/     API: jobs, ats, psychometric, talkme, saas, admin
@@ -43,8 +47,10 @@ docs/TAREAS.md            plan de trabajo numerado
 1. **Ninguna clave en el repo.** El historial de GitHub se limpió de claves expuestas; un test (`tests/admin-fuentes.test.js`) falla si vuelve a aparecer una en `config/apis.js` o una URL de RSS escrita en el código.
 2. **No se cobra al candidato por conseguir trabajo.** Buscar ofertas, ser visible para empresas, postularse y recibir alertas: gratis e ilimitado. Se cobra solo la preparación: curso en Skool, ATS, simulador, CV premium/adaptado. Cuenta gratis: 1 uso de ATS y 1 entrevista simulada (rama `limites-ats`, tarea 2 de `docs/TAREAS.md`).
 3. **Datos personales**: permisos separados, casillas desmarcadas, con historial (texto, versión, fecha). Los tests y el CI nunca deciden solos sobre una persona: revisión humana. Los CVs no se usan como datos para entrenar IA.
-4. **Términos de las fuentes**: mostrar la fuente y enlazar a la oferta original. Remotive prohíbe mostrar sus ofertas a cambio de registro y pide máx. 4 consultas por día: incompatible con el registro obligatorio (tarea pendiente: quitarla).
+4. **Términos de las fuentes**: mostrar la fuente y enlazar a la oferta original. Remotive se quitó: prohíbe mostrar sus ofertas a cambio de registro.
 5. **La IA no inventa** en los CVs: solo reordena y reformula lo que la persona cargó.
+6. **Sin recursos de terceros en las páginas**: nada de Google Fonts ni CDNs (envían la IP del visitante). `tests/recursos-externos.test.js` lo controla. La única excepción es el widget de Alex IO.
+7. **La base de etiquetadores no se vende**: Puentes Globales vende horas de trabajo de su propio equipo, nunca la lista de personas.
 
 ## Convenciones
 - Textos del sitio en español rioplatense (vos: "tenés", "podés").
