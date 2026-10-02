@@ -26,12 +26,37 @@ export async function seleccionar(tabla, query) {
   return (await pedir(`/rest/v1/${tabla}?${query}`)).json();
 }
 
-export async function insertar(tabla, filas) {
-  await pedir(`/rest/v1/${tabla}`, {
+export async function insertar(tabla, filas, { devolver = false } = {}) {
+  const res = await pedir(`/rest/v1/${tabla}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    headers: { 'Content-Type': 'application/json', Prefer: devolver ? 'return=representation' : 'return=minimal' },
     body: JSON.stringify(filas)
   });
+  return devolver ? res.json() : null;
+}
+
+// Inserta o reemplaza según la clave indicada (p. ej. 'org_id,producto').
+export async function upsert(tabla, filas, conflicto) {
+  await pedir(`/rest/v1/${tabla}?on_conflict=${encodeURIComponent(conflicto)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(filas)
+  });
+}
+
+// filtro en formato PostgREST, p. ej. 'id=eq.123'. Nunca vacío: evita tocar toda la tabla.
+export async function actualizar(tabla, filtro, cambios) {
+  if (!filtro) throw new Error('actualizar sin filtro');
+  await pedir(`/rest/v1/${tabla}?${filtro}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify(cambios)
+  });
+}
+
+export async function borrar(tabla, filtro) {
+  if (!filtro) throw new Error('borrar sin filtro');
+  await pedir(`/rest/v1/${tabla}?${filtro}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
 }
 
 // Borra el usuario de Supabase Auth. Sus filas en pg_* se borran en cascada (on delete cascade).

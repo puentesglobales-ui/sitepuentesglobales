@@ -11,6 +11,9 @@ import talkmeRoutes from './routes/talkme.js';
 import saasRoutes from './routes/saas.js';
 import adminRoutes from './routes/admin.js';
 import cuentaRoutes from './routes/cuenta.js';
+import orgRoutes from './routes/org.js';
+import empresaRoutes from './routes/empresa.js';
+import superadminRoutes from './routes/superadmin.js';
 
 dotenv.config();
 
@@ -52,6 +55,9 @@ app.use('/api/v1/talkme', talkmeRoutes);
 app.use('/api/v1/saas', saasRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/cuenta', cuentaRoutes);
+app.use('/api/v1/org', orgRoutes);
+app.use('/api/v1/empresa/:slug', empresaRoutes);
+app.use('/api/v1/superadmin', superadminRoutes);
 
 // Ruta fallback para 404
 app.use((req, res) => {
