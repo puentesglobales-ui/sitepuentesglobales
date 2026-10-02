@@ -836,12 +836,8 @@
             { id: 'adzuna', name: 'Adzuna Jobs', url: 'https://api.adzuna.com/v1/api/jobs/gb/search/1?app_id=demo&app_key=demo', type: 'api' }
         ];
 
-        const defaultRSS = [
-            { id: 'wwr-prog', name: 'WWR Programming', url: 'https://weworkremotely.com/categories/remote-programming-jobs.rss', category: 'Programming', location: 'Global' },
-            { id: 'remoteok-rss', name: 'RemoteOK RSS', url: 'https://remoteok.com/remote-jobs.rss', category: 'All', location: 'Global' },
-            { id: 'reddit-forhire', name: 'Reddit ForHire', url: 'https://www.reddit.com/r/forhire/new/.rss', category: 'Freelance', location: 'Global' },
-            { id: 'dribbble-jobs', name: 'Dribbble Jobs', url: 'https://dribbble.com/jobs.rss', category: 'Design', location: 'Global' }
-        ];
+        // Los feeds del buscador real se configuran en Render (variable RSS_FEEDS).
+        const defaultRSS = [];
 
         // --- State Management ---
         let apiSources = JSON.parse(localStorage.getItem('pg_api_sources')) || defaultAPIs;

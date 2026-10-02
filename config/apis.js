@@ -76,10 +76,19 @@ export const API_SOURCES = {
   }
 };
 
-// Feeds RSS que se controlan desde el panel de estado (/api/v1/admin/status).
-export const RSS_FEEDS = [
-  { id: 'wwr-prog', name: 'WWR Programming', url: 'https://weworkremotely.com/categories/remote-programming-jobs.rss' },
-  { id: 'remoteok-rss', name: 'RemoteOK RSS', url: 'https://remoteok.com/remote-jobs.rss' },
-  { id: 'reddit-forhire', name: 'Reddit ForHire', url: 'https://www.reddit.com/r/forhire/new/.rss' },
-  { id: 'dribbble-jobs', name: 'Dribbble Jobs', url: 'https://dribbble.com/jobs.rss' }
-];
+// Feeds RSS: variable RSS_FEEDS con el formato "Nombre|https://url;Otro nombre|https://url".
+export function parseRssFeeds(raw) {
+  return String(raw || '')
+    .split(';')
+    .map(entry => entry.trim())
+    .filter(Boolean)
+    .map(entry => {
+      const sep = entry.indexOf('|');
+      const name = (sep >= 0 ? entry.slice(0, sep) : entry).trim();
+      const url = (sep >= 0 ? entry.slice(sep + 1) : entry).trim();
+      return { id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name, url };
+    })
+    .filter(feed => /^https?:\/\//.test(feed.url));
+}
+
+export const RSS_FEEDS = parseRssFeeds(env('RSS_FEEDS'));

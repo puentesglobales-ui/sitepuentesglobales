@@ -1,4 +1,4 @@
-import { API_SOURCES } from '../../config/apis.js';
+import { API_SOURCES, RSS_FEEDS } from '../../config/apis.js';
 
 export class AdzunaAdapter {
   static async fetchJobs(query = '', location = 'gb') {
@@ -242,6 +242,74 @@ export class RemotiveAdapter {
   }
 }
 
+// Feeds RSS genéricos (variable RSS_FEEDS). Parser mínimo sin dependencias.
+function decodeXml(s = '') {
+  return s
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&amp;/g, '&');
+}
+
+function tag(xml, name) {
+  const m = xml.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`, 'i'));
+  return m ? decodeXml(m[1]).trim() : '';
+}
+
+export function parseRss(xml, feedName) {
+  const blocks = xml.match(/<item[\s>][\s\S]*?<\/item>|<entry[\s>][\s\S]*?<\/entry>/gi) || [];
+  return blocks.map((b, i) => {
+    const atomLink = (b.match(/<link[^>]*href="([^"]+)"/i) || [])[1];
+    const url = tag(b, 'link') || decodeXml(atomLink || '');
+    const text = (tag(b, 'description') || tag(b, 'summary') || tag(b, 'content')).replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+    return {
+      id: `rss_${feedName}_${url || i}`,
+      title: tag(b, 'title') || 'Oferta de Empleo',
+      company: tag(b, 'author') || tag(b, 'dc:creator') || feedName,
+      location: 'Remoto / Global',
+      description: text ? text.slice(0, 280) + '...' : '',
+      url,
+      source: `RSS: ${feedName}`,
+      tags: [],
+      created_at: tag(b, 'pubDate') || tag(b, 'updated') || tag(b, 'published')
+    };
+  }).filter(j => j.url);
+}
+
+// Los feeds no dependen de la búsqueda: se guardan 15 min para no pedirlos en cada
+// búsqueda (Reddit, por ejemplo, responde 429 si se lo consulta seguido).
+const RSS_CACHE_MS = 15 * 60 * 1000;
+const rssCache = new Map();
+
+export class RssAdapter {
+  static async fetchFeed(feed) {
+    const cached = rssCache.get(feed.url);
+    if (cached && Date.now() - cached.at < RSS_CACHE_MS) return cached.jobs;
+    try {
+      const res = await fetch(feed.url, { headers: { 'User-Agent': 'PuentesGlobalesBot/2.0' } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const jobs = parseRss(await res.text(), feed.name);
+      rssCache.set(feed.url, { at: Date.now(), jobs });
+      return jobs;
+    } catch (err) {
+      // Si falla pero hay una copia anterior, mejor mostrar eso que nada.
+      if (cached) return cached.jobs;
+      throw err;
+    }
+  }
+
+  static async fetchJobs(query = '') {
+    const results = await Promise.allSettled(RSS_FEEDS.map(feed => withTimeout(RssAdapter.fetchFeed(feed))));
+    const q = query.toLowerCase();
+    // Hasta 15 por feed, para que ningún feed tape a los demás.
+    return results
+      .filter(r => r.status === 'fulfilled')
+      .flatMap(r => r.value
+        .filter(j => !q || j.title.toLowerCase().includes(q) || j.description.toLowerCase().includes(q))
+        .slice(0, 15));
+  }
+}
+
 // Fuente id (config/apis.js) → adaptador.
 export const ADAPTERS = {
   adzuna: AdzunaAdapter,
@@ -266,9 +334,10 @@ export function withTimeout(promise, ms = TIMEOUT_MS) {
 
 export class AdapterManager {
   static async searchAllSources(query = '', location = '') {
-    const results = await Promise.allSettled(
-      Object.values(ADAPTERS).map(adapter => withTimeout(adapter.fetchJobs(query, location)))
-    );
+    const results = await Promise.allSettled([
+      ...Object.values(ADAPTERS).map(adapter => withTimeout(adapter.fetchJobs(query, location))),
+      RssAdapter.fetchJobs(query)
+    ]);
 
     let allJobs = [];
     results.forEach(res => {
