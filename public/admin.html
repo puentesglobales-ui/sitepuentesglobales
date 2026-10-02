@@ -6,6 +6,8 @@
     <title>PuentesGlobales - Admin Dashboard</title>
     <link rel="stylesheet" href="fonts.css">
     <script src="vendor/lucide.js"></script>
+    <script src="vendor/supabase.js"></script>
+    <script src="auth-gate.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -749,13 +751,16 @@
         <section id="candidatos" class="section-content">
             <div class="header">
                 <h1>Candidatos Registrados</h1>
-                <button class="btn btn-danger" onclick="clearCandidateLeads()">
-                    <i data-lucide="trash-2"></i> Limpiar Leads
+                <button class="btn btn-primary" onclick="renderCandidatosTable()">
+                    <i data-lucide="refresh-cw"></i> Actualizar
                 </button>
             </div>
+            <p class="text-muted" style="margin-bottom:1rem;">Datos de Supabase. Cada consulta queda registrada con tu email (tabla pg_auditoria). Para contactar o enviar un CV, respetá los permisos de cada persona.</p>
             <div class="table-container">
                 <div class="table-header">
-                    <h3>Leads de Postulantes</h3>
+                    <label style="display:flex; gap:0.5rem; align-items:center; font-weight:600; font-size:0.9rem;">
+                        <input type="checkbox" id="cand-filtro-cv" onchange="pintarCandidatos()"> Solo quienes aceptan compartir su CV
+                    </label>
                     <span id="leads-count-badge" class="badge badge-primary">0 registrados</span>
                 </div>
                 <table id="candidatos-table">
@@ -766,10 +771,12 @@
                             <th>Email</th>
                             <th>WhatsApp / Teléfono</th>
                             <th>Área / Profesión</th>
+                            <th>CI</th>
+                            <th>Permisos</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Populated by JS -->
+                        <tr><td colspan="7" class="text-muted">Cargando…</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1101,21 +1108,15 @@
         };
 
         async function checkSourcesStatus() {
-            let token = sessionStorage.getItem('pg_admin_token');
-            if (!token) {
-                token = prompt('Clave de administrador (ADMIN_TOKEN de Render):');
-                if (!token) return;
-            }
             const btn = document.getElementById('btn-check-status');
             const tbody = document.querySelector('#status-table tbody');
             btn.disabled = true;
             tbody.innerHTML = '<tr><td colspan="6" class="text-muted">Probando fuentes… (hasta 10 s)</td></tr>';
             try {
-                const res = await fetch('/api/v1/admin/status', { headers: { 'x-admin-token': token } });
+                // Con sesión de administrador alcanza; ADMIN_TOKEN queda como alternativa.
+                const res = await fetch('/api/v1/admin/status', { headers: { Authorization: `Bearer ${await PG_AUTH.getToken()}` } });
                 const data = await res.json();
-                if (res.status === 401) sessionStorage.removeItem('pg_admin_token');
                 if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
-                sessionStorage.setItem('pg_admin_token', token);
 
                 tbody.innerHTML = '';
                 data.fuentes.forEach(f => {
@@ -1448,37 +1449,79 @@
         }
 
         // --- Candidatos / Leads Section ---
-        function renderCandidatosTable() {
-            const leads = JSON.parse(localStorage.getItem('pg_candidate_leads')) || [];
-            document.getElementById('leads-count-badge').textContent = `${leads.length} registrados`;
+        // --- Candidatos (Supabase, vía servidor con sesión de administrador) ---
+        let candidatos = [];
+        const ETIQUETAS_PERMISO = { recomendar_ofertas: 'Ofertas', compartir_cv: 'Compartir CV', mensajes: 'Mensajes', trabajos_ia: 'Trabajos IA', mostrar_tests: 'Tests' };
+
+        async function apiAdmin(path) {
+            const res = await fetch(`/api/v1/admin${path}`, { headers: { Authorization: `Bearer ${await PG_AUTH.getToken()}` } });
+            const data = await res.json().catch(() => ({ success: false, error: 'Respuesta inválida del servidor.' }));
+            if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
+            return data;
+        }
+
+        async function renderCandidatosTable() {
+            const tbody = document.querySelector('#candidatos-table tbody');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-muted">Cargando…</td></tr>';
+            try {
+                candidatos = (await apiAdmin('/candidatos')).items;
+                pintarCandidatos();
+            } catch (err) {
+                tbody.innerHTML = '';
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td colspan="7" style="color: var(--danger);"></td>';
+                tr.firstChild.textContent = 'No se pudieron cargar los candidatos: ' + err.message;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function pintarCandidatos() {
+            const soloCV = document.getElementById('cand-filtro-cv').checked;
+            const lista = soloCV ? candidatos.filter(c => c.permisos.compartir_cv) : candidatos;
+            document.getElementById('leads-count-badge').textContent = `${lista.length} registrados`;
             const tbody = document.querySelector('#candidatos-table tbody');
             tbody.innerHTML = '';
-
-            if (leads.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:#9ca3af;">No hay postulantes registrados todavía.</td></tr>';
+            if (!lista.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#9ca3af;">No hay candidatos para mostrar.</td></tr>';
                 return;
             }
-
-            leads.forEach(lead => {
+            const celda = (tr, texto) => { const td = document.createElement('td'); td.textContent = texto; tr.appendChild(td); return td; };
+            for (const c of lista) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${formatDate(lead.registeredAt)}</td>
-                    <td><strong>${lead.name}</strong></td>
-                    <td><a href="mailto:${lead.email}">${lead.email}</a></td>
-                    <td><a href="https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color:#2563eb; font-weight:600;">💬 ${lead.phone}</a></td>
-                    <td><span class="badge badge-secondary">${lead.profession || 'General'}</span></td>
-                `;
+                celda(tr, formatDate(c.created_at));
+                celda(tr, c.nombre || '—').style.fontWeight = '700';
+                celda(tr, c.email || '—');
+                celda(tr, c.telefono || '—');
+                celda(tr, c.profesion || '—');
+                celda(tr, c.ci ?? '—');
+                const td = celda(tr, '');
+                for (const [tipo, etiqueta] of Object.entries(ETIQUETAS_PERMISO)) {
+                    if (!c.permisos[tipo]) continue;
+                    const b = document.createElement('span');
+                    b.className = 'badge badge-success';
+                    b.style.marginRight = '0.25rem';
+                    b.textContent = etiqueta;
+                    td.appendChild(b);
+                }
+                if (!td.childNodes.length) td.textContent = 'Ninguno';
                 tbody.appendChild(tr);
-            });
-        }
-
-        function clearCandidateLeads() {
-            if (confirm('¿Eliminar todos los registros de candidatos?')) {
-                localStorage.removeItem('pg_candidate_leads');
-                renderCandidatosTable();
-                showToast('Leads Limpiados', 'Se han borrado los registros de candidatos.', 'info');
             }
         }
+
+        // --- Acceso: solo cuentas de ADMIN_EMAILS ---
+        (async () => {
+            await PG_AUTH.requireAuth();
+            let esAdmin = false;
+            try { esAdmin = (await apiAdmin('/yo')).admin; } catch (e) { /* no admin */ }
+            if (!esAdmin) {
+                const o = document.createElement('div');
+                o.style.cssText = 'position:fixed;inset:0;background:#0f172a;color:#fff;z-index:10000;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;';
+                o.innerHTML = '<div style="max-width:420px;"><h2 style="margin-bottom:0.5rem;">Acceso solo para el equipo</h2><p style="opacity:0.8;margin-bottom:1rem;">Tu cuenta no tiene permiso de administrador.</p><a href="index.html" style="color:#fb923c;font-weight:700;">← Volver al inicio</a></div>';
+                document.body.appendChild(o);
+                return;
+            }
+            renderCandidatosTable();
+        })();
 
         // --- Global Sync ---
         async function syncAllSources() {

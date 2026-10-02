@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacidad y términos | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <style>
+    :root { --bg: #F8FAFC; --white: #fff; --brand: #FF6A00; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --warn: #92400e; --warn-bg: #fffbeb; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; background: var(--white); border-bottom: 1px solid var(--border); }
+    .logo { font-weight: 800; font-size: 1.25rem; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--brand); }
+    nav a.back { color: var(--muted); font-weight: 600; text-decoration: none; font-size: 0.9rem; }
+    main { max-width: 760px; margin: 0 auto; padding: 2rem 1rem 4rem; display: grid; gap: 1.6rem; }
+    h1 { font-size: 1.9rem; font-weight: 800; line-height: 1.2; }
+    h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.4rem; }
+    p, li { max-width: 68ch; }
+    ul { padding-left: 1.2rem; display: grid; gap: 0.3rem; }
+    .draft { background: var(--warn-bg); border: 1px solid #fde68a; color: var(--warn); border-radius: 12px; padding: 0.9rem 1rem; font-size: 0.92rem; }
+    .todo { background: #fef3c7; padding: 0 0.25rem; border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; background: var(--white); }
+    th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.6rem; border: 1px solid var(--border); }
+    th { background: var(--bg); }
+    .scroll { overflow-x: auto; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Puentes<span>Globales</span></a>
+  <a href="index.html" class="back">← Inicio</a>
+</nav>
+<main>
+  <h1>Política de privacidad y términos de uso</h1>
+  <p class="draft"><strong>Borrador en revisión legal.</strong> Este texto todavía no fue validado por abogados. Las partes marcadas <span class="todo">[completar]</span> faltan definir.</p>
+
+  <section>
+    <h2>1. Quién es responsable de tus datos</h2>
+    <p>Puentes Globales <span class="todo">[completar: razón social, país, domicilio, número de registro]</span>. Contacto para temas de datos personales: <span class="todo">[completar: email]</span>.</p>
+  </section>
+
+  <section>
+    <h2>2. Qué datos pedimos</h2>
+    <ul>
+      <li><strong>Para tu cuenta:</strong> nombre, email, teléfono o WhatsApp y profesión.</li>
+      <li><strong>Para tu CV (opcional):</strong> experiencia, formación, idiomas y licencias que vos cargues.</li>
+      <li><strong>Resultados de los tests</strong> que hagas en el sitio.</li>
+      <li>No te pedimos datos de salud, religión, origen étnico ni números de pasaporte. La foto y la fecha de nacimiento son opcionales.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. Para qué los usamos</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Uso</th><th>Base</th></tr></thead>
+        <tbody>
+          <tr><td>Crear tu cuenta y tu CV, guardar tus tests</td><td>Es el servicio que pediste</td></tr>
+          <tr><td>Recomendarte ofertas</td><td>Tu permiso</td></tr>
+          <tr><td>Enviar tu CV a empresas</td><td>Tu permiso; te avisamos cada envío y a qué empresa</td></tr>
+          <tr><td>Escribirte por email o WhatsApp con oportunidades</td><td>Tu permiso</td></tr>
+          <tr><td>Proponerte trabajos de entrenamiento de IA</td><td>Tu permiso</td></tr>
+          <tr><td>Seguridad del sitio y prevención de fraude</td><td>Nuestro interés legítimo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Tu CV no se usa como datos para entrenar inteligencia artificial.</p>
+  </section>
+
+  <section>
+    <h2>4. Tests y decisiones automáticas</h2>
+    <p>Los tests miden razonamiento, cálculo, idiomas y rasgos de personalidad. Sus resultados nunca deciden solos sobre vos: si se usan para elegir candidatos para un trabajo, una persona del equipo revisa siempre la selección, y podés pedirnos que te expliquemos cómo se usó tu resultado.</p>
+  </section>
+
+  <section>
+    <h2>5. Con quién los compartimos</h2>
+    <ul>
+      <li><strong>Proveedores que nos prestan servicios</strong> y tratan los datos por cuenta nuestra: Supabase (base de datos y cuentas), Render (servidores) <span class="todo">[completar: proveedor de email, de IA y otros]</span>.</li>
+      <li><strong>Empresas y reclutadores</strong>, solo si nos diste ese permiso y solo para una oferta concreta.</li>
+      <li>No vendemos tus datos.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>6. Dónde se guardan</h2>
+    <p><span class="todo">[completar: región del proyecto de Supabase y del servidor; hoy Estados Unidos, se prevé mudarlos a la Unión Europea]</span>. Si en el futuro los datos se transfieren fuera de la Unión Europea, será solo a países con un nivel de protección reconocido o con garantías contractuales.</p>
+  </section>
+
+  <section>
+    <h2>7. Cuánto tiempo los guardamos</h2>
+    <p>Mientras tengas tu cuenta. Si no la usás durante <span class="todo">[completar: plazo]</span>, te avisamos y, si no respondés, la borramos.</p>
+  </section>
+
+  <section>
+    <h2>8. Tus derechos</h2>
+    <p>Podés ver, corregir, descargar o borrar tus datos, y activar o retirar cada permiso, desde <a href="mis-datos.html">Mis datos</a>. También podés oponerte a un uso o presentar un reclamo ante la autoridad de protección de datos de tu país.</p>
+  </section>
+
+  <section>
+    <h2>9. Seguridad</h2>
+    <p>Cada persona solo puede acceder a sus propios datos. El equipo de Puentes Globales accede con cuentas personales y cada consulta queda registrada. Si ocurriera una filtración que te afecte, te avisaremos.</p>
+  </section>
+
+  <section id="terminos">
+    <h2>10. Términos de uso</h2>
+    <ul>
+      <li>Buscar ofertas, postularte y ser visible para empresas es gratis. Los planes pagos solo incluyen herramientas de preparación (curso, escáner ATS, simulador de entrevistas, CV adaptado).</li>
+      <li>Los resultados de los tests son orientativos y no reemplazan una evaluación profesional.</li>
+      <li>Las ofertas de otras fuentes enlazan al sitio original; Puentes Globales no es responsable de su contenido.</li>
+      <li>Te comprometés a cargar información verdadera en tu perfil y tu CV.</li>
+      <li><span class="todo">[completar: ley aplicable, jurisdicción, condiciones de los planes pagos y de baja]</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>11. Cambios</h2>
+    <p>Si cambiamos esta política te lo vamos a avisar. Si un cambio afecta un permiso que diste, te pediremos que lo aceptes de nuevo.</p>
+    <p class="draft" style="margin-top:0.8rem">Versión borrador · <span class="todo">[completar: fecha de vigencia]</span></p>
+  </section>
+</main>
+</body>
+</html>

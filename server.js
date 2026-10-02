@@ -10,6 +10,7 @@ import psychometricRoutes from './routes/psychometric.js';
 import talkmeRoutes from './routes/talkme.js';
 import saasRoutes from './routes/saas.js';
 import adminRoutes from './routes/admin.js';
+import cuentaRoutes from './routes/cuenta.js';
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use('/api/v1/psychometric', psychometricRoutes);
 app.use('/api/v1/talkme', talkmeRoutes);
 app.use('/api/v1/saas', saasRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/cuenta', cuentaRoutes);
 
 // Ruta fallback para 404
 app.use((req, res) => {

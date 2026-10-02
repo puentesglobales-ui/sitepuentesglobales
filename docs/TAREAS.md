@@ -17,23 +17,21 @@ Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "D
 - [x] Búsqueda de empleo gratis e ilimitada en todos los planes.
 - [x] Tareas 6, 7 y 29 (parte): Remotive fuera; destinos corregidos y ampliados; búsqueda en español traducida al idioma de cada país (diccionario propio + ESCO); resultados seguros con textContent.
 - [x] Tarea 14: fuentes y librerías (Supabase, Lucide) servidas desde el propio sitio; sin Google Fonts, jsDelivr ni unpkg.
+- [x] Tareas 8, 9 y 15 (listas en la rama, se publican con el SQL de la tarea 1): login de administradores (ADMIN_EMAILS) con lista de candidatos auditada; permisos separados con historial; pantalla "Mis datos" con descarga y borrado de cuenta. Borrador de privacidad y términos en privacidad.html (tarea 10).
 
 ## Fase 0 — Antes de juntar CVs
 
 | # | Tarea | Responsable | Depende de |
 |---|---|---|---|
-| 1 | Ejecutar `supabase/migrations/20261002_pg_uso_planes.sql` en Supabase | Usuario | — |
+| 1 | Ejecutar en Supabase `20261002_pg_uso_planes.sql` y `20261003_pg_consentimientos.sql`; cargar en Render `ADMIN_EMAILS` y `SUPABASE_SECRET_KEY` | Usuario | — |
 | 2 | Publicar límites de ATS y simulador (rama `limites-ats`: cuenta gratis 1 uso, Pro sin límite) | Código | 1 |
 | 3 | Vincular el grupo de variables "puentes globales" al servicio `sitepuentesglobales` en Render y verificar las 11 fuentes en "Estado de fuentes" | Usuario | — |
 | 4 | Supabase → Authentication → URL Configuration: Site URL y Redirect URLs con `https://sitepuentesglobales.onrender.com` | Usuario | — |
 | 5 | Pedir a GitHub Support que elimine el commit `963d1fa` y sus vistas en caché | Usuario | — |
-| 8 | Inicio de sesión de administrador en `admin.html` y registro de quién ve o descarga cada CV | Código | — |
-| 9 | Permisos separados en el registro, sin casillas marcadas, con tabla de historial (tipo, texto, versión, fecha) | Código | 10 |
 | 10 | Redactar política de privacidad y términos (borrador en el informe legal) | Usuario + Abogado | — |
 | 11 | Revisar con abogados el informe legal y los textos de permisos | Abogado | — |
 | 12 | Crear proyecto de Supabase en `eu-central-1` (Frankfurt) y mover el servicio de Render a Frankfurt, antes del primer usuario real | Usuario | — |
 | 13 | Apuntar el sitio al proyecto de la UE (`auth-gate.js`, `SUPABASE_URL`) y correr las migraciones allí | Código | 12 |
-| 15 | Pantalla "Mis datos": ver y cambiar permisos, descargar todo, borrar la cuenta | Código | 9 |
 | 16 | Corregir el nombre del servicio en `render.yaml` (`sitepuentesglobales`) y la región | Código | 12 |
 | 17 | Revisar restricciones para reclutar personal de salud para Alemania (lista de la OMS, § 38 BeschV) | Abogado | — |
 

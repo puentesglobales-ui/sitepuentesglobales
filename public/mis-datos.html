@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis datos | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <style>
+    :root { --bg: #F8FAFC; --white: #fff; --brand: #FF6A00; --brand-dark: #c2410c; --brand-light: #fff7ed; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --red: #b91c1c; --red-light: #fef2f2; --green: #15803d; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 5%; background: var(--white); border-bottom: 1px solid var(--border); }
+    .logo { font-weight: 800; font-size: 1.25rem; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--brand); }
+    nav a.back { color: var(--muted); font-weight: 600; text-decoration: none; font-size: 0.9rem; }
+    main { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 4rem; display: grid; gap: 1.25rem; }
+    h1 { font-size: 1.8rem; font-weight: 800; }
+    .intro { color: var(--muted); }
+    section { background: var(--white); border: 1px solid var(--border); border-radius: 18px; padding: 1.25rem 1.3rem; display: grid; gap: 0.9rem; }
+    h2 { font-size: 1.1rem; font-weight: 800; }
+    .hint { color: var(--muted); font-size: 0.88rem; }
+    label.field { display: grid; gap: 0.3rem; font-size: 0.85rem; font-weight: 600; color: #334155; }
+    input[type=text], input[type=tel], select { width: 100%; padding: 0.7rem 0.85rem; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.95rem; background: var(--white); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+    .btn { border: none; background: var(--brand); color: white; font-weight: 800; font-family: inherit; font-size: 0.95rem; padding: 0.75rem 1.1rem; border-radius: 12px; cursor: pointer; justify-self: start; }
+    .btn:hover { background: var(--brand-dark); }
+    .btn:disabled { opacity: 0.5; cursor: default; }
+    .btn.ghost { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+    .btn.danger { background: var(--red); }
+    .msg { font-size: 0.88rem; min-height: 1.2em; }
+    .msg.ok { color: var(--green); }
+    .msg.err { color: var(--red); }
+    .permiso { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start; padding: 0.8rem 0; border-top: 1px solid var(--border); }
+    .permiso:first-of-type { border-top: none; padding-top: 0; }
+    .permiso p { font-size: 0.9rem; color: #334155; }
+    .permiso .fixed { font-size: 0.78rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
+    .switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 100%; height: 100%; position: absolute; inset: 0; margin: 0; cursor: pointer; z-index: 1; }
+    .switch span { position: absolute; inset: 0; background: #cbd5e1; border-radius: 99px; transition: background 0.2s; }
+    .switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform 0.2s; }
+    .switch input:checked + span { background: var(--brand); }
+    .switch input:checked + span::after { transform: translateX(20px); }
+    .switch input:focus-visible + span { outline: 3px solid var(--brand); outline-offset: 2px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.5rem 0.4rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .danger-zone { border-color: #fecaca; background: var(--red-light); }
+    .confirm { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+    .confirm input { max-width: 200px; }
+  </style>
+  <script src="vendor/supabase.js"></script>
+  <script src="auth-gate.js"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Puentes<span>Globales</span></a>
+  <a href="index.html" class="back">← Inicio</a>
+</nav>
+
+<main>
+  <div>
+    <h1>Mis datos</h1>
+    <p class="intro" id="intro">Cargando…</p>
+  </div>
+
+  <section aria-labelledby="t-perfil">
+    <h2 id="t-perfil">Mi perfil</h2>
+    <form id="f-perfil" class="grid2">
+      <label class="field" for="p-nombre">Nombre completo<input type="text" id="p-nombre" required autocomplete="name"></label>
+      <label class="field" for="p-telefono">WhatsApp / Teléfono<input type="tel" id="p-telefono" required autocomplete="tel" pattern="[+0-9 ()-]{7,20}"></label>
+      <label class="field" for="p-profesion">Profesión / Área<input type="text" id="p-profesion" required></label>
+      <label class="field" for="p-email">Email<input type="text" id="p-email" disabled></label>
+      <button type="submit" class="btn">Guardar cambios</button>
+      <p class="msg" id="m-perfil" role="status"></p>
+    </form>
+  </section>
+
+  <section aria-labelledby="t-permisos">
+    <h2 id="t-permisos">Mis permisos</h2>
+    <p class="hint">Cada cambio queda registrado con la fecha. Podés activarlos o retirarlos cuando quieras.</p>
+    <div id="permisos"></div>
+    <p class="msg" id="m-permisos" role="status"></p>
+  </section>
+
+  <section aria-labelledby="t-tests">
+    <h2 id="t-tests">Mis resultados</h2>
+    <div id="tests"><p class="hint">Cargando…</p></div>
+  </section>
+
+  <section aria-labelledby="t-descargar">
+    <h2 id="t-descargar">Descargar mis datos</h2>
+    <p class="hint">Un archivo con todo lo que guardamos de vos: perfil, permisos con su historial y resultados de los tests.</p>
+    <button type="button" class="btn ghost" id="b-descargar">Descargar archivo</button>
+  </section>
+
+  <section class="danger-zone" aria-labelledby="t-borrar">
+    <h2 id="t-borrar">Borrar mi cuenta</h2>
+    <p class="hint">Se borran tu cuenta, tu perfil, tus resultados y tus permisos. No se puede deshacer. Para confirmar, escribí <strong>BORRAR</strong>.</p>
+    <div class="confirm">
+      <input type="text" id="b-confirm" aria-label="Escribí BORRAR para confirmar" autocomplete="off">
+      <button type="button" class="btn danger" id="b-borrar" disabled>Borrar mi cuenta</button>
+    </div>
+    <p class="msg" id="m-borrar" role="status"></p>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const fecha = s => new Date(s).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
+const NOMBRES_TEST = { razonamiento: 'Razonamiento lógico', numerico: 'Numérico', idiomas: 'Idiomas', personalidad: 'Personalidad', psicometrico: 'Psicométrico', ci: 'Coeficiente intelectual' };
+let user = null;
+
+function msg(id, texto, tipo) { const el = $(id); el.textContent = texto; el.className = 'msg ' + (tipo || ''); }
+
+async function cargarPerfil() {
+  const m = user.user_metadata || {};
+  $('intro').textContent = `Sesión iniciada como ${user.email}.`;
+  $('p-nombre').value = m.full_name || m.name || '';
+  $('p-telefono').value = m.phone || '';
+  $('p-profesion').value = m.profession || '';
+  $('p-email').value = user.email;
+}
+
+$('f-perfil').addEventListener('submit', async e => {
+  e.preventDefault();
+  msg('m-perfil', 'Guardando…');
+  const { error } = await PG_AUTH.client.auth.updateUser({
+    data: { full_name: $('p-nombre').value.trim(), phone: $('p-telefono').value.trim(), profession: $('p-profesion').value.trim() }
+  });
+  if (error) return msg('m-perfil', 'No pudimos guardar los cambios. Probá de nuevo.', 'err');
+  await PG_AUTH.syncProfile();
+  msg('m-perfil', 'Cambios guardados.', 'ok');
+});
+
+async function cargarPermisos() {
+  const estado = await PG_AUTH.misPermisos();
+  const cont = $('permisos');
+  cont.replaceChildren();
+  if (!estado) { msg('m-permisos', 'No pudimos leer tus permisos en este momento.', 'err'); return; }
+  for (const p of PG_AUTH.PERMISOS) {
+    const fila = document.createElement('div');
+    fila.className = 'permiso';
+    const texto = document.createElement('p');
+    texto.textContent = p.texto;
+    fila.append(texto);
+    if (p.obligatorio) {
+      const fijo = document.createElement('span');
+      fijo.className = 'fixed';
+      fijo.textContent = estado[p.tipo] ? 'Aceptado · necesario para tener cuenta' : 'Pendiente';
+      fila.append(fijo);
+    } else {
+      const sw = document.createElement('label');
+      sw.className = 'switch';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = Boolean(estado[p.tipo]);
+      input.setAttribute('aria-label', p.texto);
+      const track = document.createElement('span');
+      sw.append(input, track);
+      input.addEventListener('change', async () => {
+        input.disabled = true;
+        try {
+          await PG_AUTH.cambiarPermiso(p.tipo, input.checked, 'mis-datos');
+          msg('m-permisos', input.checked ? 'Permiso activado.' : 'Permiso retirado.', 'ok');
+        } catch (err) {
+          input.checked = !input.checked;
+          msg('m-permisos', 'No pudimos guardar el cambio. Probá de nuevo.', 'err');
+        } finally {
+          input.disabled = false;
+        }
+      });
+      fila.append(sw);
+    }
+    cont.append(fila);
+  }
+}
+
+async function cargarTests() {
+  const { data, error } = await PG_AUTH.client.from('pg_resultados_test')
+    .select('test, puntaje, maximo, detalle, created_at').order('created_at', { ascending: false });
+  const cont = $('tests');
+  if (error) { cont.textContent = 'No pudimos leer tus resultados.'; return; }
+  if (!data.length) { cont.innerHTML = '<p class="hint">Todavía no hiciste ningún test. <a href="index.html#tests">Ver los tests</a>.</p>'; return; }
+  const tabla = document.createElement('table');
+  tabla.innerHTML = '<thead><tr><th>Test</th><th>Resultado</th><th>Fecha</th></tr></thead>';
+  const tbody = document.createElement('tbody');
+  for (const r of data) {
+    const tr = document.createElement('tr');
+    const ci = r.test === 'ci' && r.detalle && r.detalle.ci_estimado ? ` · CI ${r.detalle.ci_estimado}` : '';
+    for (const t of [NOMBRES_TEST[r.test] || r.test, `${r.puntaje} / ${r.maximo}${ci}`, fecha(r.created_at)]) {
+      const td = document.createElement('td');
+      td.textContent = t;
+      tr.append(td);
+    }
+    tbody.append(tr);
+  }
+  tabla.append(tbody);
+  cont.replaceChildren(tabla);
+}
+
+$('b-descargar').addEventListener('click', async () => {
+  const leer = async (tabla, orden) => {
+    const { data, error } = await PG_AUTH.client.from(tabla).select('*').order(orden, { ascending: false });
+    return error ? { error: error.message } : data;
+  };
+  const archivo = {
+    generado: new Date().toISOString(),
+    cuenta: { id: user.id, email: user.email, creada: user.created_at, datos: user.user_metadata },
+    perfil: await leer('pg_candidatos', 'updated_at'),
+    permisos: await leer('pg_consentimientos', 'created_at'),
+    resultados_tests: await leer('pg_resultados_test', 'created_at'),
+    usos_herramientas: await leer('pg_uso', 'created_at')
+  };
+  const blob = new Blob([JSON.stringify(archivo, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mis-datos-puentes-globales.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+$('b-confirm').addEventListener('input', e => { $('b-borrar').disabled = e.target.value.trim() !== 'BORRAR'; });
+
+$('b-borrar').addEventListener('click', async () => {
+  $('b-borrar').disabled = true;
+  msg('m-borrar', 'Borrando…');
+  try {
+    const apiBase = window.PG_CONFIG ? window.PG_CONFIG.API_BASE : '/api/v1';
+    const res = await fetch(`${apiBase}/cuenta`, { method: 'DELETE', headers: { Authorization: `Bearer ${await PG_AUTH.getToken()}` } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) throw new Error(data.error || 'No pudimos borrar tu cuenta.');
+    await PG_AUTH.signOut();
+    msg('m-borrar', 'Tu cuenta fue borrada. Te llevamos al inicio…', 'ok');
+    setTimeout(() => { window.location.href = 'index.html'; }, 2500);
+  } catch (err) {
+    msg('m-borrar', err.message, 'err');
+    $('b-borrar').disabled = false;
+  }
+});
+
+PG_AUTH.requireAuth().then(async u => {
+  user = u;
+  await cargarPerfil();
+  await Promise.all([cargarPermisos(), cargarTests()]);
+});
+</script>
+<script src="config.js"></script>
+</body>
+</html>

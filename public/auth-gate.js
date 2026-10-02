@@ -66,7 +66,11 @@
     .pg-auth-form input,.pg-auth-form select{width:100%;box-sizing:border-box;padding:.75rem .9rem;border:1.5px solid #e2e8f0;border-radius:12px;font-size:.95rem;font-family:inherit;background:#fff;color:#0f172a}
     .pg-auth-form input:focus,.pg-auth-form select:focus{outline:none;border-color:#FF6A00}
     .pg-auth-check{display:flex;gap:.5rem;align-items:flex-start;font-size:.8rem;color:#475569;line-height:1.45}
-    .pg-auth-check input{width:auto;margin-top:.15rem}
+    .pg-auth-check input{width:auto;margin-top:.15rem;flex-shrink:0}
+    .pg-auth-check a{color:#FF6A00;font-weight:600}
+    .pg-auth-permisos{display:grid;gap:.6rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:.8rem}
+    .pg-auth-nota{font-size:.75rem;color:#64748b;margin:0}
+    .pg-auth-nota a{color:#64748b}
     .pg-auth-btn{width:100%;border:none;background:#FF6A00;color:#fff;font-weight:800;font-size:1rem;padding:.9rem;border-radius:12px;cursor:pointer;font-family:inherit}
     .pg-auth-btn:disabled{opacity:.6;cursor:wait}
     .pg-auth-google{width:100%;border:1.5px solid #e2e8f0;background:#fff;color:#0f172a;font-weight:700;font-size:.95rem;padding:.8rem;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;font-family:inherit}
@@ -106,6 +110,80 @@
         if (/rate limit|too many/i.test(msg)) return 'Demasiados intentos. Esperá unos minutos y probá de nuevo.';
         if (/invalid email|unable to validate email/i.test(msg)) return 'El email no es válido.';
         return 'No pudimos completar la operación: ' + msg;
+    }
+
+    /* ─── Permisos (historial en pg_consentimientos) ───────────────────── */
+    // Cada permiso se guarda con su versión y el texto exacto que vio la persona.
+    // Si se cambia un texto, subir la versión: el historial conserva el texto anterior.
+    const PERMISOS = [
+        {
+            tipo: 'terminos', version: 'terminos_v1', obligatorio: true, enRegistro: true,
+            texto: 'Acepto los Términos de uso y la Política de privacidad. Puentes Globales guarda mis datos para crear mi cuenta y mi CV.',
+            html: 'Acepto los <a href="privacidad.html#terminos" target="_blank" rel="noopener">Términos de uso</a> y la <a href="privacidad.html" target="_blank" rel="noopener">Política de privacidad</a>. Puentes Globales guarda mis datos para crear mi cuenta y mi CV.'
+        },
+        {
+            tipo: 'recomendar_ofertas', version: 'recomendar_ofertas_v1', enRegistro: true,
+            texto: 'Quiero que Puentes Globales use mi perfil para recomendarme ofertas de trabajo que encajen conmigo.'
+        },
+        {
+            tipo: 'compartir_cv', version: 'compartir_cv_v1', enRegistro: true,
+            texto: 'Autorizo a Puentes Globales a enviar mi CV a empresas y reclutadores con ofertas que encajen con mi perfil. Me avisarán cada vez que lo envíen y a qué empresa.'
+        },
+        {
+            tipo: 'mensajes', version: 'mensajes_v1', enRegistro: true,
+            texto: 'Quiero recibir oportunidades por email y WhatsApp. Puedo darme de baja desde cualquier mensaje.'
+        },
+        {
+            tipo: 'trabajos_ia', version: 'trabajos_ia_v1',
+            texto: 'Quiero que Puentes Globales me escriba con propuestas de trabajo remoto de entrenamiento de inteligencia artificial y use el resultado de este test para evaluarme para esos trabajos. Una persona del equipo revisa siempre la selección. Mi CV no se usa como datos para entrenar IA. Puedo retirar este permiso cuando quiera.'
+        },
+        {
+            tipo: 'mostrar_tests', version: 'mostrar_tests_v1',
+            texto: 'Quiero que los resultados de mis tests formen parte de mi perfil. Una persona revisa siempre cualquier selección; los tests no deciden solos.'
+        }
+    ];
+    const PERMISO = Object.fromEntries(PERMISOS.map(p => [p.tipo, p]));
+
+    // Casillas desmarcadas (fallo Planet49). Solo "terminos" es obligatoria.
+    function permisosHtml() {
+        return PERMISOS.filter(p => p.enRegistro).map(p => `
+            <label class="pg-auth-check"><input type="checkbox" name="permiso_${p.tipo}"${p.obligatorio ? ' required' : ''}>
+            <span>${p.html || esc(p.texto)}${p.obligatorio ? ' <strong>(obligatorio)</strong>' : ''}</span></label>`).join('');
+    }
+
+    function leerPermisos(f) {
+        return PERMISOS.filter(p => p.enRegistro).map(p => ({ tipo: p.tipo, aceptado: f[`permiso_${p.tipo}`] === 'on' }));
+    }
+
+    async function guardarPermisos(user, lista, origen) {
+        const filas = lista.filter(p => PERMISO[p.tipo]).map(p => ({
+            user_id: user.id, tipo: p.tipo, aceptado: Boolean(p.aceptado),
+            version: PERMISO[p.tipo].version, texto: PERMISO[p.tipo].texto, origen
+        }));
+        if (!filas.length) return true;
+        const { error } = await client.from('pg_consentimientos').insert(filas);
+        if (error) { console.warn('[PG_AUTH] No se pudieron guardar los permisos:', error.message); return false; }
+        return true;
+    }
+
+    // Estado vigente de cada permiso ({ terminos: true, … }), o null si no se pudo leer.
+    async function estadoPermisos(user) {
+        const { data, error } = await client.from('pg_consentimientos')
+            .select('tipo, aceptado, created_at').eq('user_id', user.id).order('created_at', { ascending: false });
+        if (error) { console.warn('[PG_AUTH] No se pudieron leer los permisos:', error.message); return null; }
+        const estado = {};
+        for (const r of data || []) if (!(r.tipo in estado)) estado[r.tipo] = r.aceptado;
+        return estado;
+    }
+
+    // Quien se registró con email y todavía no lo había confirmado no tenía sesión para
+    // guardar sus permisos: quedaron en user_metadata y se guardan en la primera sesión.
+    async function guardarPendientes(user) {
+        const pendientes = user.user_metadata && user.user_metadata.pending_consents;
+        if (!Array.isArray(pendientes) || !pendientes.length) return;
+        if (await guardarPermisos(user, pendientes, 'registro')) {
+            await client.auth.updateUser({ data: { pending_consents: null } });
+        }
     }
 
     // Guarda/actualiza la ficha del candidato. Si falla (p. ej. tabla aún no creada)
@@ -169,8 +247,8 @@
             }
 
             const profOpts = PROFESIONES.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
-            const consent = `<label class="pg-auth-check"><input type="checkbox" name="consent" required>
-                <span>Acepto que Puentes Globales guarde mis datos y me contacte sobre oportunidades laborales y migratorias.</span></label>`;
+            const consent = `<div class="pg-auth-permisos">${permisosHtml()}
+                <p class="pg-auth-nota">Podés cambiar estos permisos cuando quieras en <a href="mis-datos.html">Mis datos</a>.</p></div>`;
 
             function render(msg) {
                 const closeBtn = closable ? '<button class="pg-auth-close" data-act="close" aria-label="Cerrar">✕</button>' : '';
@@ -304,6 +382,7 @@
 
             async function handleSubmit(kind, f) {
                 if (kind === 'signup') {
+                    const permisos = leerPermisos(f);
                     const { data, error } = await client.auth.signUp({
                         email: f.email.trim(),
                         password: f.password,
@@ -313,7 +392,8 @@
                                 full_name: f.nombre.trim(),
                                 phone: f.telefono.trim(),
                                 profession: f.profesion,
-                                accepts_contact: true
+                                accepts_contact: permisos.some(p => p.tipo === 'mensajes' && p.aceptado),
+                                pending_consents: permisos
                             }
                         }
                     });
@@ -332,20 +412,30 @@
                         render({ text: 'Ese email ya tiene una cuenta. Ingresá con tu contraseña.', type: 'err' });
                         return;
                     }
-                    if (data.session) return finish(data.user);
+                    if (data.session) {
+                        await guardarPendientes(data.user);
+                        return finish(data.user);
+                    }
                     mode = 'check-email';
                     render();
                 } else if (kind === 'login') {
                     const { data, error } = await client.auth.signInWithPassword({ email: f.email.trim(), password: f.password });
                     if (error) throw error;
                     currentUser = data.user;
-                    if (!profileComplete(currentUser)) { mode = 'profile'; render(); return; }
+                    await guardarPendientes(currentUser);
+                    const estado = await estadoPermisos(currentUser);
+                    if (!profileComplete(currentUser) || (estado && !estado.terminos)) { mode = 'profile'; render(); return; }
                     return finish(currentUser);
                 } else if (kind === 'profile') {
+                    const permisos = leerPermisos(f);
                     const { data, error } = await client.auth.updateUser({
-                        data: { full_name: f.nombre.trim(), phone: f.telefono.trim(), profession: f.profesion, accepts_contact: true }
+                        data: {
+                            full_name: f.nombre.trim(), phone: f.telefono.trim(), profession: f.profesion,
+                            accepts_contact: permisos.some(p => p.tipo === 'mensajes' && p.aceptado)
+                        }
                     });
                     if (error) throw error;
+                    await guardarPermisos(data.user, permisos, 'perfil');
                     return finish(data.user);
                 } else if (kind === 'new-password') {
                     const { data, error } = await client.auth.updateUser({ password: f.password });
@@ -377,11 +467,32 @@
     async function gate(closable) {
         const user = await getUser();
         if (recovering) return new Promise(() => {});
-        if (user && profileComplete(user)) {
-            syncProfile(user);
-            return user;
+        if (user) {
+            await guardarPendientes(user);
+            // null = no se pudo leer (p. ej. tabla todavía no creada): no se bloquea a la persona.
+            const estado = await estadoPermisos(user);
+            if (profileComplete(user) && !(estado && !estado.terminos)) {
+                syncProfile(user);
+                return user;
+            }
         }
         return openAuthModal({ closable, initialMode: user ? 'profile' : 'signup', user });
+    }
+
+    // Para "Mis datos" y otras pantallas: estado y cambios de permisos del usuario actual.
+    async function misPermisos() {
+        const user = await getUser();
+        return user ? estadoPermisos(user) : null;
+    }
+
+    async function cambiarPermiso(tipo, aceptado, origen) {
+        const user = await getUser();
+        if (!user) throw new Error('sin sesión');
+        if (!(await guardarPermisos(user, [{ tipo, aceptado }], origen || 'mis-datos'))) throw new Error('no se pudo guardar');
+        if (tipo === 'mensajes') {
+            await client.auth.updateUser({ data: { accepts_contact: Boolean(aceptado) } });
+            syncProfile((await getUser()) || user);
+        }
     }
 
     async function saveResult(test, puntaje, maximo, detalle) {
@@ -410,6 +521,10 @@
         getUser,
         getToken,
         saveResult,
+        PERMISOS: PERMISOS.map(p => ({ tipo: p.tipo, version: p.version, texto: p.texto, obligatorio: Boolean(p.obligatorio) })),
+        misPermisos,
+        cambiarPermiso,
+        syncProfile: async () => { const u = await getUser(); if (u) await syncProfile(u); },
         signOut: () => client.auth.signOut(),
         onChange: cb => {
             client.auth.onAuthStateChange((_e, session) => cb((session && session.user) || null));

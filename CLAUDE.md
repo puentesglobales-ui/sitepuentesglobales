@@ -26,7 +26,10 @@ services/profesiones.js   diccionario propio de profesiones frecuentes, por idio
 services/esco.js          traducción de la profesión con ESCO para lo que no está en el diccionario
 public/fonts.css, fonts/  fuentes alojadas en el sitio; /vendor/supabase.js y /vendor/lucide.js salen de node_modules
 services/saasCore.js      planes de candidatos
-services/usage.js         sesión Supabase en el servidor y contador de usos (rama limites-ats)
+services/usage.js         sesión Supabase en el servidor y contador de usos
+services/supabaseAdmin.js acceso con clave secreta (solo rutas protegidas) y auditoría
+public/mis-datos.html     perfil, permisos, resultados, descarga y borrado de la cuenta
+public/privacidad.html    política de privacidad y términos (BORRADOR hasta revisión legal)
 controllers/, routes/     API: jobs, ats, psychometric, talkme, saas, admin
 public/auth-gate.js       registro/login obligatorio (Supabase), guarda resultados de tests
 public/test-*.html        6 tests (razonamiento, numérico, idiomas, personalidad, psicométrico, CI)
@@ -39,6 +42,8 @@ docs/TAREAS.md            plan de trabajo numerado
 ## Variables de entorno (Render → grupo "puentes globales")
 `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, `REED_API_KEY`, `FINDWORK_TOKEN`, `ADMIN_TOKEN`, `RSS_FEEDS`.
 - `RSS_FEEDS` = `"Nombre|https://url;Otro|https://url"`.
+- `ADMIN_EMAILS` = emails del equipo separados por coma (acceso al panel admin, con email confirmado).
+- `SUPABASE_SECRET_KEY` = clave secreta de Supabase (sb_secret_…): solo servidor; lista de candidatos del admin y borrado de cuentas.
 - Opcionales: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (si no, usa el proyecto actual), `GEMINI_API_KEY` u `OPENAI_API_KEY` (simulador de entrevistas; sin clave responde con textos fijos).
 - Una fuente sin su variable queda desactivada; no rompe el sitio.
 - Para probar local: archivo `.env` (está en `.gitignore`).

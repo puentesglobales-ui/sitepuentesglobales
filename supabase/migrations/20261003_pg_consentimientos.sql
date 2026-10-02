@@ -8,7 +8,7 @@
 create table if not exists public.pg_consentimientos (
     id          bigint generated always as identity primary key,
     user_id     uuid not null references auth.users (id) on delete cascade,
-    tipo        text not null check (tipo in ('trabajos_ia', 'recomendar_ofertas', 'compartir_cv', 'mensajes', 'mostrar_tests')),
+    tipo        text not null check (tipo in ('terminos', 'trabajos_ia', 'recomendar_ofertas', 'compartir_cv', 'mensajes', 'mostrar_tests')),
     aceptado    boolean not null,
     version     text not null,              -- versión del texto mostrado, p. ej. 'trabajos_ia_v1'
     texto       text not null,              -- texto exacto que vio la persona
@@ -58,3 +58,16 @@ left join lateral (
 ) r on true
 where u.aceptado
 order by ci_estimado desc nulls last;
+
+-- Auditoría: quién del equipo vio o descargó datos de candidatos, y cuándo.
+-- Solo la escribe el servidor con la clave secreta (service role); RLS sin políticas
+-- impide que cualquier usuario del sitio la lea o la modifique.
+create table if not exists public.pg_auditoria (
+    id           bigint generated always as identity primary key,
+    admin_email  text not null,
+    accion       text not null,               -- 'listar_candidatos', 'ver_candidato', 'exportar', ...
+    candidato_id uuid,
+    detalle      jsonb,
+    created_at   timestamptz not null default now()
+);
+alter table public.pg_auditoria enable row level security;
