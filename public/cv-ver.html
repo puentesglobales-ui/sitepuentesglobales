@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi CV | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <style>
+    :root { --brand: #FF6A00; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --acento: #1e3a5f; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #e2e8f0; color: var(--text); }
+    .herramientas { background: white; border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 5; }
+    .herramientas select, .herramientas a, .herramientas button { font-family: inherit; font-size: 0.9rem; padding: 0.5rem 0.8rem; border-radius: 10px; border: 1.5px solid var(--border); background: white; color: var(--text); text-decoration: none; cursor: pointer; }
+    .herramientas .principal { background: var(--brand); border-color: var(--brand); color: white; font-weight: 800; }
+    .aviso { max-width: 210mm; margin: 1rem auto 0; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.88rem; line-height: 1.5; }
+    .hoja { background: white; width: 210mm; max-width: 100%; min-height: 297mm; margin: 1rem auto 2rem; padding: 16mm 17mm; box-shadow: 0 4px 24px rgba(15,23,42,0.12); font-size: 10.5pt; line-height: 1.45; }
+    .hoja h1 { font-size: 22pt; font-weight: 800; color: var(--acento); line-height: 1.15; }
+    .hoja .subtitulo { font-size: 12pt; color: var(--muted); font-weight: 600; margin-top: 2pt; }
+    .hoja .contacto { margin-top: 6pt; color: #334155; font-size: 9.5pt; display: flex; flex-wrap: wrap; gap: 4pt 14pt; }
+    .hoja h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: 0.06em; color: var(--acento); border-bottom: 1.5pt solid var(--acento); padding-bottom: 2pt; margin: 14pt 0 7pt; }
+    .hoja p { white-space: pre-line; }
+    .fila { display: grid; grid-template-columns: 34mm 1fr; gap: 6mm; margin-bottom: 7pt; break-inside: avoid; }
+    .fila .fecha { color: var(--muted); font-size: 9.5pt; }
+    .bloque { margin-bottom: 8pt; break-inside: avoid; }
+    .bloque .cab { display: flex; justify-content: space-between; gap: 8pt; }
+    .bloque .cab .fecha { color: var(--muted); font-size: 9.5pt; white-space: nowrap; }
+    strong { font-weight: 700; }
+    .lugar { color: var(--muted); }
+    table.idiomas { border-collapse: collapse; width: 100%; font-size: 9.5pt; }
+    table.idiomas th, table.idiomas td { border: 0.75pt solid #cbd5e1; padding: 3pt 6pt; text-align: left; }
+    table.idiomas th { background: #f1f5f9; }
+    .firma { margin-top: 24pt; color: #334155; }
+    .vacio { text-align: center; padding: 4rem 1rem; color: var(--muted); }
+    @media (max-width: 800px) { .hoja { padding: 8mm; font-size: 10pt; } .fila { grid-template-columns: 1fr; gap: 0; } }
+    @media print {
+      body { background: white; }
+      .herramientas, .aviso { display: none !important; }
+      .hoja { box-shadow: none; margin: 0; width: auto; min-height: 0; padding: 0; }
+    }
+  </style>
+  <style id="pagina"></style>
+  <script src="config.js"></script>
+  <script src="marca.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="auth-gate.js"></script>
+  <script src="cv-guia.js"></script>
+</head>
+<body>
+<div class="herramientas">
+  <a href="cv.html">← Editar</a>
+  <select id="formato" aria-label="Formato"></select>
+  <select id="idioma" aria-label="Idioma de los títulos"></select>
+  <button type="button" class="principal" id="imprimir">Descargar PDF</button>
+</div>
+<div class="aviso" id="aviso" hidden></div>
+<div class="hoja" id="hoja"><div class="vacio">Cargando tu CV…</div></div>
+
+<script>
+const G = CV_GUIA;
+// Títulos del CV en el idioma del país de destino. El contenido lo escribe la persona.
+const T = {
+  es: { perfil: 'Perfil', experiencia: 'Experiencia laboral', formacion: 'Formación', idiomas: 'Idiomas', habilidades: 'Habilidades', licencias: 'Permiso de conducir', datos: 'Datos personales', actual: 'actualidad', idioma: 'Idioma', nivel: 'Nivel', certificado: 'Certificado', nativo: 'Nativo', permiso: 'Permiso de trabajo', ue: 'Ciudadanía UE', disponible: 'Disponibilidad', si: 'Sí', tramite: 'En trámite', no: 'No', reconocimiento: 'Reconocimiento', reconocido: 'reconocido', en_tramite: 'en trámite', lugarFecha: 'Lugar, fecha', firma: 'Firma', inmediata: 'Inmediata', '1_mes': 'En 1 mes', '3_meses': 'En 3 meses', mas: 'Más de 3 meses' },
+  en: { perfil: 'Personal statement', experiencia: 'Work experience', formacion: 'Education', idiomas: 'Languages', habilidades: 'Skills', licencias: 'Driving licence', datos: 'Personal details', actual: 'present', idioma: 'Language', nivel: 'Level', certificado: 'Certificate', nativo: 'Native', permiso: 'Right to work', ue: 'EU citizen', disponible: 'Availability', si: 'Yes', tramite: 'In progress', no: 'No', reconocimiento: 'Recognition', reconocido: 'recognised', en_tramite: 'in progress', lugarFecha: 'Place, date', firma: 'Signature', inmediata: 'Immediate', '1_mes': 'In 1 month', '3_meses': 'In 3 months', mas: 'In more than 3 months' },
+  de: { perfil: 'Profil', experiencia: 'Berufserfahrung', formacion: 'Ausbildung', idiomas: 'Sprachkenntnisse', habilidades: 'Kenntnisse', licencias: 'Führerschein', datos: 'Persönliche Daten', actual: 'heute', idioma: 'Sprache', nivel: 'Niveau', certificado: 'Zertifikat', nativo: 'Muttersprache', permiso: 'Arbeitserlaubnis', ue: 'EU-Staatsbürgerschaft', disponible: 'Verfügbarkeit', si: 'Ja', tramite: 'Beantragt', no: 'Nein', reconocimiento: 'Anerkennung', reconocido: 'anerkannt', en_tramite: 'beantragt', lugarFecha: 'Ort, Datum', firma: 'Unterschrift', inmediata: 'Ab sofort', '1_mes': 'In 1 Monat', '3_meses': 'In 3 Monaten', mas: 'In mehr als 3 Monaten' },
+  fr: { perfil: 'Profil', experiencia: 'Expérience professionnelle', formacion: 'Formation', idiomas: 'Langues', habilidades: 'Compétences', licencias: 'Permis de conduire', datos: 'Informations personnelles', actual: "aujourd'hui", idioma: 'Langue', nivel: 'Niveau', certificado: 'Certificat', nativo: 'Langue maternelle', permiso: 'Autorisation de travail', ue: 'Citoyenneté UE', disponible: 'Disponibilité', si: 'Oui', tramite: 'En cours', no: 'Non', reconocimiento: 'Reconnaissance', reconocido: 'reconnu', en_tramite: 'en cours', lugarFecha: 'Lieu, date', firma: 'Signature', inmediata: 'Immédiate', '1_mes': 'Dans 1 mois', '3_meses': 'Dans 3 mois', mas: 'Dans plus de 3 mois' },
+  it: { perfil: 'Profilo', experiencia: 'Esperienza lavorativa', formacion: 'Istruzione e formazione', idiomas: 'Lingue', habilidades: 'Competenze', licencias: 'Patente di guida', datos: 'Dati personali', actual: 'oggi', idioma: 'Lingua', nivel: 'Livello', certificado: 'Certificato', nativo: 'Madrelingua', permiso: 'Permesso di lavoro', ue: 'Cittadinanza UE', disponible: 'Disponibilità', si: 'Sì', tramite: 'In corso', no: 'No', reconocimiento: 'Riconoscimento', reconocido: 'riconosciuto', en_tramite: 'in corso', lugarFecha: 'Luogo, data', firma: 'Firma', inmediata: 'Immediata', '1_mes': 'Tra 1 mese', '3_meses': 'Tra 3 mesi', mas: 'Tra più di 3 mesi' },
+  nl: { perfil: 'Profiel', experiencia: 'Werkervaring', formacion: 'Opleiding', idiomas: 'Talen', habilidades: 'Vaardigheden', licencias: 'Rijbewijs', datos: 'Persoonlijke gegevens', actual: 'heden', idioma: 'Taal', nivel: 'Niveau', certificado: 'Certificaat', nativo: 'Moedertaal', permiso: 'Werkvergunning', ue: 'EU-burger', disponible: 'Beschikbaarheid', si: 'Ja', tramite: 'Aangevraagd', no: 'Nee', reconocimiento: 'Erkenning', reconocido: 'erkend', en_tramite: 'aangevraagd', lugarFecha: 'Plaats, datum', firma: 'Handtekening', inmediata: 'Direct', '1_mes': 'Over 1 maand', '3_meses': 'Over 3 maanden', mas: 'Over meer dan 3 maanden' },
+  pl: { perfil: 'Profil', experiencia: 'Doświadczenie zawodowe', formacion: 'Wykształcenie', idiomas: 'Języki', habilidades: 'Umiejętności', licencias: 'Prawo jazdy', datos: 'Dane osobowe', actual: 'obecnie', idioma: 'Język', nivel: 'Poziom', certificado: 'Certyfikat', nativo: 'Ojczysty', permiso: 'Pozwolenie na pracę', ue: 'Obywatelstwo UE', disponible: 'Dostępność', si: 'Tak', tramite: 'W toku', no: 'Nie', reconocimiento: 'Uznanie kwalifikacji', reconocido: 'uznane', en_tramite: 'w toku', lugarFecha: 'Miejsce, data', firma: 'Podpis', inmediata: 'Od zaraz', '1_mes': 'Za 1 miesiąc', '3_meses': 'Za 3 miesiące', mas: 'Za ponad 3 miesiące' },
+  pt: { perfil: 'Perfil', experiencia: 'Experiência profissional', formacion: 'Formação', idiomas: 'Línguas', habilidades: 'Competências', licencias: 'Carta de condução', datos: 'Dados pessoais', actual: 'atual', idioma: 'Língua', nivel: 'Nível', certificado: 'Certificado', nativo: 'Nativo', permiso: 'Autorização de trabalho', ue: 'Cidadania UE', disponible: 'Disponibilidade', si: 'Sim', tramite: 'Em curso', no: 'Não', reconocimiento: 'Reconhecimento', reconocido: 'reconhecido', en_tramite: 'em curso', lugarFecha: 'Local, data', firma: 'Assinatura', inmediata: 'Imediata', '1_mes': 'Em 1 mês', '3_meses': 'Em 3 meses', mas: 'Em mais de 3 meses' }
+};
+const NOMBRE_IDIOMA = { es: 'Español', en: 'English', de: 'Deutsch', fr: 'Français', it: 'Italiano', nl: 'Nederlands', pl: 'Polski', pt: 'Português' };
+
+const params = new URLSearchParams(location.search);
+let perfil = null, contacto = null, formato = null, lengua = null;
+
+function el(tag, attrs = {}, ...hijos) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'text') n.textContent = v; else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  for (const h of hijos.flat()) if (h !== null && h !== undefined && h !== false && h !== '') n.append(h);
+  return n;
+}
+const fecha = m => { if (!m) return ''; const [a, mm] = m.split('-'); return `${mm}/${a}`; };
+const lugar = (...p) => p.filter(Boolean).join(', ');
+
+function render() {
+  const t = T[lengua];
+  const hoja = document.getElementById('hoja');
+  const exp = [...(perfil.experiencia || [])].sort((a, b) => (b.actual ? '9999' : b.desde || '').localeCompare(a.actual ? '9999' : a.desde || ''));
+  const form = [...(perfil.formacion || [])].sort((a, b) => (b.fin || '9999').localeCompare(a.fin || '9999'));
+  const idiomas = (perfil.idiomas || []).filter(i => i.idioma && i.nivel);
+  const s = perfil.situacion || {};
+  const periodo = e => `${fecha(e.desde)} – ${e.actual ? t.actual : fecha(e.hasta)}`;
+  const nivel = n => n === 'Nativo' ? t.nativo : n;
+  const titulo = (perfil.puesto || '').split('/')[0].trim().replace(/^./, c => c.toUpperCase());
+
+  const datosSituacion = [
+    s.pasaporte_ue === 'si' ? `${t.ue}: ${t.si}` : null,
+    s.permiso && s.permiso !== 'no' ? `${t.permiso}: ${t[s.permiso]}` : null,
+    s.disponibilidad ? `${t.disponible}: ${t[s.disponibilidad]}` : null
+  ].filter(Boolean);
+
+  const cabecera = [
+    el('h1', { text: contacto.nombre || '' }),
+    titulo ? el('div', { class: 'subtitulo', text: titulo }) : null,
+    el('div', { class: 'contacto' },
+      contacto.telefono ? el('span', { text: contacto.telefono }) : null,
+      el('span', { text: contacto.email }),
+      lugar(s.ciudad, s.pais_residencia) ? el('span', { text: lugar(s.ciudad, s.pais_residencia) }) : null,
+      s.linkedin ? el('span', { text: s.linkedin.replace(/^https?:\/\/(www\.)?/, '') }) : null,
+      ...datosSituacion.map(d => el('span', { text: d })))
+  ];
+  const reco = f => f.reconocimiento === 'reconocido' || f.reconocimiento === 'en_tramite' ? ` · ${t.reconocimiento}: ${t[f.reconocimiento]}` : '';
+  const habilidades = (perfil.habilidades || []).length ? [el('h2', { text: t.habilidades }), el('p', { text: perfil.habilidades.join(' · ') })] : [];
+  const licencias = (perfil.licencias || []).length ? [el('h2', { text: t.licencias }), el('p', { text: perfil.licencias.join(', ') })] : [];
+  const resumen = perfil.resumen ? [el('h2', { text: formato === 'us' && lengua === 'en' ? 'Summary' : t.perfil }), el('p', { text: perfil.resumen })] : [];
+
+  let cuerpo;
+  if (formato === 'lebenslauf') {
+    // Lebenslauf: tabla de dos columnas, fechas a la izquierda, cierre con lugar, fecha y firma.
+    const fila = (izq, ...der) => el('div', { class: 'fila' }, el('div', { class: 'fecha', text: izq }), el('div', {}, ...der));
+    cuerpo = [
+      ...resumen,
+      exp.length ? el('h2', { text: t.experiencia }) : null,
+      exp.map(e => fila(periodo(e), el('strong', { text: e.cargo }), el('div', { class: 'lugar', text: lugar(e.empresa, e.ciudad, e.pais) }), e.tareas ? el('p', { text: e.tareas }) : null)),
+      form.length ? el('h2', { text: t.formacion }) : null,
+      form.map(f => fila(fecha(f.fin), el('strong', { text: f.titulo }), el('div', { class: 'lugar', text: lugar(f.institucion, f.pais) + reco(f) }))),
+      idiomas.length ? el('h2', { text: t.idiomas }) : null,
+      idiomas.map(i => fila(i.idioma, `${nivel(i.nivel)}${i.certificado ? ` (${i.certificado})` : ''}`)),
+      ...habilidades, ...licencias,
+      el('div', { class: 'firma', text: `${s.ciudad || '__________'}, ${new Date().toLocaleDateString('de-DE')}` })
+    ];
+  } else {
+    const anglo = formato === 'uk' || formato === 'us';
+    const bloque = (izq, der, ...resto) => el('div', { class: 'bloque' }, el('div', { class: 'cab' }, el('div', {}, izq), el('div', { class: 'fecha', text: der })), ...resto);
+    const tablaIdiomas = el('table', { class: 'idiomas' },
+      el('thead', {}, el('tr', {}, el('th', { text: t.idioma }), el('th', { text: t.nivel }), el('th', { text: t.certificado }))),
+      el('tbody', {}, idiomas.map(i => el('tr', {}, el('td', { text: i.idioma }), el('td', { text: nivel(i.nivel) }), el('td', { text: i.certificado || '—' })))));
+    cuerpo = [
+      ...resumen,
+      exp.length ? el('h2', { text: t.experiencia }) : null,
+      exp.map(e => bloque([el('strong', { text: e.cargo }), ' · ', e.empresa, el('span', { class: 'lugar', text: lugar(e.ciudad, e.pais) ? ` — ${lugar(e.ciudad, e.pais)}` : '' })], periodo(e), e.tareas ? el('p', { text: e.tareas }) : null)),
+      form.length ? el('h2', { text: t.formacion }) : null,
+      form.map(f => bloque([el('strong', { text: f.titulo }), ' · ', f.institucion, el('span', { class: 'lugar', text: (f.pais ? ` — ${f.pais}` : '') + reco(f) })], fecha(f.fin))),
+      anglo ? [...habilidades] : [],
+      idiomas.length ? el('h2', { text: t.idiomas }) : null,
+      idiomas.length ? (formato === 'europass' ? tablaIdiomas : el('p', { text: idiomas.map(i => `${i.idioma} (${nivel(i.nivel)}${i.certificado ? `, ${i.certificado}` : ''})`).join(' · ') })) : null,
+      anglo ? [] : [...habilidades],
+      ...licencias
+    ];
+  }
+  hoja.replaceChildren(...cabecera, ...cuerpo.flat());
+  // EE. UU. y Canadá usan papel Letter; el resto, A4.
+  document.getElementById('pagina').textContent = `@media print { @page { size: ${formato === 'us' ? 'letter' : 'A4'}; margin: 15mm; } }`;
+  document.title = `CV ${contacto.nombre || ''}`.trim();
+
+  const aviso = document.getElementById('aviso');
+  aviso.hidden = lengua === 'es';
+  aviso.textContent = `Los títulos ya están en ${NOMBRE_IDIOMA[lengua]}, pero lo que escribiste (tareas, resumen, títulos) sigue en español. Antes de enviarlo, traducilo al mismo idioma: un CV mezclado da mala impresión. ${G.FORMATOS[formato].nota}`;
+}
+
+(async () => {
+  const user = await PG_AUTH.requireAuth();
+  const m = user.user_metadata || {};
+  contacto = { nombre: m.full_name || m.name || '', telefono: m.phone || '', email: user.email };
+  const { data, error } = await PG_AUTH.client.from('pg_perfiles').select('*').eq('user_id', user.id).maybeSingle();
+  if (error || !data) {
+    document.getElementById('hoja').replaceChildren(el('div', { class: 'vacio' }, 'Todavía no armaste tu CV. ', el('a', { href: 'cv.html', text: 'Empezá acá' }), '.'));
+    return;
+  }
+  perfil = data;
+  const destino = G.DESTINOS[(perfil.paises || [])[0]];
+  formato = G.FORMATOS[params.get('formato')] ? params.get('formato') : G.formatoPara(perfil.paises || []);
+  lengua = T[params.get('idioma')] ? params.get('idioma') : destino ? destino.idioma : 'es';
+
+  const selF = document.getElementById('formato');
+  selF.replaceChildren(...Object.entries(G.FORMATOS).map(([k, f]) => el('option', { value: k, text: f.nombre })));
+  selF.value = formato;
+  const selI = document.getElementById('idioma');
+  selI.replaceChildren(...Object.entries(NOMBRE_IDIOMA).map(([k, n]) => el('option', { value: k, text: `Títulos en ${n}` })));
+  selI.value = lengua;
+  const actualizar = () => { formato = selF.value; lengua = selI.value; history.replaceState(null, '', `?formato=${formato}&idioma=${lengua}`); render(); };
+  selF.addEventListener('change', actualizar);
+  selI.addEventListener('change', actualizar);
+  document.getElementById('imprimir').addEventListener('click', () => window.print());
+  render();
+})();
+</script>
+</body>
+</html>

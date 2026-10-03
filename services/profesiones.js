@@ -10,7 +10,7 @@
  */
 export const PROFESIONES = [
   {
-    titulo: 'enfermero/enfermera',
+    titulo: 'enfermero/enfermera', regulada: true,
     claves: ['enfermera', 'enfermero', 'enfermeria', 'licenciada en enfermeria', 'licenciado en enfermeria'],
     terminos: {
       es: ['enfermera', 'enfermero', 'enfermería'],
@@ -88,7 +88,7 @@ export const PROFESIONES = [
     }
   },
   {
-    titulo: 'médico/médica',
+    titulo: 'médico/médica', regulada: true,
     claves: ['medico', 'medica', 'doctor', 'doctora', 'medico general', 'medica general'],
     terminos: {
       es: ['médico', 'médica', 'facultativo'],
@@ -192,7 +192,20 @@ export const PROFESIONES = [
     }
   },
   {
-    titulo: 'fisioterapeuta',
+    titulo: 'niñero/niñera',
+    claves: ['niñera', 'niñero', 'nana', 'cuidadora de niños', 'cuidador de niños', 'babysitter', 'canguro'],
+    terminos: {
+      es: ['niñera', 'cuidadora de niños', 'canguro'],
+      en: ['nanny', 'childminder', 'babysitter', 'mother\'s help'],
+      de: ['Kinderbetreuer', 'Kinderbetreuerin', 'Kindermädchen', 'Nanny', 'Tagesmutter'],
+      nl: ['nanny', 'oppas', 'gastouder'],
+      fr: ['nounou', 'garde d\'enfants', 'assistante maternelle'],
+      it: ['babysitter', 'tata'],
+      pl: ['niania', 'opiekunka do dziecka']
+    }
+  },
+  {
+    titulo: 'fisioterapeuta', regulada: true,
     claves: ['fisioterapeuta', 'kinesiologo', 'kinesiologa', 'kinesiologia', 'fisioterapia'],
     terminos: {
       es: ['fisioterapeuta'],
@@ -209,7 +222,8 @@ export const PROFESIONES = [
 import { normalizar } from './destinos.js';
 
 const INDICE = new Map();
-for (const p of PROFESIONES) for (const c of p.claves) INDICE.set(normalizar(c), p);
+// Se indexan las claves y también el título ("enfermero/enfermera"), que es lo que guarda el CV.
+for (const p of PROFESIONES) for (const c of [...p.claves, p.titulo]) INDICE.set(normalizar(c), p);
 
 export function buscarEnDiccionario(consulta) {
   return INDICE.get(normalizar(consulta)) || null;
