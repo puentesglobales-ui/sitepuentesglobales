@@ -54,6 +54,8 @@ docs/TAREAS.md            plan de trabajo numerado
 - `PAYMENTS_ENC_KEY` = 32 bytes en base64 para cifrar las claves de pago de cada empresa. Si se pierde, hay que recargar todas.
 - `BASE_DOMAIN` = dominio propio (p. ej. puentesglobales.com) para reconocer empresas por subdominio. Sin él, se usa ?org=slug.
 - `PUBLIC_URL` = dirección pública del sitio (p. ej. https://puentesglobales.com) para las vueltas de los medios de pago. Sin ella se usa la del pedido.
+- `RESEND_API_KEY` y `EMAIL_FROM` ("Puentes Globales <hola@dominio>") = envío de invitaciones de etiquetado con Resend. Exige dominio propio verificado; sin ellas el panel da el texto para enviarlo a mano.
+- `ETIQUETADO_AGENDA_URL` = enlace para que los candidatos elijan horario de la videollamada (Calendly o similar). Sin él, el email pide responder con horarios.
 - Opcionales: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (si no, usa el proyecto actual), `GEMINI_API_KEY` u `OPENAI_API_KEY` (simulador de entrevistas; sin clave responde con textos fijos).
 - Una fuente sin su variable queda desactivada; no rompe el sitio.
 - Para probar local: archivo `.env` (está en `.gitignore`).

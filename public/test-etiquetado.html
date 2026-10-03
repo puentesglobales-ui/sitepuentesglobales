@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba de aptitud: entrenamiento de IA | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <style>
+    :root { --bg: #F8FAFC; --white: #fff; --brand: #FF6A00; --brand-dark: #c2410c; --brand-light: #fff7ed; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --blue-bg: #eff6ff; --blue: #1e40af; --err: #b91c1c; --ok: #15803d; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; padding-bottom: 6rem; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 5%; background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20; }
+    .logo { font-weight: 800; font-size: 1.15rem; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--brand); }
+    .reloj { font-weight: 800; font-variant-numeric: tabular-nums; }
+    .reloj.poco { color: var(--err); }
+    main { max-width: 720px; margin: 0 auto; padding: 1.25rem 1rem; display: grid; gap: 1rem; }
+    h1 { font-size: 1.55rem; font-weight: 800; line-height: 1.2; }
+    .intro { color: var(--muted); }
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem; display: grid; gap: 0.75rem; }
+    .guia { background: var(--blue-bg); color: var(--blue); border-radius: 12px; padding: 0.8rem 1rem; font-size: 0.9rem; }
+    .guia li { margin-left: 1.1rem; }
+    .enunciado { font-weight: 600; }
+    .resp { border-left: 3px solid var(--border); padding: 0.35rem 0.75rem; font-size: 0.93rem; }
+    .resp strong { color: var(--brand-dark); }
+    .par { font-family: ui-monospace, Consolas, monospace; font-size: 0.95rem; background: #f1f5f9; border-radius: 8px; padding: 0.4rem 0.6rem; word-break: break-all; }
+    .opciones { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .opcion { display: flex; gap: 0.5rem; align-items: center; border: 1.5px solid var(--border); border-radius: 12px; padding: 0.55rem 0.85rem; cursor: pointer; font-size: 0.93rem; background: var(--white); }
+    .opcion.bloque { width: 100%; align-items: flex-start; }
+    .opcion:has(input:checked) { border-color: var(--brand); background: var(--brand-light); }
+    .opcion input { accent-color: var(--brand); margin-top: 0.2rem; }
+    textarea { width: 100%; min-height: 180px; padding: 0.75rem; border: 1.5px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 0.95rem; resize: vertical; }
+    textarea:focus { outline: none; border-color: var(--brand); }
+    .contador { font-size: 0.8rem; color: var(--muted); text-align: right; }
+    .btn { border: none; background: var(--brand); color: white; font-weight: 800; font-family: inherit; font-size: 0.95rem; padding: 0.75rem 1.1rem; border-radius: 12px; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+    .btn:hover { background: var(--brand-dark); }
+    .btn:disabled { opacity: 0.45; cursor: default; }
+    .btn.ghost { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+    .barra { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.97); border-top: 1px solid var(--border); padding: 0.75rem 1rem; z-index: 20; }
+    .barra-in { max-width: 720px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; }
+    .progreso { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+    .reglas li { margin: 0.35rem 0 0.35rem 1.1rem; }
+    .msg { font-size: 0.9rem; color: var(--err); }
+    .grande { font-size: 2.6rem; font-weight: 800; color: var(--brand); line-height: 1; }
+    [hidden] { display: none !important; }
+  </style>
+  <script src="config.js"></script>
+  <script src="marca.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="auth-gate.js"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">Puentes<span>Globales</span></a>
+  <span class="reloj" id="reloj" hidden></span>
+</nav>
+<main id="main"><p class="intro">Cargando…</p></main>
+<div class="barra" id="barra" hidden>
+  <div class="barra-in">
+    <button type="button" class="btn ghost" id="atras">← Atrás</button>
+    <span class="progreso" id="progreso"></span>
+    <button type="button" class="btn" id="siguiente">Siguiente →</button>
+  </div>
+</div>
+
+<script>
+const main = document.getElementById('main');
+const CLAVE = 'pg_etiquetado_borrador';
+let secciones = [], actual = 0, finRelojMs = 0, timer = null;
+let respuestas = {}, redaccion = '';
+const senales = { cambios_pestana: 0, intentos_pegar: 0 };
+
+function el(tag, attrs = {}, ...hijos) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'text') n.textContent = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v === true) n.setAttribute(k, '');
+    else if (v !== false && v !== null && v !== undefined) n.setAttribute(k, v);
+  }
+  for (const h of hijos.flat()) if (h !== null && h !== undefined && h !== false) n.append(h);
+  return n;
+}
+
+async function api(path, body) {
+  const res = await fetch(`/api/v1/etiquetado${path}`, {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await PG_AUTH.getToken()}` },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({ success: false, error: 'Respuesta inválida del servidor.' }));
+  if (!res.ok || !data.success) { const e = new Error(data.error || `Error ${res.status}`); e.code = data.code; throw e; }
+  return data;
+}
+
+// Borrador en el navegador por si se recarga la página (las respuestas válidas son las que se envían).
+function guardarBorrador() { try { localStorage.setItem(CLAVE, JSON.stringify({ respuestas, redaccion, senales })); } catch {} }
+function leerBorrador() {
+  try { const b = JSON.parse(localStorage.getItem(CLAVE) || 'null'); if (b) { respuestas = b.respuestas || {}; redaccion = b.redaccion || ''; Object.assign(senales, b.senales || {}); } } catch {}
+}
+function borrarBorrador() { try { localStorage.removeItem(CLAVE); } catch {} }
+
+const palabras = t => String(t || '').trim().split(/\s+/).filter(Boolean).length;
+
+/* ─── Pantallas ───────────────────────────────────────────────────────── */
+function pantallaSinPermiso() {
+  main.replaceChildren(el('h1', { text: 'Prueba de aptitud para entrenamiento de IA' }), el('div', { class: 'card' },
+    el('p', { text: 'Para hacer esta prueba primero tenés que anotarte para trabajos remotos de entrenamiento de IA. Lo hacés al final del test de coeficiente intelectual, que es gratis.' }),
+    el('a', { class: 'btn', href: 'test-ci.html', text: 'Ir al test de CI →' })));
+}
+
+function pantallaHecha(e) {
+  main.replaceChildren(el('h1', { text: 'Ya hiciste la prueba' }), el('div', { class: 'card' },
+    e.puntaje !== null ? el('div', {}, el('div', { class: 'grande', text: `${e.puntaje}/${e.maximo}` }), el('p', { class: 'intro', text: 'en las preguntas con respuesta correcta' })) : null,
+    el('p', { text: 'Una persona del equipo revisa tu prueba, incluida la redacción. Si tu perfil encaja con un proyecto, te escribimos por email para invitarte a una videollamada.' }),
+    el('p', { class: 'intro', text: 'Podés retirar tu permiso cuando quieras desde "Mis datos".' }),
+    el('a', { class: 'btn ghost', href: 'index.html', text: 'Volver al inicio' })));
+}
+
+function pantallaInicio(estado) {
+  const msg = el('p', { class: 'msg', role: 'status' });
+  const btn = el('button', { type: 'button', class: 'btn', text: 'Empezar la prueba' });
+  btn.addEventListener('click', async () => {
+    btn.disabled = true; btn.textContent = 'Preparando…';
+    try { empezar(await api('/iniciar', {})); }
+    catch (e) { if (e.code === 'hecha') return pantallaHecha({ puntaje: null }); msg.textContent = e.message; btn.disabled = false; btn.textContent = 'Empezar la prueba'; }
+  });
+  main.replaceChildren(
+    el('h1', { text: 'Prueba de aptitud para entrenamiento de IA' }),
+    el('p', { class: 'intro', text: 'Son las mismas tareas que hace un revisor de IA: seguir una guía, comparar respuestas, encontrar errores y explicar tu criterio por escrito.' }),
+    el('div', { class: 'card' },
+      el('ul', { class: 'reglas' },
+        el('li', { text: `Tenés ${estado.tiempo_limite_min} minutos. El reloj arranca al tocar "Empezar" y sigue corriendo aunque cierres la página.` }),
+        el('li', { text: 'Se hace una sola vez.' }),
+        el('li', { text: 'Hacela vos, sin IA ni ayuda: en la entrevista por videollamada vas a hacer tareas parecidas en vivo.' }),
+        el('li', { text: 'Registramos si cambiás de pestaña o pegás texto. No te descalifica solo, pero lo ve quien revisa.' }),
+        el('li', { text: 'Hay preguntas en inglés: es parte de lo que se evalúa.' })),
+      btn, msg));
+}
+
+function empezar(datos) {
+  secciones = datos.secciones;
+  finRelojMs = Date.now() + datos.segundos_restantes * 1000;
+  leerBorrador();
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { senales.cambios_pestana++; guardarBorrador(); } });
+  document.getElementById('reloj').hidden = false;
+  document.getElementById('barra').hidden = false;
+  timer = setInterval(tick, 1000); tick();
+  actual = 0; render();
+}
+
+function tick() {
+  const s = Math.max(0, Math.round((finRelojMs - Date.now()) / 1000));
+  const r = document.getElementById('reloj');
+  r.textContent = `⏱ ${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  r.classList.toggle('poco', s < 300);
+  if (s === 0) { clearInterval(timer); r.textContent = '⏱ Tiempo terminado: enviá lo que tengas'; }
+}
+
+/* ─── Preguntas ───────────────────────────────────────────────────────── */
+function radio(nombre, valor, etiqueta, bloque) {
+  const i = el('input', { type: 'radio', name: nombre, value: valor, checked: respuestas[nombre] === valor });
+  i.addEventListener('change', () => { respuestas[nombre] = valor; guardarBorrador(); });
+  return el('label', { class: `opcion${bloque ? ' bloque' : ''}` }, i, etiqueta);
+}
+
+function pregunta(s, p, n) {
+  const caja = el('div', { class: 'card' });
+  if (s.tipo === 'opcion' && p.pares) {
+    caja.append(el('div', { class: 'enunciado', text: `${n}.` }), el('div', { class: 'par', text: p.pares[0] }), el('div', { class: 'par', text: p.pares[1] }),
+      el('div', { class: 'opciones' }, p.opciones.map(o => radio(p.id, o, o))));
+  } else if (s.tipo === 'opcion' && p.respuestas) {
+    caja.append(el('div', { class: 'enunciado', text: `${n}. ${p.texto}` }),
+      ...Object.entries(p.respuestas).map(([k, v]) => el('div', { class: 'resp' }, el('strong', { text: `Respuesta ${k}: ` }), v)),
+      el('div', { class: 'opciones' }, p.opciones.map(o => radio(p.id, o, `${o} es mejor`))));
+  } else if (s.tipo === 'opcion') {
+    caja.append(el('div', { class: 'enunciado', text: `${n}. «${p.texto}»` }), el('div', { class: 'opciones' }, p.opciones.map(o => radio(p.id, o, o))));
+  } else if (s.tipo === 'multiple') {
+    const marcadas = new Set(respuestas[p.id] || []);
+    caja.append(el('div', { class: 'enunciado', text: `${n}. Marcá las frases con errores:` }),
+      ...p.frases.map((f, i) => {
+        const c = el('input', { type: 'checkbox', checked: marcadas.has(i) });
+        c.addEventListener('change', () => { c.checked ? marcadas.add(i) : marcadas.delete(i); respuestas[p.id] = [...marcadas].sort(); guardarBorrador(); });
+        return el('label', { class: 'opcion bloque' }, c, f);
+      }));
+  } else {
+    const ta = el('textarea', { maxlength: String(p.maxCaracteres), spellcheck: 'true' }, redaccion);
+    const cuenta = el('div', { class: 'contador' });
+    const contar = () => { cuenta.textContent = `${palabras(ta.value)} palabras (mínimo ${p.minPalabras})`; };
+    ta.addEventListener('input', () => { redaccion = ta.value; contar(); guardarBorrador(); });
+    ta.addEventListener('paste', ev => { ev.preventDefault(); senales.intentos_pegar++; guardarBorrador(); cuenta.textContent = 'Acá no se puede pegar texto: escribilo vos.'; });
+    ta.addEventListener('drop', ev => { ev.preventDefault(); senales.intentos_pegar++; });
+    contar();
+    caja.append(ta, cuenta);
+  }
+  return caja;
+}
+
+function render() {
+  const s = secciones[actual];
+  let n = 0;
+  main.replaceChildren(
+    el('div', { class: 'progreso', text: `Parte ${actual + 1} de ${secciones.length}` }),
+    el('h1', { text: s.titulo }),
+    el('p', { class: 'intro', text: s.intro }),
+    s.guia ? el('div', { class: 'guia' }, el('strong', { text: 'Guía' }), el('ul', {}, s.guia.map(g => el('li', { text: g })))) : null,
+    ...s.preguntas.map(p => pregunta(s, p, ++n)),
+    el('p', { class: 'msg', id: 'msg', role: 'status' })
+  );
+  document.getElementById('progreso').textContent = `${actual + 1}/${secciones.length}`;
+  document.getElementById('atras').disabled = actual === 0;
+  document.getElementById('siguiente').textContent = actual === secciones.length - 1 ? 'Enviar prueba' : 'Siguiente →';
+  window.scrollTo({ top: 0 });
+}
+
+function faltantes() {
+  return secciones.flatMap(s => s.tipo === 'texto' ? [] : s.preguntas.filter(p => s.tipo === 'multiple' ? false : !respuestas[p.id]).map(p => s.titulo));
+}
+
+document.getElementById('atras').addEventListener('click', () => { if (actual > 0) { actual--; render(); } });
+document.getElementById('siguiente').addEventListener('click', async ev => {
+  if (actual < secciones.length - 1) { actual++; render(); return; }
+  const msg = document.getElementById('msg');
+  const sinResponder = faltantes();
+  if (sinResponder.length) { msg.textContent = `Te faltan ${sinResponder.length} preguntas por responder (en "${sinResponder[0]}").`; return; }
+  if (palabras(redaccion) < 40) { msg.textContent = 'La redacción tiene que tener al menos 40 palabras.'; return; }
+  if (!confirm('¿Enviar la prueba? Después no se puede cambiar.')) return;
+  const btn = ev.currentTarget;
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  try {
+    const r = await api('/enviar', { respuestas, redaccion, senales });
+    clearInterval(timer); borrarBorrador();
+    document.getElementById('barra').hidden = true; document.getElementById('reloj').hidden = true;
+    pantallaHecha(r);
+  } catch (e) {
+    if (e.code === 'hecha') { borrarBorrador(); return pantallaHecha({ puntaje: null }); }
+    msg.textContent = e.message; btn.disabled = false; btn.textContent = 'Enviar prueba';
+  }
+});
+
+(async () => {
+  await PG_AUTH.requireAuth();
+  try {
+    const e = await api('/estado');
+    if (e.hecha) return pantallaHecha(e);
+    if (!e.permiso) return pantallaSinPermiso();
+    if (e.estado === 'prueba_iniciada') return empezar(await api('/iniciar', {}));
+    pantallaInicio(e);
+  } catch (err) {
+    main.replaceChildren(el('h1', { text: 'Prueba de aptitud' }), el('p', { class: 'msg', text: err.message }));
+  }
+})();
+</script>
+</body>
+</html>

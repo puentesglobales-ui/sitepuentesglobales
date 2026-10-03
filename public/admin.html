@@ -549,6 +549,9 @@
             <a class="nav-item" data-target="candidatos">
                 <i data-lucide="users"></i> Candidatos / Leads
             </a>
+            <a class="nav-item" href="admin-etiquetado.html">
+                <i data-lucide="tags"></i> Etiquetado de IA
+            </a>
         </nav>
     </aside>
 
@@ -861,7 +864,7 @@
         if (!localStorage.getItem('pg_rss_feeds')) localStorage.setItem('pg_rss_feeds', JSON.stringify(rssFeeds));
 
         // --- UI Navigation ---
-        document.querySelectorAll('.nav-item').forEach(item => {
+        document.querySelectorAll('.nav-item[data-target]').forEach(item => {
             item.addEventListener('click', (e) => {
                 document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
                 item.classList.add('active');

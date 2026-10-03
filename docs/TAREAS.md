@@ -5,6 +5,8 @@ Responsable: **Usuario** (acciones en paneles o decisiones), **Código** (cambio
 Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "Depende de".
 
 ## Hecho
+- [x] Creador de CV (tareas 19, 20, 21 y 23 sin versión ATS): cuestionario de 7 pasos que empieza por el puesto, revisión automática, CV en Lebenslauf, británico, résumé de EE. UU./Canadá y Europass.
+- [x] Tarea 33 (parte): prueba de aptitud para etiquetado de IA (`test-etiquetado.html`, corregida en el servidor, una sola vez, 30 minutos) y base aparte `pg_etiquetado` con embudo en `admin-etiquetado.html`: filtrar por CI y puntaje, invitar por email (Resend) o a mano, aprobar o descartar. Falta: ejecutar `20261007_etiquetado.sql` y dominio propio para el envío automático.
 - [x] Corregir los tests: personalidad no cargaba, flecha de la pregunta 11 de razonamiento, ítems ambiguos de idiomas, cálculo del motor psicométrico.
 - [x] Test de coeficiente intelectual (`test-ci.html`).
 - [x] Registro obligatorio con Supabase para tests y búsqueda.

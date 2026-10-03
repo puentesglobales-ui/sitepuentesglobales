@@ -210,6 +210,7 @@ $('b-descargar').addEventListener('click', async () => {
     cuenta: { id: user.id, email: user.email, creada: user.created_at, datos: user.user_metadata },
     perfil: await leer('pg_candidatos', 'updated_at'),
     cv: await leer('pg_perfiles', 'updated_at'),
+    etiquetado_ia: await leer('pg_etiquetado', 'updated_at'),
     permisos: await leer('pg_consentimientos', 'created_at'),
     resultados_tests: await leer('pg_resultados_test', 'created_at'),
     usos_herramientas: await leer('pg_uso', 'created_at')

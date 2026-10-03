@@ -16,6 +16,7 @@ import empresaRoutes from './routes/empresa.js';
 import superadminRoutes from './routes/superadmin.js';
 import pagosRoutes from './routes/pagos.js';
 import profesionesRoutes from './routes/profesiones.js';
+import etiquetadoRoutes from './routes/etiquetado.js';
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ app.use('/api/v1/empresa/:slug', empresaRoutes);
 app.use('/api/v1/superadmin', superadminRoutes);
 app.use('/api/v1/pagos', pagosRoutes);
 app.use('/api/v1/profesiones', profesionesRoutes);
+app.use('/api/v1/etiquetado', etiquetadoRoutes);
 
 // Ruta fallback para 404
 app.use((req, res) => {

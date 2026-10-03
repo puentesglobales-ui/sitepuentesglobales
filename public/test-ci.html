@@ -676,6 +676,7 @@ function renderIAFormulario(body) {
 function renderIAAnotado(body, recien) {
   body.innerHTML = `
     <p class="ia-ok">${recien ? '¡Listo! Te anotamos.' : 'Ya estás anotado/a.'} Si tu perfil encaja con un proyecto, te vamos a escribir por email para preguntarte si querés participar. No compartimos tus datos con nadie hasta que aceptes.</p>
+    <p class="ia-ok"><a href="test-etiquetado.html" style="font-weight:800">Hacé ahora la prueba de aptitud (30 minutos) →</a></p>
     <button type="button" class="link-btn" id="ia-retirar">Retirar mi permiso</button>
     <p class="ia-msg" id="ia-msg" role="status"></p>`;
   document.getElementById('ia-retirar').addEventListener('click', async () => {

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Etiquetado de IA | Admin PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <style>
+    :root { --bg: #F8FAFC; --white: #fff; --brand: #FF6A00; --brand-dark: #c2410c; --brand-light: #fff7ed; --border: #e2e8f0; --text: #0f172a; --muted: #64748b; --ok: #15803d; --ok-bg: #f0fdf4; --err: #b91c1c; --err-bg: #fef2f2; --warn-bg: #fffbeb; --warn: #92400e; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.9rem 4%; background: var(--white); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    header a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    main { max-width: 1280px; margin: 0 auto; padding: 1.25rem 4%; display: grid; gap: 1rem; }
+    h1 { font-size: 1.4rem; font-weight: 800; }
+    .hint { color: var(--muted); font-size: 0.88rem; }
+    .embudo { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; }
+    .etapa { background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; padding: 0.7rem 0.85rem; cursor: pointer; text-align: left; font-family: inherit; color: var(--text); }
+    .etapa[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-light); }
+    .etapa .n { font-size: 1.6rem; font-weight: 800; }
+    .etapa .t { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+    .filtros { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 0.75rem 1rem; }
+    .filtros label { font-size: 0.85rem; font-weight: 600; display: flex; gap: 0.4rem; align-items: center; }
+    .filtros input[type=number] { width: 80px; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; }
+    .acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .btn { border: none; background: var(--brand); color: white; font-weight: 700; font-family: inherit; font-size: 0.88rem; padding: 0.55rem 0.9rem; border-radius: 10px; cursor: pointer; }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+    .btn.ghost { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+    .btn.small { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+    .btn.ok { background: var(--ok); }
+    .btn.no { background: var(--white); color: var(--err); border: 1.5px solid #fecaca; }
+    .tabla { overflow-x: auto; background: var(--white); border: 1px solid var(--border); border-radius: 14px; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+    th, td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #f8fafc; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+    tr.abierta td { background: #fffaf5; }
+    .chip { display: inline-block; font-size: 0.75rem; font-weight: 700; border-radius: 99px; padding: 0.1rem 0.55rem; background: #f1f5f9; white-space: nowrap; }
+    .chip.aprobado { background: var(--ok-bg); color: var(--ok); }
+    .chip.descartado { background: var(--err-bg); color: var(--err); }
+    .chip.alerta { background: var(--warn-bg); color: var(--warn); }
+    .detalle { display: grid; gap: 0.6rem; padding: 0.25rem 0 0.5rem; }
+    .redaccion { white-space: pre-wrap; background: #f8fafc; border-radius: 10px; padding: 0.7rem; font-size: 0.9rem; }
+    textarea { width: 100%; min-height: 60px; padding: 0.5rem; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.88rem; }
+    .copia { display: grid; gap: 0.5rem; background: var(--warn-bg); border: 1px solid #fde68a; border-radius: 14px; padding: 1rem; }
+    .copia textarea { min-height: 140px; background: white; }
+    .toast { position: fixed; bottom: 1rem; right: 1rem; background: var(--text); color: white; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.9rem; z-index: 50; }
+    .toast.err { background: var(--err); }
+    [hidden] { display: none !important; }
+  </style>
+  <script src="config.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="marca.js"></script>
+  <script src="auth-gate.js"></script>
+  <script src="panel-comun.js"></script>
+</head>
+<body>
+<header>
+  <strong>Etiquetado de IA · Selección</strong>
+  <a href="admin.html">← Volver al admin</a>
+</header>
+<main>
+  <div>
+    <h1>Embudo de etiquetadores</h1>
+    <p class="hint">Solo aparecen quienes dieron el permiso de trabajos de IA y no lo retiraron. La prueba es un filtro: la decisión la toma una persona, después de la videollamada.</p>
+  </div>
+  <div class="embudo" id="embudo"></div>
+  <div class="filtros">
+    <label>CI mínimo <input type="number" id="f-ci" min="0" max="160" step="1"></label>
+    <label>Puntaje mínimo <input type="number" id="f-puntaje" min="0" max="24" step="1"></label>
+    <label><input type="checkbox" id="f-senales"> Ocultar con alertas</label>
+    <span class="hint" id="cuenta"></span>
+  </div>
+  <div class="acciones">
+    <button class="btn ghost small" id="sel-todos" type="button">Seleccionar visibles</button>
+    <button class="btn" id="inv-prueba" type="button" disabled>Invitar a la prueba</button>
+    <button class="btn" id="inv-entrevista" type="button" disabled>Invitar a la entrevista</button>
+    <span class="hint" id="modo-email"></span>
+  </div>
+  <div class="copia" id="copia" hidden></div>
+  <div class="tabla">
+    <table>
+      <thead><tr><th></th><th>Persona</th><th>CI</th><th>Prueba</th><th>Alertas</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="filas"><tr><td colspan="7" class="hint">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+const { el, api, aviso } = PANEL;
+const ETAPAS = [
+  ['anotado', 'Anotados'], ['invitado_prueba', 'Invitados a la prueba'], ['prueba_iniciada', 'Prueba empezada'],
+  ['prueba_hecha', 'Prueba hecha'], ['invitado_entrevista', 'Invitados a entrevista'], ['aprobado', 'Aprobados'], ['descartado', 'Descartados']
+];
+const NOMBRE_ETAPA = Object.fromEntries(ETAPAS);
+let datos = { items: [] }, etapa = 'anotado', abierta = null;
+const elegidos = new Set();
+
+const alertas = s => !s ? [] : [
+  s.cambios_pestana > 2 ? `${s.cambios_pestana} cambios de pestaña` : null,
+  s.intentos_pegar > 0 ? `${s.intentos_pegar} intentos de pegar` : null,
+  s.fuera_de_tiempo ? 'fuera de tiempo' : null,
+  s.segundos !== null && s.segundos < 300 ? `muy rápido (${Math.round(s.segundos / 60)} min)` : null
+].filter(Boolean);
+
+function visibles() {
+  const ci = Number(document.getElementById('f-ci').value) || 0;
+  const pts = Number(document.getElementById('f-puntaje').value) || 0;
+  const sinAlertas = document.getElementById('f-senales').checked;
+  return datos.items.filter(i => i.estado === etapa
+    && (!ci || (i.ci ?? 0) >= ci)
+    && (!pts || (i.puntaje ?? 0) >= pts)
+    && (!sinAlertas || !alertas(i.senales).length));
+}
+
+function render() {
+  document.getElementById('embudo').replaceChildren(...ETAPAS.map(([k, t]) => el('button', {
+    type: 'button', class: 'etapa', 'aria-pressed': String(k === etapa),
+    onclick: () => { etapa = k; elegidos.clear(); abierta = null; render(); }
+  }, el('div', { class: 'n', text: String(datos.items.filter(i => i.estado === k).length) }), el('div', { class: 't', text: t }))));
+
+  const lista = visibles();
+  document.getElementById('cuenta').textContent = `${lista.length} personas en "${NOMBRE_ETAPA[etapa]}"`;
+  for (const id of [...elegidos]) if (!lista.some(i => i.user_id === id)) elegidos.delete(id);
+  document.getElementById('inv-prueba').disabled = etapa !== 'anotado' || !elegidos.size;
+  document.getElementById('inv-entrevista').disabled = etapa !== 'prueba_hecha' || !elegidos.size;
+
+  const tbody = document.getElementById('filas');
+  if (!lista.length) { tbody.replaceChildren(el('tr', {}, el('td', { colspan: '7', class: 'hint', text: 'No hay personas en esta etapa con estos filtros.' }))); return; }
+  tbody.replaceChildren(...lista.flatMap(i => {
+    const check = el('input', { type: 'checkbox', checked: elegidos.has(i.user_id), 'aria-label': `Elegir a ${i.email}` });
+    check.addEventListener('change', () => { check.checked ? elegidos.add(i.user_id) : elegidos.delete(i.user_id); render(); });
+    const al = alertas(i.senales);
+    const fila = el('tr', { class: abierta === i.user_id ? 'abierta' : '' },
+      el('td', {}, check),
+      el('td', {}, el('strong', { text: i.nombre || '—' }), el('div', { class: 'hint', text: i.email }), i.profesion ? el('div', { class: 'hint', text: i.profesion }) : null),
+      el('td', { text: i.ci ?? '—' }),
+      el('td', { text: i.puntaje !== null ? `${i.puntaje}/${i.maximo}` : '—' }),
+      el('td', {}, al.length ? al.map(a => el('span', { class: 'chip alerta', text: a })) : el('span', { class: 'hint', text: i.prueba_at ? 'ninguna' : '—' })),
+      el('td', {}, el('span', { class: `chip ${i.estado}`, text: NOMBRE_ETAPA[i.estado] })),
+      el('td', {}, i.prueba_at ? el('button', { type: 'button', class: 'btn ghost small', text: abierta === i.user_id ? 'Cerrar' : 'Ver', onclick: () => { abierta = abierta === i.user_id ? null : i.user_id; render(); } }) : null)
+    );
+    if (abierta !== i.user_id) return [fila];
+    const nota = el('textarea', { maxlength: '1000', placeholder: 'Nota interna (por qué se aprueba o descarta)' }, i.nota || '');
+    const revisar = estado => async () => {
+      try { await api('/etiquetado/admin/revisar', { method: 'POST', body: { user_id: i.user_id, estado, nota: nota.value } }); aviso(estado === 'aprobado' ? 'Aprobado.' : 'Descartado.'); cargar(); }
+      catch (e) { aviso(e.message, 'err'); }
+    };
+    const secciones = Object.entries(i.secciones || {}).map(([k, v]) => `${k}: ${v.puntaje}/${v.maximo}`).join(' · ');
+    return [fila, el('tr', { class: 'abierta' }, el('td', { colspan: '7' }, el('div', { class: 'detalle' },
+      el('div', { class: 'hint', text: `Por parte: ${secciones}${i.senales?.segundos ? ` · tardó ${Math.round(i.senales.segundos / 60)} min` : ''}` }),
+      el('strong', { text: 'Redacción (evaluala vos):' }),
+      el('div', { class: 'redaccion', text: i.redaccion || '' }),
+      nota,
+      el('div', { class: 'acciones' },
+        el('button', { type: 'button', class: 'btn ok small', text: 'Aprobar', onclick: revisar('aprobado') }),
+        el('button', { type: 'button', class: 'btn no small', text: 'Descartar', onclick: revisar('descartado') })))))];
+  }));
+}
+
+async function invitar(etapaInv) {
+  const ids = [...elegidos];
+  const copia = document.getElementById('copia');
+  if (datos.email_disponible) {
+    if (!confirm(`¿Enviar ${ids.length} emails de invitación ${etapaInv === 'prueba' ? 'a la prueba' : 'a la entrevista'}?`)) return;
+    try {
+      const r = await api('/etiquetado/admin/invitar', { method: 'POST', body: { user_ids: ids, etapa: etapaInv } });
+      aviso(`Enviados: ${r.invitados.length}${r.omitidos.length ? ` · omitidos: ${r.omitidos.length}` : ''}`);
+      elegidos.clear(); cargar();
+    } catch (e) { aviso(e.message, 'err'); }
+    return;
+  }
+  // Sin email configurado: el texto y los destinatarios para mandarlo a mano (en copia oculta).
+  const lista = datos.items.filter(i => elegidos.has(i.user_id));
+  const m = datos.textos[etapaInv];
+  const marcar = el('button', { type: 'button', class: 'btn', text: `Ya los envié: marcar ${lista.length} como invitados` });
+  marcar.addEventListener('click', async () => {
+    try {
+      const r = await api('/etiquetado/admin/invitar', { method: 'POST', body: { user_ids: ids, etapa: etapaInv, manual: true } });
+      aviso(`Marcados: ${r.invitados.length}`); copia.hidden = true; elegidos.clear(); cargar();
+    } catch (e) { aviso(e.message, 'err'); }
+  });
+  copia.replaceChildren(
+    el('strong', { text: 'El envío automático no está configurado. Mandalo desde tu email, con los destinatarios en copia oculta (CCO):' }),
+    el('label', { class: 'hint', text: 'Destinatarios (CCO)' }), el('textarea', { readonly: true }, lista.map(i => i.email).join(', ')),
+    el('label', { class: 'hint', text: `Asunto: ${m.asunto}` }), el('textarea', { readonly: true }, m.texto),
+    el('div', { class: 'acciones' }, marcar, el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: () => { copia.hidden = true; } })));
+  copia.hidden = false;
+  copia.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function cargar() {
+  try {
+    datos = await api('/etiquetado/admin/embudo');
+    document.getElementById('modo-email').textContent = datos.email_disponible ? 'Los emails se envían automáticamente.' : 'Sin envío automático: te damos el texto para mandarlo a mano.';
+    document.getElementById('f-puntaje').placeholder = `sug. ${datos.puntaje_sugerido}`;
+    render();
+  } catch (e) {
+    document.getElementById('filas').replaceChildren(el('tr', {}, el('td', { colspan: '7', class: 'hint', text: `No se pudo cargar: ${e.message}` })));
+  }
+}
+
+['f-ci', 'f-puntaje', 'f-senales'].forEach(id => document.getElementById(id).addEventListener('input', render));
+document.getElementById('sel-todos').addEventListener('click', () => { visibles().forEach(i => elegidos.add(i.user_id)); render(); });
+document.getElementById('inv-prueba').addEventListener('click', () => invitar('prueba'));
+document.getElementById('inv-entrevista').addEventListener('click', () => invitar('entrevista'));
+
+(async () => {
+  await PG_AUTH.requireAuth();
+  let admin = false;
+  try { admin = (await api('/admin/yo')).admin; } catch { /* sin permiso */ }
+  if (!admin) { document.querySelector('main').replaceChildren(el('h1', { text: 'Acceso solo para el equipo' }), el('p', { class: 'hint', text: 'Tu cuenta no tiene permiso de administrador.' })); return; }
+  cargar();
+})();
+</script>
+</body>
+</html>
