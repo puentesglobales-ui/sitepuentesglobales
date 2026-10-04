@@ -12,17 +12,17 @@
 export const SAAS_PLANS = {
   FREE: {
     name: 'Plan Gratuito',
-    limits: { ats: 1, entrevista: 1 },
+    limits: { ats: 1, entrevista: 1, idiomas: 1 },
     price: '$0 / mes'
   },
   PRO: {
     name: 'Plan Profesional',
-    limits: { ats: null, entrevista: null },
+    limits: { ats: null, entrevista: null, idiomas: null },
     price: '$19 / mes'
   },
   ENTERPRISE: {
     name: 'Plan Enterprise Multi-Tenant',
-    limits: { ats: null, entrevista: null },
+    limits: { ats: null, entrevista: null, idiomas: null },
     alexWhatsAppBot: true,
     whitelabelBranding: true,
     price: '$99 / mes'
@@ -31,7 +31,8 @@ export const SAAS_PLANS = {
 
 export const HERRAMIENTAS = {
   ats: 'escaneo ATS',
-  entrevista: 'entrevista simulada'
+  entrevista: 'entrevista simulada',
+  idiomas: 'clase de idiomas'
 };
 
 export class SaasCore {
@@ -55,7 +56,7 @@ export class SaasCore {
       limit,
       used: usosPrevios,
       planName: p.name,
-      message: `Ya usaste tu ${HERRAMIENTAS[herramienta]} gratis. Con el Plan Profesional lo usás sin límite.`
+      message: `Ya usaste tu ${HERRAMIENTAS[herramienta]} gratis. Para seguir sin límite, comprá la herramienta sola o en un combo.`
     };
   }
 

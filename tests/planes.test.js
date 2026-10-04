@@ -15,7 +15,7 @@ test('cuenta gratis: 1 escaneo ATS y 1 entrevista en total', () => {
         assert.equal(SaasCore.canUse(null, h, 0).allowed, true, h);
         const segunda = SaasCore.canUse(null, h, 1);
         assert.equal(segunda.allowed, false, h);
-        assert.match(segunda.message, /Plan Profesional/);
+        assert.match(segunda.message, /comprá la herramienta/);
     }
 });
 

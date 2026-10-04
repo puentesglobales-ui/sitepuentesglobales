@@ -56,7 +56,8 @@ docs/TAREAS.md            plan de trabajo numerado
 - `PUBLIC_URL` = dirección pública del sitio (p. ej. https://puentesglobales.com) para las vueltas de los medios de pago. Sin ella se usa la del pedido.
 - `RESEND_API_KEY` y `EMAIL_FROM` ("Puentes Globales <hola@dominio>") = envío de invitaciones de etiquetado con Resend. Exige dominio propio verificado; sin ellas el panel da el texto para enviarlo a mano.
 - `ETIQUETADO_AGENDA_URL` = enlace para que los candidatos elijan horario de la videollamada (Calendly o similar). Sin él, el email pide responder con horarios.
-- Opcionales: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (si no, usa el proyecto actual), `GEMINI_API_KEY` u `OPENAI_API_KEY` (simulador de entrevistas; sin clave responde con textos fijos).
+- Simulador de entrevistas e idiomas = **API motor de Alex IO** (proyecto aparte; acá no hay IA propia ni se reconstruye). `ALEXIO_ENGINE_URL`, `ALEXIO_ENGINE_KEY` (y `ALEXIO_ENGINE_KEY_2` durante una rotación), `ALEXIO_REF_SECRET` (secreto propio para el seudónimo student_ref: si cambia, Alex IO deja de reconocer a los alumnos) y `ALEXIO_PRODUCTOS` ("simulador" o "simulador,idiomas"). Sin ellas, los dos productos y los combos que los incluyen se muestran como "Próximamente" y no se pueden comprar.
+- Opcionales: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (si no, usa el proyecto actual).
 - Una fuente sin su variable queda desactivada; no rompe el sitio.
 - Para probar local: archivo `.env` (está en `.gitignore`).
 

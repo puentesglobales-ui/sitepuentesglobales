@@ -4,6 +4,7 @@
  */
 import { seleccionar } from './supabaseAdmin.js';
 import { requireUser } from './usage.js';
+import { productoDisponible } from './alexioMotor.js';
 
 export const PLATAFORMA = {
   id: null,
@@ -113,7 +114,9 @@ export function mezclarPrecios(productos, preciosOrg) {
         codigo: p.codigo, nombre: p.nombre, descripcion: p.descripcion, periodo: p.periodo,
         precio: Number(propio ? propio.precio : p.precio_base),
         moneda: propio ? propio.moneda : p.moneda,
-        precio_propio: Boolean(propio)
+        precio_propio: Boolean(propio),
+        // Se muestra pero no se vende (p. ej. productos de Alex IO todavía no conectados).
+        proximamente: !productoDisponible(p.codigo)
       };
     })
     .filter(Boolean);
@@ -146,7 +149,8 @@ export async function configPublica(org) {
     ? { id: org.id, slug: org.slug, nombre: org.nombre, logo_url: org.logo_url || PLATAFORMA.logo_url, color_primario: org.color_primario, color_acento: org.color_acento, email_contacto: org.email_contacto }
     : PLATAFORMA;
   const combos = (combosOrg.length ? combosOrg : combosPlat).map(c => ({
-    id: c.id, nombre: c.nombre, descripcion: c.descripcion, precio: Number(c.precio), moneda: c.moneda, periodo: c.periodo, items: c.items || []
+    id: c.id, nombre: c.nombre, descripcion: c.descripcion, precio: Number(c.precio), moneda: c.moneda, periodo: c.periodo, items: c.items || [],
+    proximamente: (c.items || []).some(i => !productoDisponible(i.producto))
   }));
   const valor = { marca, productos: mezclarPrecios(productos, preciosOrg), combos, pagos: elegirPagos(pagosOrg, pagosPlat) };
   cacheConfig.set(clave, { at: Date.now(), valor });

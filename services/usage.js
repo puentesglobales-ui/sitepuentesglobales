@@ -11,10 +11,6 @@ const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://mceiutonddbgddrrrajv.
 // Clave pública (publishable): la misma que usa el navegador en public/auth-gate.js.
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_n95hBZKrS8tOxICy8xd4HA_G_xebnDi';
 
-// Una entrevista son varios pasos: se cuenta un uso al empezar y los pasos
-// siguientes se permiten durante esta ventana.
-export const VENTANA_ENTREVISTA_MS = 2 * 60 * 60 * 1000;
-
 function headers(token, extra = {}) {
   return { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, ...extra };
 }
@@ -78,7 +74,7 @@ export async function registrarUso(user, token, herramienta) {
 
 // Comprueba el límite del plan. Si se puede usar, registra el uso.
 // Producto del catálogo que habilita cada herramienta.
-export const PRODUCTO_DE = { ats: 'ats', entrevista: 'simulador' };
+export const PRODUCTO_DE = { ats: 'ats', entrevista: 'simulador', idiomas: 'idiomas' };
 
 // ¿Compró la herramienta (o un combo que la incluye) y el acceso está vigente?
 // Si la tabla todavía no existe en Supabase, se responde que no (no rompe nada).
@@ -95,9 +91,14 @@ export async function tieneAcceso(user, token, herramienta) {
   }
 }
 
-export async function consumir(user, token, herramienta) {
+// Decide sin registrar el uso (para registrarlo recién cuando el servicio respondió).
+export async function evaluarUso(user, token, herramienta) {
   const [plan, usos, comprado] = await Promise.all([getPlan(user, token), contarUsos(user, token, herramienta), tieneAcceso(user, token, herramienta)]);
-  const decision = comprado ? { allowed: true, limit: null, used: usos, planName: 'Compra' } : SaasCore.canUse(plan, herramienta, usos);
+  return comprado ? { allowed: true, limit: null, used: usos, planName: 'Compra' } : SaasCore.canUse(plan, herramienta, usos);
+}
+
+export async function consumir(user, token, herramienta) {
+  const decision = await evaluarUso(user, token, herramienta);
   if (decision.allowed) await registrarUso(user, token, herramienta);
   return decision;
 }

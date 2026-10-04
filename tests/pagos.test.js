@@ -9,6 +9,8 @@ import { instalar } from './helpers/supabaseFalso.js';
 process.env.SUPABASE_SECRET_KEY = 'sb_secret_prueba';
 process.env.PAYMENTS_ENC_KEY = crypto.randomBytes(32).toString('base64');
 process.env.PUBLIC_URL = 'https://pg.test';
+// Estos tests compran el simulador: se habilita como si Alex IO estuviera conectado.
+Object.assign(process.env, { ALEXIO_ENGINE_URL: 'https://motor.test', ALEXIO_ENGINE_KEY: 'k', ALEXIO_REF_SECRET: 's', ALEXIO_PRODUCTOS: 'simulador' });
 
 const { cifrar } = await import('../services/cifrado.js');
 const { limpiarCacheOrgs } = await import('../services/marcaBlanca.js');

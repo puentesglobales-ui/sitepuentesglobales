@@ -15,58 +15,6 @@ Proporciona orientación sobre:
 
 export class TalkMeEngine {
   /**
-   * Genera respuestas de simulador de entrevista de trabajo según el puesto objetivo
-   */
-  static generateInterviewQuestion(jobTitle = 'General', candidateAnswer = '', step = 1) {
-    const questionsByRole = {
-      tech: [
-        `Bienvenido a la entrevista para el puesto de ${jobTitle}. Háblame de tu experiencia principal y qué arquitecturas o tecnologías dominas.`,
-        `Excelente. En un entorno laboral europeo con equipos distribuidos, ¿cómo gestionas la entrega de código, las pruebas unitarias y el control de calidad?`,
-        `Cuéntame sobre una situación en la que tuviste un desacuerdo técnico con un compañero o cliente y cómo lo resolviste.`
-      ],
-      health: [
-        `Bienvenido/a. Para la posición en el sector salud como ${jobTitle}, ¿cuál es tu formación oficial y qué homologación o título posees?`,
-        `En hospitales o clínicas europeas, la atención al paciente bajo presión es clave. ¿Cómo manejas turnos exigentes y la comunicación con pacientes de diversos orígenes?`,
-        `¿Cuál es tu nivel de idioma (Inglés, Alemán o Francés) para la comunicación médica diaria y la redacción de informes?`
-      ],
-      general: [
-        `Hola, bienvenido/a a la entrevista para ${jobTitle} en Europa. ¿Podrías presentarte brevemente y resumir tu trayectoria laboral relevante?`,
-        `¿Qué te motiva a relocalizarte laboralmente en Europa en este momento de tu carrera?`,
-        `¿Cuáles consideras que son tus 3 mayores fortalezas profesionales y cómo las aplicarías en tu primer mes de trabajo?`
-      ]
-    };
-
-    let roleType = 'general';
-    const titleLower = jobTitle.toLowerCase();
-    if (titleLower.includes('developer') || titleLower.includes('software') || titleLower.includes('tech') || titleLower.includes('it') || titleLower.includes('programador')) {
-      roleType = 'tech';
-    } else if (titleLower.includes('médico') || titleLower.includes('enfermer') || titleLower.includes('salud') || titleLower.includes('doctor')) {
-      roleType = 'health';
-    }
-
-    const roleQuestions = questionsByRole[roleType] || questionsByRole.general;
-    const currentQuestionIndex = Math.min(step - 1, roleQuestions.length - 1);
-    const nextQuestion = roleQuestions[currentQuestionIndex];
-
-    let feedback = '';
-    if (candidateAnswer) {
-      if (candidateAnswer.length > 50) {
-        feedback = '✓ Buena profundidad en tu respuesta. Demuestras seguridad y claridad en tus conceptos.';
-      } else {
-        feedback = '💡 Consejo: En entrevistas europeas se valora la precisión. Trata de expandir tus respuestas con ejemplos concretos (método STAR: Situación, Tarea, Acción, Resultado).';
-      }
-    }
-
-    return {
-      step,
-      totalSteps: roleQuestions.length,
-      question: nextQuestion,
-      feedback,
-      isCompleted: step >= roleQuestions.length
-    };
-  }
-
-  /**
    * Asistente ALEX IO con soporte para Gemini API, OpenAI API o Base de Conocimientos Experta
    */
   static async chatWithAlex(message = '') {

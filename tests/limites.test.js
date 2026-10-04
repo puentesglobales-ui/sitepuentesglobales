@@ -1,9 +1,9 @@
-// Límites de la cuenta gratis en ATS y entrevista, con Supabase simulado.
+// Límites de la cuenta gratis en el ATS, con Supabase simulado.
+// Los del simulador de entrevistas e idiomas están en practica.test.js.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
 import atsRoutes from '../routes/ats.js';
-import talkmeRoutes from '../routes/talkme.js';
 
 const realFetch = globalThis.fetch;
 const usos = []; // filas de pg_uso simuladas
@@ -39,7 +39,6 @@ before(async () => {
     const app = express();
     app.use(express.json());
     app.use('/api/v1/ats', atsRoutes);
-    app.use('/api/v1/talkme', talkmeRoutes);
     await new Promise(r => { server = app.listen(0, r); });
     base = `http://127.0.0.1:${server.address().port}/api/v1`;
 });
@@ -56,9 +55,8 @@ async function post(path, body, user) {
 
 const CV = 'Experiencia laboral: enfermera en hospital durante 5 años. Educación: universidad. Email: a@b.com';
 
-test('sin sesión: 401 en ATS y entrevista', async () => {
+test('sin sesión: 401 en ATS', async () => {
     assert.equal((await post('/ats/evaluate', { cvText: CV })).status, 401);
-    assert.equal((await post('/talkme/interview', { jobTitle: 'Enfermera', step: 1 })).status, 401);
 });
 
 test('ATS gratis: el primero funciona, el segundo pide plan', async () => {
@@ -73,25 +71,9 @@ test('ATS: un CV vacío no gasta el uso gratis', async () => {
     assert.equal((await post('/ats/evaluate', { cvText: CV }, 'beto')).status, 200);
 });
 
-test('entrevista gratis: una entrevista completa, la segunda pide plan', async () => {
-    assert.equal((await post('/talkme/interview', { jobTitle: 'Chofer', step: 1 }, 'carla')).status, 200);
-    for (let step = 2; step <= 4; step++) {
-        assert.equal((await post('/talkme/interview', { jobTitle: 'Chofer', candidateAnswer: 'respuesta', step }, 'carla')).status, 200, `paso ${step}`);
-    }
-    assert.equal(usos.filter(u => u.user_id === 'carla').length, 1, 'una entrevista = un uso');
-    assert.equal((await post('/talkme/interview', { jobTitle: 'Chofer', step: 1 }, 'carla')).status, 403);
-});
-
-test('entrevista: no se puede saltar al paso 2 sin haber empezado', async () => {
-    const r = await post('/talkme/interview', { jobTitle: 'Chofer', step: 2 }, 'dani');
-    assert.equal(r.status, 403);
-    assert.equal(r.body.code, 'reiniciar');
-});
-
 test('Plan Pro: sin límite', async () => {
     planes.eva = 'pro';
     for (let i = 0; i < 3; i++) {
         assert.equal((await post('/ats/evaluate', { cvText: CV }, 'eva')).status, 200);
-        assert.equal((await post('/talkme/interview', { jobTitle: 'Cocinero', step: 1 }, 'eva')).status, 200);
     }
 });

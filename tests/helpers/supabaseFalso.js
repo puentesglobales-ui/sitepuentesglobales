@@ -57,10 +57,13 @@ export function instalar({ db, usuarios, otros = async () => null }) {
         r.sort((a, b) => (String(a[campo]) > String(b[campo]) ? 1 : -1) * (dir === 'desc' ? -1 : 1));
       }
       const limit = Number(u.searchParams.get('limit')) || r.length;
-      return Response.json(r.slice(0, limit));
+      // Como PostgREST con Prefer: count=exact, el total va en content-range.
+      const conteo = { 'content-type': 'application/json', 'content-range': `*/${r.length}` };
+      if (metodo === 'HEAD') return new Response(null, { status: 200, headers: conteo });
+      return new Response(JSON.stringify(r.slice(0, limit)), { status: 200, headers: conteo });
     }
     if (metodo === 'POST') {
-      const nuevas = JSON.parse(init.body).map(f => ({ id: f.id ?? crypto.randomUUID(), created_at: new Date().toISOString(), ...f }));
+      const nuevas = [JSON.parse(init.body)].flat().map(f => ({ id: f.id ?? crypto.randomUUID(), created_at: new Date().toISOString(), ...f }));
       const conflicto = u.searchParams.get('on_conflict');
       for (const n of nuevas) {
         const i = conflicto ? filas.findIndex(f => conflicto.split(',').every(c => f[c] === n[c])) : -1;

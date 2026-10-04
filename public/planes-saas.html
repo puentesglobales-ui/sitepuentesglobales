@@ -51,7 +51,7 @@
                         <li>✓ Postulación a ofertas sin costo</li>
                         <li>✓ 6 tests de selección (incluye CI)</li>
                         <li>✓ 1 escaneo ATS de prueba</li>
-                        <li>✓ 1 entrevista simulada de prueba</li>
+                        <li>✓ 1 entrevista simulada y 1 clase de idiomas de prueba (cuando estén disponibles)</li>
                     </ul>
                 </div>
                 <a href="index.html" class="btn-plan" style="background:#e2e8f0; color:#1e293b">Comenzar gratis</a>
@@ -111,7 +111,7 @@
             }
         }
 
-        function tarjeta({ titulo, descripcion, monto, moneda, periodo, items, destacada, pagos, tipo, id }) {
+        function tarjeta({ titulo, descripcion, monto, moneda, periodo, items, destacada, pagos, tipo, id, proximamente }) {
             const card = document.createElement('div');
             card.className = 'plan-card' + (destacada ? ' popular' : '');
             if (destacada) { const b = document.createElement('div'); b.className = 'badge'; b.textContent = 'RECOMENDADO'; card.append(b); }
@@ -130,6 +130,16 @@
             botones.style.cssText = 'display:grid; gap:0.5rem;';
             const nota = document.createElement('p');
             nota.className = 'pagos';
+            if (proximamente) {
+                const btn = document.createElement('button');
+                btn.className = 'btn-plan';
+                btn.disabled = true;
+                btn.textContent = 'Próximamente';
+                botones.append(btn);
+                nota.textContent = 'Estamos terminando esta herramienta. Todavía no se puede comprar.';
+                card.append(cuerpo, botones, nota);
+                return card;
+            }
             if (!pagos.length) {
                 const btn = document.createElement('button');
                 btn.className = 'btn-plan';
@@ -155,8 +165,8 @@
             const combos = document.getElementById('combos');
             combos.replaceChildren(...cfg.combos.map((c, i) => tarjeta({
                 titulo: c.nombre, descripcion: c.descripcion, monto: c.precio, moneda: c.moneda, periodo: c.periodo,
-                items: c.items.map(it => `${nombre(it)}${it.cantidad > 1 ? ` ×${it.cantidad}` : ''}`), destacada: i === 0, pagos: cfg.pagos,
-                tipo: 'combo', id: c.id
+                items: c.items.map(it => `${nombre(it)}${it.cantidad > 1 ? ` ×${it.cantidad}` : ''}`), destacada: i === 0 && !c.proximamente, pagos: cfg.pagos,
+                tipo: 'combo', id: c.id, proximamente: c.proximamente
             })));
             if (!cfg.combos.length) combos.innerHTML = '<p class="sub">Por ahora no hay combos.</p>';
 
@@ -164,7 +174,7 @@
             const pagos = cfg.productos.filter(p => Number(p.precio) > 0);
             productos.replaceChildren(...pagos.map(p => tarjeta({
                 titulo: p.nombre, descripcion: p.descripcion, monto: p.precio, moneda: p.moneda, periodo: p.periodo, pagos: cfg.pagos,
-                tipo: 'producto', id: p.codigo
+                tipo: 'producto', id: p.codigo, proximamente: p.proximamente
             })));
             if (new URLSearchParams(location.search).get('cancelado')) {
                 const aviso = document.createElement('p');

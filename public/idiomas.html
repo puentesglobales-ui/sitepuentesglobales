@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aprendizaje de idiomas | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="practica-ia.css">
+  <script src="config.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="marca.js"></script>
+  <script src="auth-gate.js"></script>
+  <script src="practica-ia.js"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo" data-marca="nombre">PuentesGlobales</a>
+  <a href="index.html">← Volver al inicio</a>
+</nav>
+<main id="raiz"></main>
+<script>
+const { el } = PRACTICA;
+const IDIOMAS = { en: 'Inglés', de: 'Alemán', fr: 'Francés', pt: 'Portugués' };
+const OBJETIVOS = { entrevistas: 'Entrevistas de trabajo', trabajo: 'Comunicarme en el trabajo', salud: 'Trabajo en salud', vida_diaria: 'Vida diaria en el país' };
+
+function formulario() {
+  const idioma = el('select', {}, Object.entries(IDIOMAS).map(([c, n]) => el('option', { value: c, text: n })));
+  const nivel = el('select', {}, ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(n => el('option', { value: n, text: n })));
+  const objetivo = el('select', {}, Object.entries(OBJETIVOS).map(([c, n]) => el('option', { value: c, text: n })));
+  return {
+    nodo: el('div', { style: 'display:grid; gap:0.75rem' },
+      el('div', { class: 'grid2' },
+        el('label', { class: 'campo' }, 'Idioma que querés practicar', idioma),
+        el('label', { class: 'campo' }, 'Tu nivel actual', nivel)),
+      el('label', { class: 'campo' }, '¿Para qué lo necesitás?', objetivo),
+      el('p', { class: 'sub' }, '¿No sabés tu nivel? ', el('a', { href: 'test-idiomas.html', text: 'Hacé el test de idiomas' }), '.')),
+    leer: () => ({ idioma_objetivo: idioma.value, nivel: nivel.value, objetivo: objetivo.value })
+  };
+}
+
+PRACTICA.iniciar({
+  producto: 'idiomas',
+  raiz: document.getElementById('raiz'),
+  titulo: 'Aprendizaje de idiomas',
+  intro: 'Practicá el idioma del país al que vas, con conversaciones pensadas para el trabajo. Te corregimos en cada respuesta.',
+  proximamente: 'Estamos terminando las clases de idiomas con IA. Mientras tanto, hacé el test de idiomas gratis para saber tu nivel.',
+  formulario,
+  describir: c => [IDIOMAS[c.idioma_objetivo], c.nivel, OBJETIVOS[c.objetivo]].filter(Boolean).join(' · ')
+});
+</script>
+</body>
+</html>

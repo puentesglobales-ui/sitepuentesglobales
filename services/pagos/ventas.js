@@ -18,12 +18,14 @@ export async function armarCompra(org, { tipo, id }) {
   if (tipo === 'producto') {
     const p = cfg.productos.find(x => x.codigo === id);
     exigir(p, 'Ese producto no está a la venta.');
+    exigir(!p.proximamente, 'Ese producto todavía no está disponible.');
     exigir(Number(p.precio) > 0, 'Ese producto es gratis: no hace falta pagarlo.');
     return { concepto: p.codigo, titulo: p.nombre, monto: redondear(p.precio), moneda: p.moneda, items: [{ producto: p.codigo, cantidad: 1, periodo: p.periodo }] };
   }
   if (tipo === 'combo') {
     const c = cfg.combos.find(x => x.id === id);
     exigir(c, 'Ese combo no está a la venta.');
+    exigir(!c.proximamente, 'Ese combo incluye una herramienta que todavía no está disponible.');
     exigir(Number(c.precio) > 0, 'Ese combo es gratis: no hace falta pagarlo.');
     return { concepto: `combo:${c.id}`, titulo: c.nombre, monto: redondear(c.precio), moneda: c.moneda, items: c.items.map(i => ({ producto: i.producto, cantidad: i.cantidad || 1, periodo: c.periodo })) };
   }
