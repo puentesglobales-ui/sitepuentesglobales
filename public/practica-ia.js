@@ -76,7 +76,7 @@ window.PRACTICA = (function () {
                 return;
             }
             if (!estado.opciones || !estado.opciones.length) {
-                raiz.replaceChildren(...cabecera(), aviso('No pudimos cargar las opciones en este momento. Probá de nuevo en unos minutos.'), historial());
+                raiz.replaceChildren(...cabecera(), aviso(`No pudimos cargar las opciones en este momento. Probá de nuevo en unos minutos.${estado.error_opciones ? ` (código: ${estado.error_opciones})` : ''}`), historial());
                 return;
             }
             const f = cfg.formulario(estado.sugerido, estado.opciones);

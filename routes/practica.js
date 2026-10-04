@@ -90,14 +90,20 @@ router.get('/:producto', requireUser, validarProducto, async (req, res) => {
   try {
     const { producto } = req.params;
     const disponible = puedeUsar(req, producto);
+    let errorOpciones = null;
     const [sesiones, perfil, opciones] = await Promise.all([
       seleccionar('pg_sesiones_ia', `select=*&user_id=eq.${req.user.id}&producto=eq.${producto}&order=created_at.desc&limit=20`),
       producto === 'simulador' ? perfilDe(req.user.id) : null,
-      disponible ? opcionesDe(producto).catch(() => null) : null
+      disponible ? opcionesDe(producto).catch(err => {
+        // Solo el código (UNAUTHORIZED, RED, HTTP_404…): sirve para diagnosticar sin exponer nada.
+        errorOpciones = err.code || 'DESCONOCIDO';
+        console.error('practica: no se pudo leer el catálogo de Alex IO:', err.code, err.status, err.message);
+        return null;
+      }) : null
     ]);
     const activa = sesiones.find(s => s.estado === 'activa');
     res.json({
-      success: true, disponible, modo_prueba: modoPrueba(req, producto), opciones,
+      success: true, disponible, modo_prueba: modoPrueba(req, producto), opciones, error_opciones: errorOpciones,
       activa: publica(activa) || null,
       historial: sesiones.filter(s => s.estado === 'terminada').map(s => ({ id: s.id, created_at: s.created_at, puntaje: s.puntaje, contexto: s.contexto, resultado: s.resultado })),
       sugerido: perfil ? { puesto: perfil.puesto, paises: perfil.paises || [] } : null
