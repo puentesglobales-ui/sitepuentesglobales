@@ -4,7 +4,8 @@
  * /api/v1/practica de Puentes Globales.
  *
  *   PRACTICA.iniciar({ producto: 'simulador' | 'idiomas', raiz, titulo, intro, formulario, describir })
- *     formulario(sugerido) → { nodo, leer() }   leer() devuelve el contexto o lanza Error con el mensaje
+ *     formulario(sugerido, opciones) → { nodo, leer() }   leer() devuelve el contexto o lanza Error
+ *       (opciones = lo que hay cargado en Alex IO: tracks del simulador o idiomas)
  *     describir(contexto)  → texto corto de la sesión para el historial
  */
 window.PRACTICA = (function () {
@@ -74,7 +75,11 @@ window.PRACTICA = (function () {
                         el('a', { class: 'btn ghost', href: 'index.html#tests', text: 'Hacer los tests gratis' }))), historial());
                 return;
             }
-            const f = cfg.formulario(estado.sugerido);
+            if (!estado.opciones || !estado.opciones.length) {
+                raiz.replaceChildren(...cabecera(), aviso('No pudimos cargar las opciones en este momento. Probá de nuevo en unos minutos.'), historial());
+                return;
+            }
+            const f = cfg.formulario(estado.sugerido, estado.opciones);
             const msg = el('div');
             const btn = el('button', { type: 'submit', class: 'btn', text: 'Empezar' });
             const form = el('form', { class: 'card' }, f.nodo, msg, btn);
@@ -101,7 +106,8 @@ window.PRACTICA = (function () {
                 ev && ev.has_mistake ? el('div', { class: 'correccion' },
                     el('strong', { text: '💡 Para mejorar: ' }),
                     ev.corrected_text ? el('span', { class: 'corregido', text: ev.corrected_text }) : '',
-                    ev.explanation ? el('div', { class: 'sub', text: ev.explanation }) : '') : '');
+                    ev.explanation ? el('div', { class: 'sub', text: ev.explanation }) : '') : '',
+                ev && ev.avanzo ? el('div', { class: 'avance', text: `✅ ¡Avanzaste!${ev.siguiente ? ` Ahora: ${ev.siguiente}` : ''}${ev.nivel ? ` (${ev.nivel})` : ''}` }) : '');
         }
 
         function chat(sesion) {
@@ -174,6 +180,7 @@ window.PRACTICA = (function () {
                         el('div', { class: 'fila-crit' }, el('strong', { text: c.criterio }), el('span', { text: `${c.puntaje}/10` })),
                         el('div', { class: 'barra' }, el('div', { style: `width:${Math.max(0, Math.min(10, Number(c.puntaje) || 0)) * 10}%` })),
                         c.comentario ? el('div', { class: 'sub', text: c.comentario }) : ''))) : '',
+                    r.comentario_general ? el('div', {}, el('h3', { text: 'Comentario general' }), el('p', { text: r.comentario_general })) : '',
                     lista('Lo que hiciste bien', r.fortalezas),
                     lista('Para mejorar', r.a_mejorar),
                     r.siguiente_paso ? el('div', { class: 'aviso info', text: `Siguiente paso: ${r.siguiente_paso}` }) : '',

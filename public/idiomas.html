@@ -20,21 +20,25 @@
 <main id="raiz"></main>
 <script>
 const { el } = PRACTICA;
-const IDIOMAS = { en: 'Inglés', de: 'Alemán', fr: 'Francés', pt: 'Portugués' };
-const OBJETIVOS = { entrevistas: 'Entrevistas de trabajo', trabajo: 'Comunicarme en el trabajo', salud: 'Trabajo en salud', vida_diaria: 'Vida diaria en el país' };
+const IDIOMAS = { en: 'Inglés', de: 'Alemán', fr: 'Francés', pt: 'Portugués', it: 'Italiano', nl: 'Neerlandés', pl: 'Polaco' };
+const nombreIdioma = c => IDIOMAS[c] || c.toUpperCase();
 
-function formulario() {
-  const idioma = el('select', {}, Object.entries(IDIOMAS).map(([c, n]) => el('option', { value: c, text: n })));
-  const nivel = el('select', {}, ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(n => el('option', { value: n, text: n })));
-  const objetivo = el('select', {}, Object.entries(OBJETIVOS).map(([c, n]) => el('option', { value: c, text: n })));
+// Solo los idiomas que Alex IO tiene cargados, con sus niveles.
+function formulario(_, opciones) {
+  const idioma = el('select', {}, opciones.map(o => el('option', { value: o.idioma, text: nombreIdioma(o.idioma) })));
+  const niveles = el('p', { class: 'sub' });
+  const mostrarNiveles = () => {
+    const o = opciones.find(x => x.idioma === idioma.value);
+    niveles.textContent = o && o.niveles.length ? `Niveles disponibles: ${o.niveles[0]} a ${o.niveles[o.niveles.length - 1]} (${o.lecciones} lecciones).` : '';
+  };
+  idioma.addEventListener('change', mostrarNiveles);
+  mostrarNiveles();
   return {
     nodo: el('div', { style: 'display:grid; gap:0.75rem' },
-      el('div', { class: 'grid2' },
-        el('label', { class: 'campo' }, 'Idioma que querés practicar', idioma),
-        el('label', { class: 'campo' }, 'Tu nivel actual', nivel)),
-      el('label', { class: 'campo' }, '¿Para qué lo necesitás?', objetivo),
-      el('p', { class: 'sub' }, '¿No sabés tu nivel? ', el('a', { href: 'test-idiomas.html', text: 'Hacé el test de idiomas' }), '.')),
-    leer: () => ({ idioma_objetivo: idioma.value, nivel: nivel.value, objetivo: objetivo.value })
+      el('label', { class: 'campo' }, 'Idioma que querés practicar', idioma),
+      niveles,
+      el('p', { class: 'sub' }, 'Empezás por la primera lección y avanzás a medida que respondés bien. ¿No sabés tu nivel? ', el('a', { href: 'test-idiomas.html', text: 'Hacé el test de idiomas' }), '.')),
+    leer: () => ({ idioma_objetivo: idioma.value })
   };
 }
 
@@ -45,7 +49,7 @@ PRACTICA.iniciar({
   intro: 'Practicá el idioma del país al que vas, con conversaciones pensadas para el trabajo. Te corregimos en cada respuesta.',
   proximamente: 'Estamos terminando las clases de idiomas con IA. Mientras tanto, hacé el test de idiomas gratis para saber tu nivel.',
   formulario,
-  describir: c => [IDIOMAS[c.idioma_objetivo], c.nivel, OBJETIVOS[c.objetivo]].filter(Boolean).join(' · ')
+  describir: c => nombreIdioma(c.idioma_objetivo || '')
 });
 </script>
 </body>

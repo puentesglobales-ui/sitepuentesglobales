@@ -22,31 +22,28 @@
 <script>
 const { el } = PRACTICA;
 const G = CV_GUIA;
-const IDIOMAS = { en: 'Inglés', de: 'Alemán', es: 'Español', fr: 'Francés', it: 'Italiano', nl: 'Neerlandés', pl: 'Polaco', pt: 'Portugués' };
 
-function formulario(sugerido) {
+// "entrevista_laboral_general" → "Entrevista laboral general"
+const nombreTrack = t => t.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+
+// Alex IO hoy recibe el puesto y el tipo de entrevista (track). El país queda en el historial.
+function formulario(sugerido, opciones) {
   const s = sugerido || {};
   const puesto = el('input', { type: 'text', maxlength: '120', placeholder: 'Ej.: enfermera, chofer de camión, programador…', value: s.puesto || '' });
   const pais = el('select', {}, el('option', { value: '', text: 'Elegí un país' }),
     Object.entries(G.DESTINOS).map(([c, d]) => el('option', { value: c, text: d.nombre, selected: (s.paises || [])[0] === c })));
-  const idioma = el('select', {}, Object.entries(IDIOMAS).map(([c, n]) => el('option', { value: c, text: n })));
-  const tipo = el('select', {}, el('option', { value: 'rrhh', text: 'Recursos humanos (motivación, experiencia)' }), el('option', { value: 'tecnica', text: 'Técnica (conocimientos del puesto)' }));
-  const dificultad = el('select', {}, el('option', { value: 'easy', text: 'Fácil' }), el('option', { value: 'medium', text: 'Media', selected: true }), el('option', { value: 'hard', text: 'Difícil' }));
-  const elegirIdioma = () => { const d = G.DESTINOS[pais.value]; if (d && IDIOMAS[d.idioma]) idioma.value = d.idioma; };
-  pais.addEventListener('change', elegirIdioma);
-  elegirIdioma();
+  const track = el('select', {}, opciones.map(o => el('option', { value: o.track, text: `${nombreTrack(o.track)} (${o.rondas} rondas)` })));
   return {
     nodo: el('div', { style: 'display:grid; gap:0.75rem' },
       s.puesto ? el('div', { class: 'aviso info', text: 'Completamos los datos con tu CV. Podés cambiarlos.' }) : '',
       el('label', { class: 'campo' }, '¿A qué puesto te postulás?', puesto),
       el('div', { class: 'grid2' },
         el('label', { class: 'campo' }, 'País de la empresa', pais),
-        el('label', { class: 'campo' }, 'Idioma de la entrevista', idioma),
-        el('label', { class: 'campo' }, 'Tipo de entrevista', tipo),
-        el('label', { class: 'campo' }, 'Dificultad', dificultad))),
+        opciones.length > 1 ? el('label', { class: 'campo' }, 'Tipo de entrevista', track) : ''),
+      el('p', { class: 'sub', text: 'Por ahora la entrevista es en español. Pronto se podrá practicar en el idioma del país.' })),
     leer() {
       if (puesto.value.trim().length < 2) throw new Error('Indicá el puesto al que te postulás.');
-      return { puesto: puesto.value.trim(), pais_destino: pais.value ? G.DESTINOS[pais.value].nombre : null, idioma_entrevista: idioma.value, tipo_entrevista: tipo.value, dificultad: dificultad.value };
+      return { puesto: puesto.value.trim(), pais_destino: pais.value ? G.DESTINOS[pais.value].nombre : null, track: track.value };
     }
   };
 }
@@ -55,10 +52,10 @@ PRACTICA.iniciar({
   producto: 'simulador',
   raiz: document.getElementById('raiz'),
   titulo: 'Simulador de entrevistas',
-  intro: 'Practicá una entrevista real para el puesto y el país que elijas. Al final te damos un puntaje y qué mejorar.',
+  intro: 'Practicá una entrevista para el puesto al que te postulás. Al final te damos un puntaje y qué mejorar.',
   proximamente: 'Estamos terminando el simulador de entrevistas con IA. Mientras tanto, armá tu CV para el puesto al que te postulás: cuando el simulador esté listo, lo usamos para que la entrevista sea a tu medida.',
   formulario,
-  describir: c => [c.puesto, c.pais_destino, IDIOMAS[c.idioma_entrevista]].filter(Boolean).join(' · ')
+  describir: c => [c.puesto, c.pais_destino].filter(Boolean).join(' · ')
 });
 </script>
 </body>

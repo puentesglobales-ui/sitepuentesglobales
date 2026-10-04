@@ -4,7 +4,7 @@
  * La llamada es de servidor a servidor: el navegador nunca habla con Alex IO.
  *
  * Variables:
- *   ALEXIO_ENGINE_URL     URL base (p. ej. https://…onrender.com), sin /api/engine/v1
+ *   ALEXIO_ENGINE_URL     URL base (p. ej. https://…onrender.com); /api/engine se agrega solo
  *   ALEXIO_ENGINE_KEY     clave de API activa; ALEXIO_ENGINE_KEY_2 = la nueva durante una rotación
  *   ALEXIO_REF_SECRET     secreto propio para el student_ref seudónimo (nunca se manda el email)
  *   ALEXIO_PRODUCTOS      productos habilitados, separados por coma: "simulador,idiomas".
@@ -44,16 +44,20 @@ export class ErrorMotor extends Error {
 // Mensajes para la persona según el error de Alex IO.
 const MENSAJES = {
   SESSION_NOT_FOUND: 'La sesión venció. Empezá una nueva.',
-  SESSION_ALREADY_ENDED: 'Esta sesión ya terminó.',
-  MESSAGE_TOO_LONG: 'El mensaje es demasiado largo.',
+  SESSION_EXPIRED: 'La sesión venció (duran 24 horas). Empezá una nueva.',
+  SESSION_ENDED: 'Esta sesión ya terminó.',
+  TEXT_TOO_LONG: 'El mensaje es demasiado largo (máximo 2000 caracteres).',
+  INVALID_TEXT: 'Escribí tu respuesta.',
   INVALID_CONTEXT: 'Faltan datos para empezar la sesión.',
+  NO_CONTENT_FOR_CONTEXT: 'Todavía no hay contenido cargado para esta opción. Probá con otra.',
   RATE_LIMITED: 'Hay mucha demanda en este momento. Probá de nuevo en unos segundos.',
   NO_AI_PROVIDER_AVAILABLE: 'El servicio de IA no está disponible en este momento. Probá de nuevo en unos minutos.',
   TURN_TIMEOUT: 'La respuesta tardó demasiado. Probá de nuevo.'
 };
 
 async function pedir(path, { method = 'GET', body } = {}, reintentar = false) {
-  const base = env('ALEXIO_ENGINE_URL').replace(/\/$/, '');
+  // Se acepta la URL con o sin /api/engine al final.
+  const base = env('ALEXIO_ENGINE_URL').replace(/\/+$/, '').replace(/\/api\/engine(\/v1)?$/, '');
   const claves = [env('ALEXIO_ENGINE_KEY'), env('ALEXIO_ENGINE_KEY_2')].filter(Boolean);
   const intentos = reintentar ? 2 : 1;
   let ultimo;
@@ -61,7 +65,7 @@ async function pedir(path, { method = 'GET', body } = {}, reintentar = false) {
     for (const [k, clave] of claves.entries()) {
       let res;
       try {
-        res = await fetch(`${base}/api/engine/v1${path}`, {
+        res = await fetch(`${base}/api/engine${path}`, {
           method,
           headers: { Authorization: `Bearer ${clave}`, 'Content-Type': 'application/json' },
           body: body ? JSON.stringify(body) : undefined,
@@ -85,19 +89,59 @@ async function pedir(path, { method = 'GET', body } = {}, reintentar = false) {
   throw ultimo;
 }
 
+// contexto: lo que Alex IO acepta hoy. Simulador: { track, role }. Idiomas: { language }.
 export function crearSesion({ producto, userId, orgRef, contexto }) {
   return pedir('/sessions', { method: 'POST', body: { product: PRODUCTO_MOTOR[producto], student_ref: studentRef(userId), org_ref: orgRef || null, context: contexto } });
 }
 
 // Con la misma idempotency_key Alex IO devuelve la misma respuesta: el reintento es seguro.
 export function enviarTurno(sessionId, mensaje, idempotencyKey) {
-  return pedir(`/sessions/${encodeURIComponent(sessionId)}/turns`, { method: 'POST', body: { message: mensaje, idempotency_key: idempotencyKey } }, true);
+  return pedir(`/sessions/${encodeURIComponent(sessionId)}/turns`, { method: 'POST', body: { text: mensaje, idempotency_key: idempotencyKey } }, true);
 }
 
+// Llamarlo dos veces devuelve la misma rúbrica (already_ended: true).
 export function terminarSesion(sessionId) {
-  return pedir(`/sessions/${encodeURIComponent(sessionId)}/end`, { method: 'POST' }, true);
+  return pedir(`/sessions/${encodeURIComponent(sessionId)}/end`, { method: 'POST', body: {} }, true);
 }
 
+// Qué hay cargado en Alex IO: tracks del simulador e idiomas del tutor. Se guarda 10 minutos.
+let cacheCatalogo = null;
+export async function catalogo() {
+  if (cacheCatalogo && Date.now() - cacheCatalogo.at < 10 * 60 * 1000) return cacheCatalogo.valor;
+  const valor = await pedir('/catalog', {}, true);
+  cacheCatalogo = { at: Date.now(), valor };
+  return valor;
+}
+export function limpiarCacheCatalogo() { cacheCatalogo = null; }
+
+// Nombres de los criterios de la rúbrica de /end.
+const CRITERIOS = {
+  contenido_relevancia: 'Contenido y relevancia', estructura_star: 'Estructura (STAR)',
+  comunicacion_claridad: 'Comunicación y claridad', manejo_objeciones: 'Manejo de preguntas difíciles',
+  vocabulario: 'Vocabulario', gramatica: 'Gramática', fluidez_comunicacion: 'Fluidez', comprension: 'Comprensión'
+};
+
+// final_evaluation de Alex IO → { rubrica[], comentario_general, puntaje 0–100 }.
+export function normalizarResultado(final = {}) {
+  const rubrica = Object.entries(final || {})
+    .filter(([, v]) => v && typeof v === 'object' && Number.isFinite(Number(v.score)))
+    .map(([k, v]) => ({ criterio: CRITERIOS[k] || k.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase()), puntaje: Math.max(0, Math.min(10, Number(v.score))), comentario: v.comment || '' }));
+  const puntaje = rubrica.length ? Math.round(rubrica.reduce((a, c) => a + c.puntaje, 0) / rubrica.length * 10) : null;
+  return { rubrica, comentario_general: typeof final?.overall_comment === 'string' ? final.overall_comment : '', puntaje };
+}
+
+// evaluacion_del_turno de Alex IO → formato que muestra la página.
+export function normalizarEvaluacion(e) {
+  if (!e) return null;
+  const m = e.mistake || null;
+  return {
+    has_mistake: Boolean(m), mistake_type: m?.mistake_type || null, corrected_text: m?.corrected_text || null, explanation: m?.explanation || null,
+    avanzo: Boolean(e.advanced), siguiente: e.next_item_title || null, nivel: e.next_level || null
+  };
+}
+
+// Ojo: al 2026-10-04 Alex IO todavía no tiene este endpoint (se pidió para la Etapa 1).
+// Mientras tanto, el borrado de cuenta lo anota en la auditoría como pendiente.
 export function borrarAlumno(userId) {
   return pedir(`/students/${studentRef(userId)}`, { method: 'DELETE' }, true);
 }
