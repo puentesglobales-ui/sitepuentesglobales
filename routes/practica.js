@@ -2,8 +2,9 @@ import { Router } from 'express';
 import { requireUser, evaluarUso, registrarUso } from '../services/usage.js';
 import { adminDisponible, seleccionar, insertar, actualizar } from '../services/supabaseAdmin.js';
 import { resolverOrg } from '../services/marcaBlanca.js';
+import { esAdmin } from '../controllers/adminController.js';
 import {
-  PRODUCTO_MOTOR, productoDisponible, crearSesion, enviarTurno, terminarSesion, catalogo,
+  PRODUCTO_MOTOR, productoDisponible, motorConfigurado, crearSesion, enviarTurno, terminarSesion, catalogo,
   normalizarResultado, normalizarEvaluacion, ErrorMotor
 } from '../services/alexioMotor.js';
 
@@ -17,6 +18,11 @@ const MAX_MENSAJE = 2000;
 export const MAX_TURNOS = 40;
 
 const texto = (v, max) => String(v ?? '').trim().slice(0, max);
+
+// Los administradores pueden probar con el motor conectado aunque la venta siga cerrada
+// (sin ALEXIO_PRODUCTOS), y sin gastar usos gratis.
+const modoPrueba = (req, producto) => !productoDisponible(producto) && motorConfigurado() && esAdmin(req.user);
+const puedeUsar = (req, producto) => productoDisponible(producto) || modoPrueba(req, producto);
 
 function validarProducto(req, res, next) {
   if (!PRODUCTO_MOTOR[req.params.producto]) return res.status(404).json({ success: false, error: 'Producto desconocido.' });
@@ -83,7 +89,7 @@ function errorMotor(res, err, sesion) {
 router.get('/:producto', requireUser, validarProducto, async (req, res) => {
   try {
     const { producto } = req.params;
-    const disponible = productoDisponible(producto);
+    const disponible = puedeUsar(req, producto);
     const [sesiones, perfil, opciones] = await Promise.all([
       seleccionar('pg_sesiones_ia', `select=*&user_id=eq.${req.user.id}&producto=eq.${producto}&order=created_at.desc&limit=20`),
       producto === 'simulador' ? perfilDe(req.user.id) : null,
@@ -91,7 +97,7 @@ router.get('/:producto', requireUser, validarProducto, async (req, res) => {
     ]);
     const activa = sesiones.find(s => s.estado === 'activa');
     res.json({
-      success: true, disponible, opciones,
+      success: true, disponible, modo_prueba: modoPrueba(req, producto), opciones,
       activa: publica(activa) || null,
       historial: sesiones.filter(s => s.estado === 'terminada').map(s => ({ id: s.id, created_at: s.created_at, puntaje: s.puntaje, contexto: s.contexto, resultado: s.resultado })),
       sugerido: perfil ? { puesto: perfil.puesto, paises: perfil.paises || [] } : null
@@ -101,14 +107,15 @@ router.get('/:producto', requireUser, validarProducto, async (req, res) => {
 
 router.post('/:producto/sesiones', requireUser, validarProducto, async (req, res) => {
   const { producto } = req.params;
-  if (!productoDisponible(producto)) return res.status(409).json({ success: false, code: 'proximamente', error: 'Esta herramienta todavía no está disponible.' });
+  if (!puedeUsar(req, producto)) return res.status(409).json({ success: false, code: 'proximamente', error: 'Esta herramienta todavía no está disponible.' });
   try {
     const [perfil, opciones] = await Promise.all([producto === 'simulador' ? perfilDe(req.user.id) : null, opcionesDe(producto)]);
     const { contexto, motor: contextoMotor, error, code } = armarContexto(producto, req.body || {}, perfil, opciones);
     if (error) return res.status(code ? 409 : 400).json({ success: false, code, error });
 
     const herramienta = HERRAMIENTA[producto];
-    const decision = await evaluarUso(req.user, req.token, herramienta);
+    const prueba = modoPrueba(req, producto);
+    const decision = prueba ? { allowed: true } : await evaluarUso(req.user, req.token, herramienta);
     if (!decision.allowed) return res.status(403).json({ success: false, code: 'limite', error: decision.message, upgradeUrl: 'planes-saas.html' });
 
     // Una sesión en curso por producto: la anterior se da por abandonada (Alex IO la borra al vencer).
@@ -122,7 +129,7 @@ router.post('/:producto/sesiones', requireUser, validarProducto, async (req, res
       mensajes: motor.mensaje_inicial ? [{ rol: 'ia', texto: motor.mensaje_inicial, at: ahora }] : []
     }], { devolver: true });
     // El uso gratis se descuenta recién cuando la sesión existe.
-    await registrarUso(req.user, req.token, herramienta).catch(e => console.error('practica: no se registró el uso:', e.message));
+    if (!prueba) await registrarUso(req.user, req.token, herramienta).catch(e => console.error('practica: no se registró el uso:', e.message));
     res.status(201).json({ success: true, sesion: publica(sesion) });
   } catch (err) { errorMotor(res, err); }
 });

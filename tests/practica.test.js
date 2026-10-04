@@ -11,12 +11,14 @@ process.env.ALEXIO_ENGINE_KEY = 'clave-vieja';
 process.env.ALEXIO_ENGINE_KEY_2 = 'clave-nueva';
 process.env.ALEXIO_REF_SECRET = 'secreto-ref';
 process.env.ALEXIO_PRODUCTOS = 'simulador';
+process.env.ADMIN_EMAILS = 'admin@pg.test';
 
 const ANA = '11111111-1111-4111-8111-111111111111';
 const BETO = '22222222-2222-4222-8222-222222222222';
 const USUARIOS = {
     'token-ana': { id: ANA, email: 'ana@pg.test', email_confirmed_at: '2026-01-01' },
-    'token-beto': { id: BETO, email: 'beto@pg.test', email_confirmed_at: '2026-01-01' }
+    'token-beto': { id: BETO, email: 'beto@pg.test', email_confirmed_at: '2026-01-01' },
+    'token-admin': { id: '33333333-3333-4333-8333-333333333333', email: 'admin@pg.test', email_confirmed_at: '2026-01-01' }
 };
 
 /* ─── Alex IO simulado (contrato real del 2026-10-04) ──────────────────── */
@@ -299,4 +301,16 @@ test('borrar la cuenta pide el borrado en Alex IO; si Alex IO no lo tiene, queda
     const borrado = motor.pedidos.find(p => p.metodo === 'DELETE' && p.auth === 'Bearer clave-nueva');
     assert.equal(borrado.path, `/api/engine/students/${REF_ANA}`);
     assert.ok(db.pg_auditoria.some(a => a.accion === 'alexio_borrado_pendiente' && a.candidato_id === ANA));
+});
+
+test('modo prueba: un admin usa idiomas con la venta cerrada y sin gastar usos; el resto no', async () => {
+    const estado = await llamar('/practica/idiomas', 'token-admin');
+    assert.equal(estado.body.disponible, true);
+    assert.equal(estado.body.modo_prueba, true);
+    assert.deepEqual(estado.body.opciones, [{ idioma: 'en', lecciones: 3, niveles: ['A1', 'A2', 'B1'] }]);
+    for (let i = 0; i < 2; i++) assert.equal((await llamar('/practica/idiomas/sesiones', 'token-admin', { idioma_objetivo: 'en' })).status, 201);
+    assert.deepEqual(pedidosA('/sessions')[0].body.context, { language: 'en' });
+    assert.equal(db.pg_uso.length, 0, 'las pruebas del admin no cuentan como uso');
+    assert.equal((await llamar('/practica/idiomas', 'token-ana')).body.disponible, false);
+    assert.equal((await llamar('/practica/idiomas/sesiones', 'token-ana', { idioma_objetivo: 'en' })).status, 409);
 });

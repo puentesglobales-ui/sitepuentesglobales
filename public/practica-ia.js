@@ -96,7 +96,8 @@ window.PRACTICA = (function () {
                     msg.replaceChildren(aviso(e.message), e.code === 'limite' ? el('a', { class: 'btn ghost', href: 'planes-saas.html', text: 'Ver planes' }) : '');
                 }
             });
-            raiz.replaceChildren(...cabecera(), mensaje ? aviso(mensaje, 'info') : '', form, historial());
+            const prueba = estado.modo_prueba ? aviso('Modo prueba: solo los administradores ven esto. La venta sigue cerrada hasta cargar ALEXIO_PRODUCTOS.', 'info') : '';
+            raiz.replaceChildren(...cabecera(), prueba, mensaje ? aviso(mensaje, 'info') : '', form, historial());
         }
 
         function burbuja(m) {
