@@ -39,6 +39,78 @@ window.PRACTICA = (function () {
 
     const fecha = iso => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
 
+    /* ─── Voz: funciones del navegador (sin costo; no se graba ni se guarda audio) ─── */
+    const Reconocimiento = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+    const puedeLeer = 'speechSynthesis' in window;
+    const PREF_LEER = 'pg_practica_leer_en_voz_alta';
+    const leerPref = () => { try { return localStorage.getItem(PREF_LEER) === '1'; } catch { return false; } };
+    const guardarPref = v => { try { localStorage.setItem(PREF_LEER, v ? '1' : '0'); } catch { /* sin almacenamiento: no se recuerda */ } };
+
+    function vozPara(lang) {
+        const voces = speechSynthesis.getVoices();
+        return voces.find(v => v.lang === lang) || voces.find(v => v.lang.startsWith(lang.split('-')[0])) || null;
+    }
+
+    function leer(texto, lang) {
+        if (!puedeLeer || !texto) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(texto);
+        u.lang = lang;
+        const v = vozPara(lang);
+        if (v) u.voice = v;
+        u.rate = 0.95; // un poco más lento que lo normal, para practicar
+        speechSynthesis.speak(u);
+    }
+
+    // Botón de micrófono: dicta en el idioma de la práctica y escribe lo que entendió.
+    function microfono(lang, entrada, nota) {
+        if (!Reconocimiento) {
+            nota.textContent = 'Para responder hablando, abrí esta página en Chrome, Edge o Safari.';
+            return '';
+        }
+        const btn = el('button', { type: 'button', class: 'btn ghost', text: '🎤 Hablar', 'aria-pressed': 'false' });
+        let rec = null;
+        btn.addEventListener('click', () => {
+            if (rec) { rec.stop(); return; }
+            if (puedeLeer) speechSynthesis.cancel();
+            rec = new Reconocimiento();
+            rec.lang = lang;
+            rec.interimResults = true;
+            rec.continuous = false;
+            const previo = entrada.value.trim();
+            let final = '', confianza = 1;
+            btn.textContent = '⏹ Listo'; btn.setAttribute('aria-pressed', 'true');
+            nota.textContent = 'Escuchando… hablá cerca del micrófono.';
+            rec.onresult = ev => {
+                let provisorio = '';
+                for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                    const r = ev.results[i];
+                    if (r.isFinal) { final += r[0].transcript; confianza = Math.min(confianza, r[0].confidence || 1); }
+                    else provisorio += r[0].transcript;
+                }
+                entrada.value = [previo, (final + provisorio).trim()].filter(Boolean).join(' ');
+            };
+            rec.onerror = ev => {
+                nota.textContent = ev.error === 'not-allowed' || ev.error === 'service-not-allowed'
+                    ? 'Tu navegador no tiene permiso para usar el micrófono. Habilitalo en el candado de la barra de direcciones.'
+                    : ev.error === 'no-speech' ? 'No escuchamos nada. Probá de nuevo, más cerca del micrófono.'
+                        : 'No pudimos usar el micrófono. Podés escribir tu respuesta.';
+            };
+            rec.onend = () => {
+                rec = null;
+                btn.textContent = '🎤 Hablar'; btn.setAttribute('aria-pressed', 'false');
+                if (!final.trim()) return;
+                // Lo que entendió el navegador es una pista de cómo se escuchó la pronunciación.
+                nota.textContent = confianza < 0.7
+                    ? `⚠️ Te entendimos: «${final.trim()}». No se escuchó del todo claro: revisá el texto y probá pronunciar más despacio.`
+                    : `✓ Te entendimos: «${final.trim()}». Si es lo que quisiste decir, tu pronunciación se entendió bien.`;
+                entrada.focus();
+            };
+            rec.start();
+        });
+        return btn;
+    }
+
     function iniciar(cfg) {
         const { producto, raiz } = cfg;
         let estado = null;
@@ -100,10 +172,11 @@ window.PRACTICA = (function () {
             raiz.replaceChildren(...cabecera(), prueba, mensaje ? aviso(mensaje, 'info') : '', form, historial());
         }
 
-        function burbuja(m) {
+        function burbuja(m, lang) {
             const ev = m.evaluacion;
             return el('div', { class: `msg ${m.rol === 'ia' ? 'ia' : 'yo'}` },
                 el('div', { text: m.texto }),
+                m.rol === 'ia' && lang && puedeLeer ? el('button', { type: 'button', class: 'escuchar', text: '🔊 Escuchar', onclick: () => leer(m.texto, lang) }) : '',
                 ev && ev.has_mistake ? el('div', { class: 'correccion' },
                     el('strong', { text: '💡 Para mejorar: ' }),
                     ev.corrected_text ? el('span', { class: 'corregido', text: ev.corrected_text }) : '',
@@ -112,8 +185,17 @@ window.PRACTICA = (function () {
         }
 
         function chat(sesion) {
-            const caja = el('div', { class: 'chat', 'aria-live': 'polite' }, sesion.mensajes.map(burbuja));
-            const entrada = el('textarea', { maxlength: '2000', rows: '3', placeholder: 'Escribí tu respuesta…', 'aria-label': 'Tu respuesta' });
+            const lang = cfg.idiomaVoz ? cfg.idiomaVoz(sesion.contexto) : null;
+            const caja = el('div', { class: 'chat', 'aria-live': 'polite' }, sesion.mensajes.map(m => burbuja(m, lang)));
+            const entrada = el('textarea', { maxlength: '2000', rows: '3', placeholder: lang && Reconocimiento ? 'Escribí o tocá 🎤 Hablar para responder en voz alta…' : 'Escribí tu respuesta…', 'aria-label': 'Tu respuesta' });
+            const notaVoz = el('p', { class: 'sub nota-voz', role: 'status' });
+            const mic = lang ? microfono(lang, entrada, notaVoz) : '';
+            const autoLeer = lang && puedeLeer ? el('input', { type: 'checkbox', checked: leerPref() }) : null;
+            if (autoLeer) autoLeer.addEventListener('change', () => guardarPref(autoLeer.checked));
+            const controlesVoz = lang ? el('div', { class: 'voz' },
+                autoLeer ? el('label', { class: 'sub' }, autoLeer, ' Leer las respuestas en voz alta') : '',
+                notaVoz,
+                Reconocimiento ? el('p', { class: 'sub privacidad-voz', text: 'El dictado lo hace tu navegador (Chrome usa servidores de Google; Edge, de Microsoft; Safari, de Apple). Puentes Globales no graba ni guarda tu voz.' }) : '') : '';
             const enviar = el('button', { type: 'button', class: 'btn', text: 'Enviar' });
             const terminar = el('button', { type: 'button', class: 'btn ghost', text: 'Terminar y ver mi resultado' });
             const msg = el('div');
@@ -126,6 +208,8 @@ window.PRACTICA = (function () {
                 const texto = entrada.value.trim();
                 if (!texto || ocupado) return;
                 ocupado = true; enviar.disabled = true; enviar.textContent = 'Pensando…'; msg.replaceChildren();
+                if (lang && puedeLeer) speechSynthesis.cancel();
+                notaVoz.textContent = '';
                 const clave = claveNueva();
                 caja.append(burbuja({ rol: 'usuario', texto })); bajar();
                 entrada.value = '';
@@ -143,7 +227,8 @@ window.PRACTICA = (function () {
                 }
                 ocupado = false; enviar.textContent = 'Enviar';
                 if (!r) { enviar.disabled = false; return; }
-                caja.append(burbuja({ rol: 'ia', texto: r.respuesta, evaluacion: r.evaluacion })); bajar();
+                caja.append(burbuja({ rol: 'ia', texto: r.respuesta, evaluacion: r.evaluacion }, lang)); bajar();
+                if (autoLeer && autoLeer.checked) leer(r.respuesta, lang);
                 bloquear(r.terminada);
                 if (!r.terminada) entrada.focus();
             }
@@ -164,7 +249,7 @@ window.PRACTICA = (function () {
             });
 
             raiz.replaceChildren(el('h1', { text: cfg.titulo }), el('p', { class: 'sub', text: cfg.describir(sesion.contexto) }),
-                el('div', { class: 'card' }, caja, entrada, el('div', { class: 'acciones' }, enviar, terminar), msg));
+                el('div', { class: 'card' }, caja, entrada, el('div', { class: 'acciones' }, mic, enviar, terminar), controlesVoz, msg));
             const ultimo = sesion.mensajes[sesion.mensajes.length - 1];
             bloquear(Boolean(ultimo && ultimo.terminada));
             bajar();

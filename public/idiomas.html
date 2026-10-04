@@ -49,7 +49,9 @@ PRACTICA.iniciar({
   intro: 'Practicá el idioma del país al que vas, con conversaciones pensadas para el trabajo. Te corregimos en cada respuesta.',
   proximamente: 'Estamos terminando las clases de idiomas con IA. Mientras tanto, hacé el test de idiomas gratis para saber tu nivel.',
   formulario,
-  describir: c => nombreIdioma(c.idioma_objetivo || '')
+  describir: c => nombreIdioma(c.idioma_objetivo || ''),
+  // Voz para escuchar y dictar: la variante de Europa de cada idioma.
+  idiomaVoz: c => ({ en: 'en-GB', de: 'de-DE', fr: 'fr-FR', pt: 'pt-PT', it: 'it-IT', nl: 'nl-NL', pl: 'pl-PL' })[c.idioma_objetivo] || null
 });
 </script>
 </body>

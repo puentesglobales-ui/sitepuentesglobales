@@ -55,7 +55,9 @@ PRACTICA.iniciar({
   intro: 'Practicá una entrevista para el puesto al que te postulás. Al final te damos un puntaje y qué mejorar.',
   proximamente: 'Estamos terminando el simulador de entrevistas con IA. Mientras tanto, armá tu CV para el puesto al que te postulás: cuando el simulador esté listo, lo usamos para que la entrevista sea a tu medida.',
   formulario,
-  describir: c => [c.puesto, c.pais_destino].filter(Boolean).join(' · ')
+  describir: c => [c.puesto, c.pais_destino].filter(Boolean).join(' · '),
+  // La entrevista es en español por ahora: se puede escuchar al entrevistador y responder hablando.
+  idiomaVoz: () => 'es-ES'
 });
 </script>
 </body>
