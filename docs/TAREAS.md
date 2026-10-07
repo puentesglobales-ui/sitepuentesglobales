@@ -1,93 +1,82 @@
 # Tareas — Puentes Globales
 
-Plan de trabajo según los informes de búsqueda de empleo, plan de CVs y marco legal (enlaces en `CLAUDE.md`).
-Responsable: **Usuario** (acciones en paneles o decisiones), **Código** (cambio en este repo), **Abogado**.
-Marcar `[x]` al terminar. Una tarea de código que depende de otra lo dice en "Depende de".
+Lista única de pendientes, al día al 2026-10-07 (main = `08e6621`).
+Responsable: **Usuario** (paneles, decisiones, contenido), **Código** (este repo), **Alex IO** (pedidos al proyecto Alex IO, que es aparte), **Abogado**.
+Marcar `[x]` al terminar y pasarla a "Hecho".
+
+## Pendientes
+
+### A. Usuario — configuración (minutos cada una)
+| # | Tarea | Depende de |
+|---|---|---|
+| 1 | Probar en producción el simulador de punta a punta (empezar, responder, terminar y ver el puntaje) y abrir `admin-etiquetado.html` | — |
+| 2 | Render: `SUPER_ADMIN_EMAILS` (tu email) y `PAYMENTS_ENC_KEY` (botón **Generate**; guardar una copia segura) | — |
+| 3 | Render: `EMAIL_FROM` = `Puentes Globales <hola@puentesglobales.com>` cuando Resend diga **Verified** | — |
+| 4 | SiteGround: reenvío de `hola@puentesglobales.com` a tu Gmail (para recibir respuestas de candidatos) | — |
+| 5 | Render: `ETIQUETADO_AGENDA_URL` (enlace de reservas de Google Calendar o Calendly, 20 min, con Google Meet) | — |
+| 6 | Superadmin: crear un combo "CV + ATS" para vender mientras el "Plan Profesional" (incluye simulador) está en Próximamente | 2 |
+| 7 | Render: `ALEXIO_PRODUCTOS` = `simulador` (y después `simulador,idiomas`) para abrir la venta, cuando las pruebas den bien | 1 |
+| 8 | Supabase → Authentication → URL Configuration: Site URL y Redirect URLs del sitio (hoy `sitepuentesglobales.onrender.com`; después el dominio propio) | — |
+| 9 | Pedir a GitHub Support que elimine el commit `963d1fa` (tenía claves) y sus vistas en caché | — |
+
+### B. Usuario — antes de salir con usuarios reales
+| # | Tarea | Depende de |
+|---|---|---|
+| 10 | Pasar el sitio a `puentesglobales.com`: dominio propio en Render, DNS en SiteGround, `PUBLIC_URL`, `BASE_DOMAIN` y comodín de subdominios para marca blanca | — |
+| 11 | Datos en Europa: proyecto de Supabase en `eu-central-1` (Frankfurt) y servicio de Render en Frankfurt | — |
+| 12 | Medios de pago: claves de prueba de Mercado Pago, Stripe y PayPal en el superadmin y una compra de punta a punta | 2 |
+| 13 | Completar los datos de la empresa en `privacidad.html` (hoy dice `[completar]`) | — |
+
+### C. Usuario — contenido y criterios
+| # | Tarea | Depende de |
+|---|---|---|
+| 14 | Criterios del curso de Skool para adaptar un CV a cada puesto | — |
+| 15 | Contenido real para Alex IO: rondas del simulador (por puesto y país) y lecciones de idiomas (A1–C2, alemán, inglés…). Hoy hay contenido de arranque: 1 track y 3 lecciones de inglés | — |
+| 16 | Validar las rúbricas de Alex IO (simulador: contenido, estructura STAR, comunicación, preguntas difíciles; idiomas: vocabulario, gramática, fluidez, comprensión) | — |
+| 17 | Elegir 2 o 3 perfiles con escasez para concentrar la captación de CVs y salir a buscar las primeras empresas | 23 |
+| 18 | Decidir el widget "ALEX IO" de textos fijos (`alex-widget.js`): quitarlo o conectarlo a Alex IO | — |
+| 19 | Decidir la IA para adaptar CVs y subir CV/LinkedIn (¿también Alex IO?) | — |
+
+### D. Abogado
+| # | Tarea | Depende de |
+|---|---|---|
+| 20 | Revisar el informe legal, la política de privacidad, los términos y los textos de permisos | 13 |
+| 21 | **Análisis de voz** (simulador e idiomas): confirmar que medir ritmo, pausas, muletillas y pronunciación no es "reconocimiento de emociones" (AI Act art. 5.1.f, prohibido en trabajo y educación); la voz es dato personal: permiso explícito, plazo de borrado, encargado de tratamiento | — |
+| 22 | Contratos: marca blanca (empresa responsable, Puentes Globales encargado, comisión), empresas que reciben CVs, etiquetadores (autónomos o empleados, confidencialidad, pagos internacionales) | 20 |
+| 23 | Reclutar personal de salud para Alemania (lista de la OMS, § 38 BeschV) | — |
+
+### E. Alex IO — pedidos
+| # | Tarea | Depende de |
+|---|---|---|
+| 24 | Borrado por alumno: `DELETE /api/engine/students/{student_ref}` (hoy las cuentas borradas quedan anotadas como "pendiente" en la auditoría) | — |
+| 25 | **Audio en la API motor** (Alex IO ya analiza audio y habla): especificación de un turno por voz para `coach` y `tutor`: recibir el audio, devolver transcripción, respuesta en texto **y en audio**, y métricas observables (palabras por minuto, pausas, muletillas, pronunciación por palabra), **sin inferir emociones**; formatos de audio, tamaño y duración máximos; borrado del audio después de analizarlo; dónde se procesa (región) | 21 |
+| 26 | Más contexto en el simulador: idioma de la entrevista, país, dificultad y resumen del CV (hoy solo `track` y `role`; la entrevista es siempre en español) | — |
+| 27 | Lección de inicio en idiomas, para que el progreso siga entre sesiones (hoy cada sesión empieza en la lección 1) | — |
+| 28 | Botón "Copiar" para la clave en SuperAdmin → API Motor (hoy se corta al copiarla) | — |
+| 29 | Campo opcional "estilo de profesor" en el contexto (por empresa de marca blanca) | — |
+| 30 | Datos en la UE y contrato de tratamiento de datos con sus proveedores de IA | — |
+
+### F. Código (Puentes Globales)
+| # | Tarea | Tiempo real aprox. | Depende de |
+|---|---|---|---|
+| 31 | Banco de preguntas del test de CI y de la prueba de etiquetado, que se mezclan por persona para que no se puedan copiar | 1–2 h | — |
+| 32 | **Audio con Alex IO en idiomas y en el simulador**: grabar la respuesta en el navegador, enviarla por el servidor a Alex IO, reproducir la voz de Alex IO, mostrar las métricas (ritmo, pausas, muletillas, pronunciación por palabra) en cada turno y en el resultado final; permiso explícito de voz con historial; el audio no se guarda en Puentes Globales. El dictado y la voz del navegador (ya publicados) quedan como respaldo | 3–4 h | 21, 25 |
+| 33 | Base de ofertas propia con actualización programada, filtros (contrato, jornada, salario, remoto, visa, idioma) y alertas por email (solo con permiso) | 4–6 h | — |
+| 34 | Pagos: reparto automático de la comisión, liquidación mensual de empresas con medios propios y renovación automática de productos mensuales | 4–6 h | 12 |
+| 35 | Portal de empresas: registro verificado, ofertas propias, candidatos que encajan (solo con permiso), registro de cada envío y aviso a la persona; planes pagos para empresas | 4–6 h | 33 |
+| 36 | CV adaptado a cada oferta con IA (no inventa; la persona aprueba), versión ATS del PDF, subir CV o LinkedIn, escáner ATS antes y después | 3–4 h | 14, 19 |
+| 37 | Recordatorio a quien dejó el CV a medias y ofertas recomendadas según el perfil (solo con permiso) | 1–2 h | 33 |
+| 38 | Sumar fuentes de ofertas: Jooble, Careerjet, Agencia Federal de Empleo de Alemania (pedir acceso: Usuario) | 1–2 h | 33 |
+| 39 | Apuntar el sitio al Supabase de la UE y corregir nombre y región en `render.yaml` | 30 min | 11 |
 
 ## Hecho
-- [x] Simulador e idiomas conectados a la API motor de Alex IO (routes/practica.js, services/alexioMotor.js, practica-ia.js; tabla pg_sesiones_ia): Puentes Globales guarda conversación, resultado e historial, controla el uso gratis y la compra, y borra en Alex IO al borrar la cuenta. Apagado hasta cargar las variables ALEXIO_*; mientras tanto, "Próximamente" y sin venta. Se quitó el simulador viejo de textos fijos. Falta: Etapa 1 de Alex IO, ejecutar 20261008_practica_ia.sql.
-- [x] Creador de CV (tareas 19, 20, 21 y 23 sin versión ATS): cuestionario de 7 pasos que empieza por el puesto, revisión automática, CV en Lebenslauf, británico, résumé de EE. UU./Canadá y Europass.
-- [x] Tarea 33 (parte): prueba de aptitud para etiquetado de IA (`test-etiquetado.html`, corregida en el servidor, una sola vez, 30 minutos) y base aparte `pg_etiquetado` con embudo en `admin-etiquetado.html`: filtrar por CI y puntaje, invitar por email (Resend) o a mano, aprobar o descartar. Falta: ejecutar `20261007_etiquetado.sql` y dominio propio para el envío automático.
-- [x] Corregir los tests: personalidad no cargaba, flecha de la pregunta 11 de razonamiento, ítems ambiguos de idiomas, cálculo del motor psicométrico.
-- [x] Test de coeficiente intelectual (`test-ci.html`).
-- [x] Registro obligatorio con Supabase para tests y búsqueda.
-- [x] Claves de APIs y feeds RSS fuera del código, en variables de entorno de Render.
-- [x] Panel "Estado de fuentes" en el admin.
-- [x] Feeds RSS conectados al buscador, con caché de 15 minutos.
-- [x] Historial de GitHub reescrito sin claves.
-- [x] Registro conectado al proyecto de Supabase de Puentes Globales.
-- [x] Tutor IA (`/home`) quitado del sitio.
-- [x] Búsqueda de empleo gratis e ilimitada en todos los planes.
-- [x] Tareas 6, 7 y 29 (parte): Remotive fuera; destinos corregidos y ampliados; búsqueda en español traducida al idioma de cada país (diccionario propio + ESCO); resultados seguros con textContent.
-- [x] Tarea 14: fuentes y librerías (Supabase, Lucide) servidas desde el propio sitio; sin Google Fonts, jsDelivr ni unpkg.
-- [x] Tareas 8, 9 y 15 (listas en la rama, se publican con el SQL de la tarea 1): login de administradores (ADMIN_EMAILS) con lista de candidatos auditada; permisos separados con historial; pantalla "Mis datos" con descarga y borrado de cuenta. Borrador de privacidad y términos en privacidad.html (tarea 10).
-
-## Fase 0 — Antes de juntar CVs
-
-| # | Tarea | Responsable | Depende de |
-|---|---|---|---|
-| 1 | Ejecutar en Supabase `20261002_pg_uso_planes.sql` y `20261003_pg_consentimientos.sql`; cargar en Render `ADMIN_EMAILS` y `SUPABASE_SECRET_KEY` | Usuario | — |
-| 2 | Publicar límites de ATS y simulador (rama `limites-ats`: cuenta gratis 1 uso, Pro sin límite) | Código | 1 |
-| 3 | Vincular el grupo de variables "puentes globales" al servicio `sitepuentesglobales` en Render y verificar las 11 fuentes en "Estado de fuentes" | Usuario | — |
-| 4 | Supabase → Authentication → URL Configuration: Site URL y Redirect URLs con `https://sitepuentesglobales.onrender.com` | Usuario | — |
-| 5 | Pedir a GitHub Support que elimine el commit `963d1fa` y sus vistas en caché | Usuario | — |
-| 10 | Redactar política de privacidad y términos (borrador en el informe legal) | Usuario + Abogado | — |
-| 11 | Revisar con abogados el informe legal y los textos de permisos | Abogado | — |
-| 12 | Crear proyecto de Supabase en `eu-central-1` (Frankfurt) y mover el servicio de Render a Frankfurt, antes del primer usuario real | Usuario | — |
-| 13 | Apuntar el sitio al proyecto de la UE (`auth-gate.js`, `SUPABASE_URL`) y correr las migraciones allí | Código | 12 |
-| 16 | Corregir el nombre del servicio en `render.yaml` (`sitepuentesglobales`) y la región | Código | 12 |
-| 17 | Revisar restricciones para reclutar personal de salud para Alemania (lista de la OMS, § 38 BeschV) | Abogado | — |
-
-## Marca blanca
-
-- [x] Tarea 43 (rama, con el SQL `20261005_pagos.sql`): cobro real con Mercado Pago, Stripe y PayPal; ventas con comisión en `pg_ventas`; accesos por producto en `pg_accesos` (mensual = 30 días); el ATS y el simulador sin límite para quien los compró.
-- [x] Empresas con marca, dominio y admins; catálogo de productos (tests, simulador, constructor de CV, ATS, idiomas, curso); precios propios; combos; medios de pago Mercado Pago, Stripe y PayPal con claves cifradas; comisión por empresa; respaldo en la plataforma; panel de empresa y superadmin (rama, se publica con el SQL `20261004_marca_blanca.sql`).
-
-| # | Tarea | Responsable | Depende de |
-|---|---|---|---|
-| 41 | Ejecutar `20261004_marca_blanca.sql` y `20261005_pagos.sql`; cargar `SUPER_ADMIN_EMAILS` y `PAYMENTS_ENC_KEY` en Render | Usuario | 1 |
-| 42 | Comprar dominio propio y configurar `BASE_DOMAIN` y comodín de subdominios (*.dominio) en Render | Usuario | — |
-| 44 | Reparto automático con la comisión cuando la empresa usa los medios de la plataforma (Stripe Connect, Mercado Pago Marketplace, PayPal para socios) | Código + Usuario | 43 |
-| 45 | Liquidación mensual de comisiones de empresas que cobran con sus propios medios | Código | 43 |
-| 46 | Contrato de marca blanca: la empresa responsable de sus candidatos, Puentes Globales encargado; comisión y facturación | Abogado | 11 |
-| 48 | Renovación automática de productos mensuales (suscripciones de Stripe, Mercado Pago y PayPal) | Código | 41 |
-| 49 | Cargar claves de prueba de cada medio de pago y hacer una compra de punta a punta | Usuario | 41 |
-| 47 | Producto "Aprendizaje de idiomas" (hoy solo existe en el catálogo) | Código | — |
-
-## Fase 1 — Creador de CV
-
-| # | Tarea | Responsable | Depende de |
-|---|---|---|---|
-| 18 | Elegir proveedor de IA para redactar, traducir y adaptar CVs (que no entrene con los datos) y cargar su clave en Render | Usuario | — |
-| 19 | Modelo de datos del perfil completo: destino, profesión, experiencia, formación y reconocimiento de título, idiomas (A1–C2), licencias | Código | 13 |
-| 20 | Onboarding de 7 pasos con guardado automático y barra de progreso, pensado para celular | Código | 19 |
-| 21 | Selector de profesión con la clasificación europea ESCO | Código | 19 |
-| 22 | Subir CV o PDF de LinkedIn y completar el perfil con IA | Código | 18, 19 |
-| 23 | Generar PDF en Europass, Lebenslauf, británico y versión ATS, en el idioma del destino | Código | 19 |
-| 24 | Pasar los criterios del curso de Skool para adaptar un CV a cada puesto | Usuario | — |
-| 25 | CV adaptado a cada oferta según esos criterios (la IA no inventa; la persona aprueba). Gratis 1, Pro sin límite | Código | 18, 23, 24 |
-| 26 | Escáner ATS con puntaje antes y después de adaptar | Código | 25 |
-| 27 | Pregunta opcional en el onboarding: "¿Te interesan trabajos remotos de entrenamiento de IA?" | Código | 9 |
-
-## Fase 2 — Ofertas que encajan
-
-| # | Tarea | Responsable | Depende de |
-|---|---|---|---|
-| 28 | Base de ofertas aparte con actualización programada, respetando los límites de cada fuente y borrando ofertas vencidas | Código | 13 |
-| 29 | Búsqueda en la base de ofertas propia (la traducción y el ruteo por país ya funcionan sobre las fuentes en vivo) | Código | 28 |
-| 30 | Filtros: contrato, jornada, salario, antigüedad, remoto, patrocinio de visa, idioma requerido | Código | 28 |
-| 31 | Ofertas recomendadas según el perfil y alertas por email o WhatsApp (solo con permiso) | Código | 9, 19, 28 |
-| 32 | Recordatorio a quien dejó el CV a medias (solo con permiso) | Código | 20 |
-| 33 | Email a los perfiles que encajan con el proyecto de etiquetado de IA; sin compartir datos hasta que acepten | Código | 27 |
-| 34 | Pedir acceso y sumar fuentes: Jooble, Careerjet, Agencia Federal de Empleo de Alemania | Usuario + Código | 28 |
-
-## Fase 3 — Empresas
-
-| # | Tarea | Responsable | Depende de |
-|---|---|---|---|
-| 35 | Elegir 2 o 3 perfiles con escasez para concentrar la captación de CVs y salir a buscar las primeras empresas | Usuario | 17 |
-| 36 | Portal de empresas: registro verificado y publicación de ofertas propias | Código | 28 |
-| 37 | Candidatos que encajan con cada oferta, solo entre quienes aceptaron compartir su CV; registro de cada envío y aviso a la persona | Código | 9, 25, 36 |
-| 38 | Contrato modelo con empresas receptoras de CVs y con el proyecto de etiquetado | Abogado | 11 |
-| 39 | Planes pagos para empresas (publicar, destacar, acceder a la base) | Usuario + Código | 36 |
-| 40 | Pagos online del Plan Pro de candidatos, en lugar de cargarlo a mano en `pg_planes` | Código | 2 |
+- [x] Voz con funciones del navegador en idiomas y simulador: escuchar cada respuesta, leerlas solas, dictar la respuesta y aviso cuando no se entendió claro (sin grabar ni guardar audio).
+- [x] Simulador e idiomas conectados a la API motor de Alex IO (contrato real `/api/engine`), con modo prueba para administradores, uso gratis único, historial, rúbrica y puntaje, tope de 40 respuestas, "Próximamente" y sin venta hasta `ALEXIO_PRODUCTOS`. Se quitó el simulador viejo de textos fijos.
+- [x] Prueba de aptitud para etiquetado de IA (`test-etiquetado.html`, corregida en el servidor, una vez, 30 minutos) y embudo en `admin-etiquetado.html` (filtros por CI y puntaje, invitar por email o a mano, aprobar o descartar). Dominio verificándose en Resend (región Irlanda).
+- [x] Creador de CV: 7 pasos que empiezan por el puesto, traducción del puesto por país, revisión automática con puntaje, CV en Lebenslauf, británico, résumé de EE. UU./Canadá y Europass.
+- [x] Marca blanca: empresas con marca, dominio, precios, combos y medios de pago propios (cifrados), comisión; paneles de empresa y superadmin; cobro real con Mercado Pago, Stripe y PayPal y accesos por producto.
+- [x] Permisos separados con historial, "Mis datos" (descarga y borrado de cuenta), login de administradores con auditoría, borrador de privacidad y términos.
+- [x] Búsqueda de empleo gratis e ilimitada, en español traducida al idioma de cada país (diccionario propio + ESCO), RSS conectados, Remotive fuera.
+- [x] Test de CI con tarjeta para compartir y anotación para trabajos de IA; tests corregidos; registro obligatorio.
+- [x] Claves fuera del código y del historial de GitHub; librerías y fuentes servidas desde el propio sitio; Tutor IA quitado.
+- [x] Dominio `puentesglobales.com` comprado (DNS en SiteGround). Variables cargadas: `SUPABASE_SECRET_KEY`, `ADMIN_EMAILS`, `RESEND_API_KEY`, `ALEXIO_ENGINE_URL`, `ALEXIO_ENGINE_KEY`, `ALEXIO_REF_SECRET`. Migraciones hasta `20261008` ejecutadas.
