@@ -18,6 +18,7 @@ import pagosRoutes from './routes/pagos.js';
 import profesionesRoutes from './routes/profesiones.js';
 import etiquetadoRoutes from './routes/etiquetado.js';
 import practicaRoutes from './routes/practica.js';
+import evaluadorRoutes from './routes/evaluador.js';
 
 dotenv.config();
 
@@ -69,6 +70,7 @@ app.use('/api/v1/pagos', pagosRoutes);
 app.use('/api/v1/profesiones', profesionesRoutes);
 app.use('/api/v1/etiquetado', etiquetadoRoutes);
 app.use('/api/v1/practica', practicaRoutes);
+app.use('/api/v1/evaluador', evaluadorRoutes);
 
 // Ruta fallback para 404
 app.use((req, res) => {

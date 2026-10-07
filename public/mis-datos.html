@@ -212,6 +212,7 @@ $('b-descargar').addEventListener('click', async () => {
     cv: await leer('pg_perfiles', 'updated_at'),
     etiquetado_ia: await leer('pg_etiquetado', 'updated_at'),
     practica_ia: await leer('pg_sesiones_ia', 'created_at'),
+    evaluaciones: await leer('pg_evaluaciones', 'created_at'),
     permisos: await leer('pg_consentimientos', 'created_at'),
     resultados_tests: await leer('pg_resultados_test', 'created_at'),
     usos_herramientas: await leer('pg_uso', 'created_at')

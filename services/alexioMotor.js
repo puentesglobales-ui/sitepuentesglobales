@@ -140,6 +140,37 @@ export function normalizarEvaluacion(e) {
   };
 }
 
+/**
+ * Evaluador de elegibilidad para visas de trabajo (contrato propuesto por Puentes Globales
+ * el 2026-10-07; se enciende con ALEXIO_EVALUADOR=1 cuando Alex IO lo tenga):
+ *   POST /api/engine/evaluations { type: 'visa_eligibility', student_ref, org_ref, input }
+ *   → { score 0–100, level: 'alta'|'media'|'en_desarrollo', summary,
+ *       pathways: [{ name, country, fit: 'si'|'parcial'|'no', reason }], gaps: [], next_steps: [] }
+ */
+export const evaluadorDisponible = () => motorConfigurado() && env('ALEXIO_EVALUADOR') === '1';
+
+export function evaluarVisa({ userId, orgRef, respuestas }) {
+  return pedir('/evaluations', { method: 'POST', body: { type: 'visa_eligibility', student_ref: studentRef(userId), org_ref: orgRef || null, input: respuestas } });
+}
+
+const lista = v => (Array.isArray(v) ? v : []).map(x => String(x ?? '').slice(0, 400)).filter(Boolean).slice(0, 10);
+
+// Respuesta de Alex IO → formato que guarda y muestra Puentes Globales.
+export function normalizarEvaluacionVisa(r = {}) {
+  const puntaje = Number.isFinite(Number(r.score)) ? Math.max(0, Math.min(100, Math.round(Number(r.score)))) : null;
+  return {
+    puntaje,
+    nivel: ['alta', 'media', 'en_desarrollo'].includes(r.level) ? r.level : null,
+    resumen: String(r.summary || '').slice(0, 1500),
+    vias: (Array.isArray(r.pathways) ? r.pathways : []).slice(0, 8).map(v => ({
+      nombre: String(v?.name || '').slice(0, 120), pais: String(v?.country || '').slice(0, 60),
+      encaje: ['si', 'parcial', 'no'].includes(v?.fit) ? v.fit : 'parcial', motivo: String(v?.reason || '').slice(0, 600)
+    })).filter(v => v.nombre),
+    falta: lista(r.gaps),
+    pasos: lista(r.next_steps)
+  };
+}
+
 // Ojo: al 2026-10-04 Alex IO todavía no tiene este endpoint (se pidió para la Etapa 1).
 // Mientras tanto, el borrado de cuenta lo anota en la auditoría como pendiente.
 export function borrarAlumno(userId) {

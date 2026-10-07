@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Calificás para una visa de trabajo? | PuentesGlobales</title>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="practica-ia.css">
+  <style>
+    .contador { font-size: 0.78rem; color: var(--muted); text-align: right; }
+    .ayuda { font-size: 0.82rem; color: var(--muted); font-weight: 400; }
+    .via { border: 1px solid var(--border); border-radius: 12px; padding: 0.7rem 0.85rem; display: grid; gap: 0.2rem; }
+    .via.si { border-color: #86efac; background: #f0fdf4; }
+    .via.parcial { border-color: #fde68a; background: #fffbeb; }
+    .via.no { background: #f8fafc; }
+    .nivel { justify-self: start; font-size: 0.8rem; font-weight: 800; border-radius: 99px; padding: 0.2rem 0.7rem; }
+    .nivel.alta { background: #dcfce7; color: var(--ok); }
+    .nivel.media { background: #fef3c7; color: #92400e; }
+    .nivel.en_desarrollo { background: var(--blue-bg); color: var(--blue); }
+  </style>
+  <script src="config.js"></script>
+  <script src="vendor/supabase.js"></script>
+  <script src="marca.js"></script>
+  <script src="auth-gate.js"></script>
+  <script src="practica-ia.js"></script>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo" data-marca="nombre">PuentesGlobales</a>
+  <a href="index.html">← Volver al inicio</a>
+</nav>
+<main id="raiz"><p class="sub">Cargando…</p></main>
+
+<script>
+const { el } = PRACTICA;
+const raiz = document.getElementById('raiz');
+const CAMPOS = [
+  { id: 'estudios', label: '¿Qué estudiaste?', ayuda: 'Título, institución, país y año. Si no terminaste, contalo igual.', ejemplo: 'Licenciatura en Enfermería, Universidad de Buenos Aires (Argentina), 2018. Curso de terapia intensiva de 1 año.', max: 1000 },
+  { id: 'idiomas', label: '¿Qué idiomas hablás y con qué nivel?', ayuda: 'Si tenés certificado, decí cuál (Goethe, IELTS, DELF…).', ejemplo: 'Español nativo. Alemán B1 (Goethe, 2025), estudiando para B2. Inglés intermedio, sin certificado.', max: 600 },
+  { id: 'experiencia', label: '¿En qué trabajaste?', ayuda: 'Puestos, años en cada uno y qué hacías.', ejemplo: 'Enfermera en terapia intensiva, Hospital Italiano, 6 años. Antes, 2 años en una clínica privada en guardia.', max: 1500 },
+  { id: 'destino', label: '¿A qué país querés ir y para qué puesto?', ayuda: 'Opcional.', ejemplo: 'Alemania, como enfermera en un hospital.', max: 300 },
+  { id: 'situacion', label: 'Tu situación', ayuda: 'Opcional: nacionalidades y pasaportes (por ejemplo, si tenés pasaporte europeo), si ya tenés una oferta de trabajo, si tu título está reconocido.', ejemplo: 'Pasaporte argentino. Sin oferta todavía. Inicié el reconocimiento del título en Alemania.', max: 600 },
+  { id: 'objetivo', label: '¿Algo más que debamos saber?', ayuda: 'Opcional: familia que viaja con vos, fecha en la que querés irte, ahorros para el primer tiempo…', ejemplo: 'Viajo con mi pareja. Quiero irme en 2027.', max: 600 }
+];
+const ENCAJE = { si: '✅ Encaja', parcial: '⚠️ Encaja en parte', no: '❌ Por ahora no' };
+const NIVEL = { alta: 'Elegibilidad alta', media: 'Elegibilidad media', en_desarrollo: 'Perfil en desarrollo' };
+const fecha = iso => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
+
+async function api(body) {
+  const res = await fetch('/api/v1/evaluador/visa', {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await PG_AUTH.getToken()}` },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({ success: false, error: 'Respuesta inválida del servidor.' }));
+  if (!res.ok || !data.success) throw new Error(data.error || `Error ${res.status}`);
+  return data;
+}
+
+const aviso = (t, tipo = 'err') => el('div', { class: `aviso ${tipo}`, role: 'status', text: t });
+const nota = () => el('p', { class: 'sub', text: 'Es una orientación, no un asesoramiento legal. Los requisitos cambian: confirmalos en la web oficial de cada país (por ejemplo, Make it in Germany) antes de iniciar un trámite.' });
+
+function formulario(estado, previas) {
+  const ultima = previas[0] && previas[0].respuestas;
+  const entradas = {};
+  const msg = el('div');
+  const btn = el('button', { type: 'submit', class: 'btn', text: 'Evaluar mi perfil' });
+  const form = el('form', { class: 'card' },
+    CAMPOS.map(c => {
+      const ta = el('textarea', { rows: c.id === 'experiencia' ? '4' : '3', maxlength: String(c.max), placeholder: `Ejemplo: ${c.ejemplo}` }, (ultima && ultima[c.id]) || '');
+      const cuenta = el('div', { class: 'contador', text: `${ta.value.length}/${c.max}` });
+      ta.addEventListener('input', () => { cuenta.textContent = `${ta.value.length}/${c.max}`; });
+      entradas[c.id] = ta;
+      return el('label', { class: 'campo' }, c.label, el('span', { class: 'ayuda', text: c.ayuda }), ta, cuenta);
+    }),
+    msg, btn);
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const body = Object.fromEntries(Object.entries(entradas).map(([k, ta]) => [k, ta.value.trim()]));
+    btn.disabled = true; btn.textContent = estado.ia_disponible ? 'Evaluando tu perfil…' : 'Guardando…'; msg.replaceChildren();
+    try {
+      const r = await api(body);
+      const nuevo = await api();
+      mostrar(nuevo, r.evaluacion, r.aviso);
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'Evaluar mi perfil';
+      msg.replaceChildren(aviso(e.message));
+    }
+  });
+  return form;
+}
+
+function resultado(e) {
+  if (e.estado !== 'evaluada' || !e.resultado) {
+    return el('div', { class: 'card' }, el('span', { class: 'chip', text: 'En revisión' }),
+      el('p', { text: 'Recibimos tus respuestas. Cuando esté lista tu evaluación la vas a ver acá y te avisamos por email.' }));
+  }
+  const r = e.resultado;
+  return el('div', { class: 'card' },
+    el('div', { class: 'puntaje' }, el('span', { class: 'n', text: r.puntaje !== null ? String(r.puntaje) : '—' }), el('span', { class: 'sub', text: '/100' })),
+    r.nivel ? el('span', { class: `nivel ${r.nivel}`, text: NIVEL[r.nivel] }) : '',
+    r.resumen ? el('p', { text: r.resumen }) : '',
+    r.vias.length ? el('div', { style: 'display:grid; gap:0.5rem' }, el('h3', { text: 'Visas y caminos posibles' }),
+      r.vias.map(v => el('div', { class: `via ${v.encaje}` },
+        el('strong', { text: `${v.nombre}${v.pais ? ` · ${v.pais}` : ''}` }),
+        el('span', { class: 'sub', text: ENCAJE[v.encaje] }),
+        v.motivo ? el('span', { text: v.motivo }) : ''))) : '',
+    r.falta.length ? el('div', {}, el('h3', { text: 'Lo que te falta' }), el('ul', {}, r.falta.map(t => el('li', { text: t })))) : '',
+    r.pasos.length ? el('div', {}, el('h3', { text: 'Próximos pasos' }), el('ul', {}, r.pasos.map(t => el('li', { text: t })))) : '',
+    el('div', { class: 'acciones' },
+      el('a', { class: 'btn', href: 'cv.html', text: 'Armar mi CV' }),
+      el('a', { class: 'btn ghost', href: 'test-idiomas.html', text: 'Test de idiomas' })),
+    nota());
+}
+
+function mostrar(estado, actual, mensaje) {
+  const previas = estado.evaluaciones.filter(e => !actual || e.id !== actual.id);
+  raiz.replaceChildren(
+    el('h1', { text: '¿Calificás para una visa de trabajo en Europa?' }),
+    el('p', { class: 'sub', text: 'Contanos con tus palabras tu formación, idiomas y experiencia. Nuestra IA analiza tu perfil y te dice qué visas encajan, qué te falta y cuáles son los próximos pasos.' }),
+    mensaje ? aviso(mensaje, 'info') : '',
+    actual ? resultado(actual) : '',
+    actual ? el('h2', { text: 'Hacer otra evaluación' }) : '',
+    formulario(estado, actual ? [actual, ...previas] : previas),
+    !actual && !estado.ia_disponible ? el('p', { class: 'sub', text: 'La evaluación con IA está por habilitarse: si completás ahora, guardamos tus respuestas y te avisamos cuando esté tu resultado.' }) : '',
+    previas.length ? el('div', { class: 'card' }, el('h2', { text: 'Tus evaluaciones anteriores' }),
+      el('div', { class: 'lista' }, previas.map(e => el('button', { type: 'button', class: 'fila', onclick: () => mostrar(estado, e) },
+        el('span', { text: fecha(e.created_at) }),
+        el('span', { class: 'puntaje-chico', text: e.estado === 'evaluada' && e.puntaje !== null ? `${e.puntaje}/100` : 'En revisión' }))))) : '',
+    nota());
+  window.scrollTo({ top: 0 });
+}
+
+(async () => {
+  await PG_AUTH.requireAuth();
+  try {
+    const estado = await api();
+    mostrar(estado, null);
+  } catch (e) {
+    raiz.replaceChildren(el('h1', { text: '¿Calificás para una visa de trabajo en Europa?' }), aviso(e.message));
+  }
+})();
+</script>
+</body>
+</html>

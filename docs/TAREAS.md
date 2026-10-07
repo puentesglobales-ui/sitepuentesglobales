@@ -17,6 +17,7 @@ Marcar `[x]` al terminar y pasarla a "Hecho".
 | 6 | Superadmin: crear un combo "CV + ATS" para vender mientras el "Plan Profesional" (incluye simulador) está en Próximamente | 2 |
 | 7 | Render: `ALEXIO_PRODUCTOS` = `simulador` (y después `simulador,idiomas`) para abrir la venta, cuando las pruebas den bien | 1 |
 | 8 | Supabase → Authentication → URL Configuration: Site URL y Redirect URLs del sitio (hoy `sitepuentesglobales.onrender.com`; después el dominio propio) | — |
+| 9a | Ejecutar en Supabase `20261009_evaluaciones.sql` (evaluador de visas) | — |
 | 9 | Pedir a GitHub Support que elimine el commit `963d1fa` (tenía claves) y sus vistas en caché | — |
 
 ### B. Usuario — antes de salir con usuarios reales
@@ -54,6 +55,7 @@ Marcar `[x]` al terminar y pasarla a "Hecho".
 | 27 | Lección de inicio en idiomas, para que el progreso siga entre sesiones (hoy cada sesión empieza en la lección 1) | — |
 | 28 | Botón "Copiar" para la clave en SuperAdmin → API Motor (hoy se corta al copiarla) | — |
 | 29 | Campo opcional "estilo de profesor" en el contexto (por empresa de marca blanca) | — |
+| 30a | **Evaluador de visas**: implementar `POST /api/engine/evaluations` (type `visa_eligibility`) con el contrato definido en `services/alexioMotor.js`; reglas de visas actualizadas en su RAG (Chancenkarte, Blue Card, profesionales cualificados, España, etc.); no guardar las respuestas. Al tenerlo: Render `ALEXIO_EVALUADOR=1` | — |
 | 30 | Datos en la UE y contrato de tratamiento de datos con sus proveedores de IA | — |
 
 ### F. Código (Puentes Globales)
@@ -70,6 +72,7 @@ Marcar `[x]` al terminar y pasarla a "Hecho".
 | 39 | Apuntar el sitio al Supabase de la UE y corregir nombre y región en `render.yaml` | 30 min | 11 |
 
 ## Hecho
+- [x] Evaluador de visas con respuestas escritas (`evaluador-visa.html`, tabla `pg_evaluaciones`): con cuenta, hasta 3 por día; se guardan siempre y, con `ALEXIO_EVALUADOR=1`, la IA de Alex IO devuelve puntaje, visas que encajan, qué falta y próximos pasos. Reemplaza al cálculo de 3 listas del inicio.
 - [x] Voz con funciones del navegador en idiomas y simulador: escuchar cada respuesta, leerlas solas, dictar la respuesta y aviso cuando no se entendió claro (sin grabar ni guardar audio).
 - [x] Simulador e idiomas conectados a la API motor de Alex IO (contrato real `/api/engine`), con modo prueba para administradores, uso gratis único, historial, rúbrica y puntaje, tope de 40 respuestas, "Próximamente" y sin venta hasta `ALEXIO_PRODUCTOS`. Se quitó el simulador viejo de textos fijos.
 - [x] Prueba de aptitud para etiquetado de IA (`test-etiquetado.html`, corregida en el servidor, una vez, 30 minutos) y embudo en `admin-etiquetado.html` (filtros por CI y puntaje, invitar por email o a mano, aprobar o descartar). Dominio verificándose en Resend (región Irlanda).

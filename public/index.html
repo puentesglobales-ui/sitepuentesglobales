@@ -540,40 +540,9 @@
                     <span style="background: rgba(255, 106, 0, 0.1); color: var(--brand-blue); font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 100px; font-size: 0.85rem;">⚡ Evaluador Rápido</span>
                     <h3 style="font-size: 1.75rem; font-weight: 800; margin-top: 0.5rem; margin-bottom: 1.5rem; color:#0f172a;">¿Calificas para una Visa de Trabajo Europea?</h3>
 
-                    <form onsubmit="calculateVisaEligibility(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
-                        <div>
-                            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">Nivel Educativo Alcanzado</label>
-                            <select id="calc-edu" required class="search-select" style="width:100%;">
-                                <option value="3">🎓 Título Universitario / Grado</option>
-                                <option value="2">📜 Terciario / Formación Técnica</option>
-                                <option value="1">🏫 Bachillerato / Secundaria</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">Nivel de Idioma (Inglés o Alemán)</label>
-                            <select id="calc-lang" required class="search-select" style="width:100%;">
-                                <option value="3">🗣️ Avanzado / Fluido (B2/C1)</option>
-                                <option value="2">💬 Intermedio (B1)</option>
-                                <option value="1">🌱 Básico / Principiante (A1/A2)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">Años de Experiencia Profesional</label>
-                            <select id="calc-exp" required class="search-select" style="width:100%;">
-                                <option value="3">⭐ Más de 5 años</option>
-                                <option value="2">🔹 Entre 2 y 5 años</option>
-                                <option value="1">🔸 Menos de 2 años</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn-search" style="margin-top: 0.5rem;">Evaluar mi Perfil Ahora →</button>
-                    </form>
-
-                    <div id="calc-result" style="display:none; margin-top: 1.5rem; padding: 1.25rem; border-radius: 14px; background: #FFFFFF; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #cbd5e1; text-align: center;">
-                        <!-- Results by JS -->
-                    </div>
+                    <p style="color:#475569; font-size:1rem; line-height:1.6; margin-bottom:1.25rem;">Contanos con tus palabras qué estudiaste, qué idiomas hablás y en qué trabajaste. Nuestra IA analiza tu perfil y te dice <strong>qué visas encajan</strong>, <strong>qué te falta</strong> y <strong>cuáles son los próximos pasos</strong>.</p>
+                    <a href="evaluador-visa.html" class="btn-search" style="display:inline-block; text-decoration:none; padding:0.9rem 1.6rem;">Evaluar mi perfil →</a>
+                    <p style="color:#64748b; font-size:0.82rem; margin-top:0.75rem;">Gratis, con tu cuenta. Es una orientación, no un asesoramiento legal.</p>
                 </div>
             </div>
         </div>
@@ -794,34 +763,6 @@
 
         function closeGuideModal() {
             document.getElementById('guide-modal').style.display = 'none';
-        }
-
-        function calculateVisaEligibility(event) {
-            event.preventDefault();
-            const edu = parseInt(document.getElementById('calc-edu').value);
-            const lang = parseInt(document.getElementById('calc-lang').value);
-            const exp = parseInt(document.getElementById('calc-exp').value);
-            const score = edu + lang + exp;
-
-            const resDiv = document.getElementById('calc-result');
-            resDiv.style.display = 'block';
-
-            if (score >= 8) {
-                resDiv.innerHTML = `
-                    <h4 style="color:#047857; font-weight:800; font-size:1.2rem; margin-bottom:0.25rem;">🌟 Elegibilidad Alta (Puntaje: ${score}/9)</h4>
-                    <p style="color:#334155; font-size:0.95rem;">Tienes un perfil excelente para aplicar a la <strong>Chancenkarte (Alemania)</strong>, <strong>EU Blue Card</strong> o <strong>Visas con Sponsor Directo</strong>.</p>
-                `;
-            } else if (score >= 5) {
-                resDiv.innerHTML = `
-                    <h4 style="color:#d97706; font-weight:800; font-size:1.2rem; margin-bottom:0.25rem;">⚡ Elegibilidad Media (Puntaje: ${score}/9)</h4>
-                    <p style="color:#334155; font-size:0.95rem;">Calificas para <strong>Visas de Nómada Digital (España/Portugal)</strong> o empleos remotos. Te recomendamos subir tu nivel de idioma al B2 para Alemania.</p>
-                `;
-            } else {
-                resDiv.innerHTML = `
-                    <h4 style="color:#2563eb; font-weight:800; font-size:1.2rem; margin-bottom:0.25rem;">🌱 Perfil en Desarrollo (Puntaje: ${score}/9)</h4>
-                    <p style="color:#334155; font-size:0.95rem;">Te sugerimos certificar un nivel intermedio de idioma (Inglés/Alemán) o sumar 2 años de experiencia técnica.</p>
-                `;
-            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
