@@ -46,6 +46,7 @@ function reiniciar() {
         ],
         pg_resultados_test: [{ user_id: ANA, test: 'ci', detalle: { ci_estimado: 124 }, created_at: '2026-09-01T00:00:00Z' }],
         pg_etiquetado: [],
+        pg_intentos_test: [],
         pg_auditoria: []
     };
     emails.length = 0;
@@ -125,17 +126,22 @@ test('prueba completa: se corrige en el servidor y se hace una sola vez', async 
     assert.equal(ini.status, 200);
     assert.ok(ini.body.segundos_restantes > 0);
     assert.doesNotMatch(JSON.stringify(ini.body), /"correcta"/);
+    const intento = db.pg_intentos_test.find(i => i.id === ini.body.intento_id);
+    const respuestasMostradas = Object.fromEntries(Object.entries(PERFECTAS).map(([id, value]) => {
+        const orden = intento.preguntas.find(p => p.id === id)?.opciones || [];
+        return [id, Array.isArray(value) ? value.map(v => orden.indexOf(v)).filter(v => v >= 0) : value];
+    }));
 
-    assert.equal((await llamar('/enviar', 'token-ana', { respuestas: PERFECTAS, redaccion: 'corta' })).status, 400);
+    assert.equal((await llamar('/enviar', 'token-ana', { intento_id: ini.body.intento_id, respuestas: respuestasMostradas, redaccion: 'corta' })).status, 400);
 
-    const env = await llamar('/enviar', 'token-ana', { respuestas: PERFECTAS, redaccion: REDACCION, senales: { cambios_pestana: 1 } });
+    const env = await llamar('/enviar', 'token-ana', { intento_id: ini.body.intento_id, respuestas: respuestasMostradas, redaccion: REDACCION, senales: { cambios_pestana: 1 } });
     assert.equal(env.status, 200);
     assert.equal(env.body.puntaje, 24);
     const fila = db.pg_etiquetado.find(f => f.user_id === ANA);
     assert.equal(fila.estado, 'prueba_hecha');
     assert.equal(fila.senales.cambios_pestana, 1);
 
-    assert.equal((await llamar('/enviar', 'token-ana', { respuestas: PERFECTAS, redaccion: REDACCION })).status, 409);
+    assert.equal((await llamar('/enviar', 'token-ana', { intento_id: ini.body.intento_id, respuestas: respuestasMostradas, redaccion: REDACCION })).status, 409);
     assert.equal((await llamar('/iniciar', 'token-ana', {})).status, 409);
     const est = await llamar('/estado', 'token-ana');
     assert.equal(est.body.hecha, true);
@@ -143,6 +149,7 @@ test('prueba completa: se corrige en el servidor y se hace una sola vez', async 
 
 test('retomar la prueba no reinicia el reloj', async () => {
     reiniciar();
+    db.pg_intentos_test.push({ id: 'intent-retomar', user_id: ANA, test: 'etiquetado', preguntas: [], created_at: new Date().toISOString() });
     db.pg_etiquetado.push({ user_id: ANA, estado: 'prueba_iniciada', prueba_inicio_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() });
     const r = await llamar('/iniciar', 'token-ana', {});
     assert.ok(r.body.segundos_restantes <= 20 * 60 && r.body.segundos_restantes > 19 * 60);

@@ -4,9 +4,10 @@ import { requireAdminUser } from '../controllers/adminController.js';
 import { adminDisponible, seleccionar, insertar, actualizar, auditar } from '../services/supabaseAdmin.js';
 import { emailDisponible, enviarEmail, escaparHtml } from '../services/email.js';
 import {
-  preguntasPublicas, corregir, validarRedaccion, limpiarSenales,
+  preguntasPublicas, preguntasParaIntento, preguntasPublicasOrdenadas, respuestasCanonicas, corregir, validarRedaccion, limpiarSenales,
   TIEMPO_LIMITE_MIN, PUNTAJE_SUGERIDO
 } from '../services/etiquetado.js';
+import crypto from 'node:crypto';
 
 // Proyecto de etiquetado de IA: prueba de aptitud (candidatos) y embudo de selección (admin).
 const router = Router();
@@ -53,6 +54,10 @@ router.post('/iniciar', requireUser, requireServidor, async (req, res) => {
     if (fila?.prueba_at) return res.status(409).json({ success: false, code: 'hecha', error: 'Ya hiciste la prueba. Se puede hacer una sola vez.' });
     if (fila?.estado === 'descartado') return res.status(403).json({ success: false, error: 'La prueba no está disponible para tu cuenta.' });
     const ahora = new Date().toISOString();
+    let intento = (await seleccionar('pg_intentos_test', `select=*&user_id=eq.${req.user.id}&test=eq.etiquetado&entregado_at=is.null&order=created_at.desc&limit=1`))[0];
+    if (!intento) {
+      [intento] = await insertar('pg_intentos_test', [{ id: crypto.randomUUID(), user_id: req.user.id, test: 'etiquetado', preguntas: preguntasParaIntento(), created_at: ahora }], { devolver: true });
+    }
     if (!fila) {
       try {
         await insertar('pg_etiquetado', [{ user_id: req.user.id, estado: 'prueba_iniciada', prueba_inicio_at: ahora }]);
@@ -64,7 +69,7 @@ router.post('/iniciar', requireUser, requireServidor, async (req, res) => {
       fila = fila || await filaDe(req.user.id);
     }
     const restante = Math.max(0, TIEMPO_LIMITE_MIN * 60 - Math.round((Date.now() - new Date(fila.prueba_inicio_at).getTime()) / 1000));
-    res.json({ success: true, secciones: preguntasPublicas(), segundos_restantes: restante, tiempo_limite_min: TIEMPO_LIMITE_MIN });
+    res.json({ success: true, intento_id: intento.id, secciones: preguntasPublicasOrdenadas(intento.preguntas), segundos_restantes: restante, tiempo_limite_min: TIEMPO_LIMITE_MIN });
   } catch (err) {
     console.error('etiquetado/iniciar:', err.message);
     res.status(500).json({ success: false, error: 'No pudimos empezar la prueba. Probá de nuevo en unos minutos.' });
@@ -72,7 +77,7 @@ router.post('/iniciar', requireUser, requireServidor, async (req, res) => {
 });
 
 router.post('/enviar', requireUser, requireServidor, async (req, res) => {
-  const { respuestas, redaccion, senales } = req.body || {};
+  const { respuestas, redaccion, senales, intento_id } = req.body || {};
   if (!respuestas || typeof respuestas !== 'object' || Array.isArray(respuestas)) {
     return res.status(400).json({ success: false, error: 'Faltan las respuestas.' });
   }
@@ -82,7 +87,10 @@ router.post('/enviar', requireUser, requireServidor, async (req, res) => {
     if (!(await permisoVigente(req.user.id))) return res.status(403).json({ success: false, code: 'permiso', error: 'Retiraste el permiso para trabajos de IA.' });
     const fila = await filaDe(req.user.id);
     if (!fila?.prueba_inicio_at) return res.status(409).json({ success: false, error: 'Primero empezá la prueba.' });
-    const r = corregir(respuestas);
+    const intento = (await seleccionar('pg_intentos_test', `select=*&id=eq.${encodeURIComponent(String(intento_id || ''))}&user_id=eq.${req.user.id}&test=eq.etiquetado&limit=1`))[0];
+    if (!intento) return res.status(409).json({ success: false, error: 'Primero empezá la prueba.' });
+    if (intento.entregado_at) return res.status(409).json({ success: false, code: 'hecha', error: 'Ya hiciste la prueba. Se puede hacer una sola vez.' });
+    const r = corregir(respuestasCanonicas(respuestas, intento.preguntas));
     const ahora = new Date().toISOString();
     // Solo se guarda si todavía no estaba hecha: evita dos envíos.
     const guardadas = await actualizar('pg_etiquetado', `user_id=eq.${req.user.id}&prueba_at=is.null`, {
@@ -91,6 +99,7 @@ router.post('/enviar', requireUser, requireServidor, async (req, res) => {
       prueba_at: ahora, updated_at: ahora
     }, { devolver: true });
     if (!guardadas.length) return res.status(409).json({ success: false, code: 'hecha', error: 'Ya hiciste la prueba. Se puede hacer una sola vez.' });
+    await actualizar('pg_intentos_test', `id=eq.${encodeURIComponent(String(intento.id))}&user_id=eq.${req.user.id}&entregado_at=is.null`, { entregado_at: ahora });
     res.json({ success: true, puntaje: r.puntaje, maximo: r.maximo });
   } catch (err) {
     console.error('etiquetado/enviar:', err.message);

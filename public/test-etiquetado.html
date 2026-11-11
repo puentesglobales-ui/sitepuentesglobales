@@ -66,7 +66,7 @@
 <script>
 const main = document.getElementById('main');
 const CLAVE = 'pg_etiquetado_borrador';
-let secciones = [], actual = 0, finRelojMs = 0, timer = null;
+let secciones = [], actual = 0, finRelojMs = 0, timer = null, intentoId = null;
 let respuestas = {}, redaccion = '';
 const senales = { cambios_pestana: 0, intentos_pegar: 0 };
 
@@ -139,6 +139,7 @@ function pantallaInicio(estado) {
 }
 
 function empezar(datos) {
+  intentoId = datos.intento_id;
   secciones = datos.secciones;
   finRelojMs = Date.now() + datos.segundos_restantes * 1000;
   leerBorrador();
@@ -228,7 +229,7 @@ document.getElementById('siguiente').addEventListener('click', async ev => {
   const btn = ev.currentTarget;
   btn.disabled = true; btn.textContent = 'Enviando…';
   try {
-    const r = await api('/enviar', { respuestas, redaccion, senales });
+    const r = await api('/enviar', { intento_id: intentoId, respuestas, redaccion, senales });
     clearInterval(timer); borrarBorrador();
     document.getElementById('barra').hidden = true; document.getElementById('reloj').hidden = true;
     pantallaHecha(r);

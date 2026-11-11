@@ -94,6 +94,40 @@ export function preguntasPublicas() {
     preguntas: preguntas.map(({ correcta, correctas, ...p }) => p)
   }));
 }
+export function preguntasParaIntento() {
+  const preguntas = [];
+  for (const s of SECCIONES) for (const p of s.preguntas) {
+    const opciones = s.tipo === 'opcion' ? [...(p.opciones || [])] : s.tipo === 'multiple' ? p.frases.map((_, i) => i) : [];
+    for (let i = opciones.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [opciones[i], opciones[j]] = [opciones[j], opciones[i]];
+    }
+    preguntas.push({ id: p.id, seccion: s.id, opciones });
+  }
+  return preguntas;
+}
+export function preguntasPublicasOrdenadas(orden) {
+  const porId = new Map((orden || []).map(p => [p.id, p]));
+  return SECCIONES.map(({ preguntas, ...s }) => ({ ...s, preguntas: preguntas.map(({ correcta, correctas, ...p }) => {
+    const guardada = porId.get(p.id);
+    if (!guardada || s.tipo === 'texto') return p;
+    if (s.tipo === 'opcion') return { ...p, opciones: guardada.opciones };
+    return { ...p, frases: guardada.opciones.map(i => p.frases[i]) };
+  }) }));
+}
+export function respuestasCanonicas(respuestas, orden) {
+  const porId = new Map((orden || []).map(p => [p.id, p]));
+  const salida = {};
+  for (const [id, respuesta] of Object.entries(respuestas || {})) {
+    const guardada = porId.get(id);
+    if (!guardada || !Array.isArray(respuesta) || !guardada.opciones.length || typeof guardada.opciones[0] !== 'number') {
+      salida[id] = respuesta;
+      continue;
+    }
+    salida[id] = respuesta.map(i => guardada.opciones[Number(i)]).filter(Number.isInteger);
+  }
+  return salida;
+}
 
 const palabras = t => String(t || '').trim().split(/\s+/).filter(Boolean).length;
 
