@@ -66,8 +66,10 @@ router.post('/:test/entregar', requireUser, async (req,res) => {
     const ordered = (intento.preguntas||[]).map(saved=>{ const q=banco.get(String(saved.id)); return q ? {...q, opciones:saved.opciones} : null; }).filter(Boolean);
     const r=test==='ci'?resultadoCI(ordered,respuestas):resultadoRazonamiento(ordered,respuestas);
     const ahora=new Date().toISOString();
+    // Primero se marca el intento como entregado (solo si no lo estaba): dos envíos simultáneos no guardan dos resultados.
+    const marcados=await actualizar('pg_intentos_test',`id=eq.${idTexto(intento_id)}&user_id=eq.${idTexto(req.user.id)}&entregado_at=is.null`,{entregado_at:ahora},{devolver:true});
+    if(!marcados.length) return res.status(409).json({success:false,error:'Este intento ya fue entregado.'});
     await insertar('pg_resultados_test',[{user_id:req.user.id,test,puntaje:r.puntaje,maximo:r.maximo,detalle:r.detalle,created_at:ahora}],{});
-    await actualizar('pg_intentos_test',`id=eq.${idTexto(intento_id)}&user_id=eq.${idTexto(req.user.id)}&entregado_at=is.null`,{entregado_at:ahora},{devolver:false});
     const revision=ordered.map(q=>({id:q.id, enunciado:q.enunciado, bloque:q.bloque, correcta:q.correcta, opciones:q.opciones, respuesta:respuestas[q.id] ?? null, explicacion:q.explicacion, ...(q.svg?{svg:q.svg}: {})}));
     res.json({success:true,puntaje:r.puntaje,maximo:r.maximo,detalle:r.detalle,revision});
   } catch(err) { console.error(`tests/${test}/entregar:`,err.message); res.status(500).json({success:false,error:'No pudimos corregir el test.'}); }

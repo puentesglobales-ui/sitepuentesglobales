@@ -7,7 +7,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 import { PsychometricEngine, PSYCHOMETRIC_QUESTIONS } from '../services/psychometricEngine.js';
-import { BANCO_CI, MATRICES, estimarCI, NORMA_CI } from '../services/bancoCI.js';
+import { BANCO_CI, MATRICES, estimarCI, NORMA_CI, cellSVG, ARROW, LINES } from '../services/bancoCI.js';
 import { BANCO_RAZONAMIENTO } from '../services/bancoRazonamiento.js';
 
 const PUBLIC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
@@ -108,6 +108,45 @@ test('CI: el permiso de trabajos de IA empieza desmarcado y se guarda con versi�
     assert.match(permiso.version, /^trabajos_ia_v\d+$/);
     assert.match(permiso.texto, /revisa siempre la selección/);
 });
+// Tests de las páginas que esta tarea no cambia (se mantienen).
+test('numérico: 15 preguntas con respuesta válida', () => {
+    const P = get(loadPage('test-numerico'), 'PREGUNTAS');
+    assert.equal(P.length, 15);
+    checkMultipleChoice(P);
+});
+
+test('idiomas: 16 preguntas, rangos cubren 0–16', () => {
+    const ctx = loadPage('test-idiomas');
+    const P = get(ctx, 'PREGUNTAS');
+    assert.equal(P.length, 16);
+    checkMultipleChoice(P);
+    const R = get(ctx, 'RANGOS');
+    for (let n = 0; n <= 16; n++) assert.ok(R.some(r => n >= r.min && n <= r.max), `sin rango para ${n}`);
+});
+
+test('personalidad: 4 ítems por dimensión, 1 invertido por dimensión', () => {
+    const P = get(loadPage('test-personalidad'), 'PREGUNTAS');
+    for (const d of ['O', 'C', 'E', 'A', 'N']) {
+        const items = P.filter(q => q.dim === d);
+        assert.equal(items.length, 4, `dimensión ${d}`);
+        assert.equal(items.filter(q => q.inv).length, 1, `invertidos en ${d}`);
+    }
+});
+
+test('psicométrico: 3 situaciones por dimensión con máximo 3 puntos (máx. 9)', () => {
+    const P = get(loadPage('test-psicometrico'), 'PREGUNTAS');
+    const byBlock = {};
+    for (const q of P) {
+        byBlock[q.bloque] = (byBlock[q.bloque] || 0) + Math.max(...q.opciones.map(o => o.puntos));
+    }
+    assert.deepEqual(Object.values(byBlock), [9, 9, 9, 9]);
+});
+
+test('CI: respuestas de la matriz de rotación y la de XOR (banco del servidor)', () => {
+    assert.equal(MATRICES[2].correcta, cellSVG(ARROW(0)));
+    assert.equal(MATRICES[7].correcta, cellSVG(LINES(['arriba', 'izquierda'])));
+});
+
 test('motor psicométrico (API): el máximo por dimensión da 100% y no se satura antes', () => {
     const best = PSYCHOMETRIC_QUESTIONS.map(q => ({ questionId: q.id, optionIndex: 0 }));
     const res = PsychometricEngine.evaluateTest(best);
